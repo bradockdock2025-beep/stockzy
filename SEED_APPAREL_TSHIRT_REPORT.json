@@ -1,0 +1,266 @@
+[
+  {
+    "file": "Anti-Social-Social-Club-A-Fire-Inside-Flame-Hoodie-Black.jpg",
+    "status": "created",
+    "productId": "7f7460d5-718e-400a-b285-aeda6aefcc04",
+    "slug": "anti-social-social-club-a-fire-inside-flame-hoodie-black",
+    "category": "outerwear"
+  },
+  {
+    "file": "Anti-Social-Social-Club-Kkoch-Tee-Black-Product.jpg",
+    "status": "created",
+    "productId": "351f4358-e834-43d2-ae5b-1eec82b0b04f",
+    "slug": "anti-social-social-club-kkoch-tee-black",
+    "category": "tops"
+  },
+  {
+    "file": "Anti-Social-Social-Club-Koi-Garden-3M-Reflective-Tee-Black.jpg",
+    "status": "created",
+    "productId": "28f76265-2b83-4563-aa93-df652b241376",
+    "slug": "anti-social-social-club-koi-garden-3m-reflective-tee-black",
+    "category": "tops"
+  },
+  {
+    "file": "Anti-Social-Social-Club-Nevermind-T-shirt-Black.jpg",
+    "status": "created",
+    "productId": "ae680930-c416-4c8e-8be4-1bd833d523c1",
+    "slug": "anti-social-social-club-nevermind-t-shirt-black",
+    "category": "tops"
+  },
+  {
+    "file": "Anti-Social-Social-Club-Playboy-Bunny-Logo-Hoodie-Black.jpg",
+    "status": "created",
+    "productId": "03a162e7-1761-4d27-9e4e-e57cd187b489",
+    "slug": "anti-social-social-club-playboy-bunny-logo-hoodie-black",
+    "category": "outerwear"
+  },
+  {
+    "file": "Billionaire-Boys-Club-Spicy-Mayo-Tee-White.jpg",
+    "status": "created",
+    "productId": "4b35b6dd-99f2-4630-8caf-a883395d43e1",
+    "slug": "billionaire-boys-club-spicy-mayo-tee-white",
+    "category": "tops"
+  },
+  {
+    "file": "Eric-Emanuel-EE-NBA-Hoodie-Orlando-Magic.jpg",
+    "status": "created",
+    "productId": "03f326b3-2662-4a4b-91e6-123a31f06a48",
+    "slug": "eric-emanuel-ee-nba-hoodie-orlando-magic",
+    "category": "outerwear"
+  },
+  {
+    "file": "Eric-Emanuel-x-Matty-Boy-EE-Basic-Core-Short-Multicolor.jpg",
+    "status": "created",
+    "productId": "563ae5a3-afdc-4943-8a60-22c5ead0b482",
+    "slug": "eric-emanuel-eric-emanuel-x-matty-boy-ee-basic-core-short-multicolor",
+    "category": "bottoms"
+  },
+  {
+    "file": "Eric-Emanuel-x-New-York-Knicks-Champ-Shorts-Black-Gold.jpg",
+    "status": "error",
+    "error": "\nInvalid `prisma.product.create()` invocation:\n\n\nUnique constraint failed on the fields: (`slug`)"
+  },
+  {
+    "file": "Fear-of-God-Essentials-Chest-Logo-Hoodie-Jet-Black-Jet-Black.jpg",
+    "status": "error",
+    "error": "\nInvalid `prisma.product.create()` invocation:\n\n\nUnique constraint failed on the fields: (`slug`)"
+  },
+  {
+    "file": "Fear-of-God-Essentials-Classic-Short-Sleeve-Tee-Jet-Black-Product.jpg",
+    "status": "error",
+    "error": "\nInvalid `prisma.product.create()` invocation:\n\n\nUnique constraint failed on the fields: (`slug`)"
+  },
+  {
+    "file": "Fear-of-God-Essentials-Classic-Sweatshort-Jet-Black-Product.jpg",
+    "status": "created",
+    "productId": "d2cba5ba-47a0-4bdc-9f5e-0f2d2e385432",
+    "slug": "fear-of-god-essentials-classic-sweatshort-jet-black",
+    "category": "bottoms"
+  },
+  {
+    "file": "Fear-of-God-Essentials-Fleece-Essential-Sweatpant-FW24-Black-Product.jpg",
+    "status": "created",
+    "productId": "6fb682e5-de7f-4447-b806-9f0552610caf",
+    "slug": "fear-of-god-essentials-fleece-essential-sweatpant-fw24-black",
+    "category": "bottoms"
+  },
+  {
+    "file": "Fear-of-God-Essentials-Fleece-Essential-Sweatpant-Light-Heather-Gray.jpg",
+    "status": "created",
+    "productId": "443f20ed-916a-4576-8074-ff898d5efce8",
+    "slug": "fear-of-god-essentials-fleece-essential-sweatpant-light-heather-gray",
+    "category": "bottoms"
+  },
+  {
+    "file": "Fear-of-God-Essentials-Fleece-Hoodie-FW24-Black-Product.jpg",
+    "status": "error",
+    "error": "\nInvalid `prisma.product.create()` invocation:\n\n\nUnique constraint failed on the fields: (`slug`)"
+  },
+  {
+    "file": "Fear-of-God-Essentials-Fleece-Hoodie-Light-Heather-Gray-Product.jpg",
+    "status": "created",
+    "productId": "ec77ccdd-65ff-4dfe-a6eb-6089d428469b",
+    "slug": "fear-of-god-essentials-fleece-hoodie-light-heather-gray",
+    "category": "outerwear"
+  },
+  {
+    "file": "Fear-of-God-Essentials-Nylon-Fleece-Hoodie-Jet-Black-Jet-Black.jpg",
+    "status": "created",
+    "productId": "120627ae-ffc8-401a-bf2c-8170df46c0f6",
+    "slug": "fear-of-god-essentials-nylon-fleece-hoodie-jet-black-jet-black",
+    "category": "outerwear"
+  },
+  {
+    "file": "Godspeed-Halftime-Shorts-Purple-Graphite.jpg",
+    "status": "created",
+    "productId": "4941a4e4-17ab-4ca7-9cd9-145a67bdcfd5",
+    "slug": "godspeed-halftime-shorts-purple-graphite",
+    "category": "bottoms"
+  },
+  {
+    "file": "Godspeed-Strike-Out-L-S-Tee-Black.jpg",
+    "status": "created",
+    "productId": "9c910502-d4c5-4992-b5d8-da4531cf21cb",
+    "slug": "godspeed-strike-out-l-s-tee-black",
+    "category": "tops"
+  },
+  {
+    "file": "Gymshark-Onyx-V1-T-Shirt-Black-Onyx-Grey-Brand-Blue.jpg",
+    "status": "error",
+    "error": "\nInvalid `prisma.product.create()` invocation:\n\n\nUnique constraint failed on the fields: (`slug`)"
+  },
+  {
+    "file": "Hellstar-Classic-T-shirt-Regular-Print-White-Black-Product.jpg",
+    "status": "created",
+    "productId": "9e48dd9d-d357-4a95-9b74-dc69080e394b",
+    "slug": "hellstar-classic-t-shirt-regular-print-white-black",
+    "category": "tops"
+  },
+  {
+    "file": "Kith-x-adidas-Messi-Football-Jersey-Blue-White-v2.jpg",
+    "status": "error",
+    "error": "\nInvalid `prisma.product.create()` invocation:\n\n\nUnique constraint failed on the fields: (`slug`)"
+  },
+  {
+    "file": "Nike-New-York-Knicks-2026-NBA-Finals-Champions-Authentic-On-Court-T-shirt-Grey.jpg",
+    "status": "error",
+    "error": "\nInvalid `prisma.product.create()` invocation:\n\n\nUnique constraint failed on the fields: (`slug`)"
+  },
+  {
+    "file": "Nike-x-Jacquemus-x-France-Pre-Match-Jersey-Blue-Stripe.jpg",
+    "status": "error",
+    "error": "\nInvalid `prisma.product.create()` invocation:\n\n\nUnique constraint failed on the fields: (`slug`)"
+  },
+  {
+    "file": "Nike-x-Peaceminusone-Korea-G-Dragon-Anthem-Jacket-Multicolor.jpg",
+    "status": "created",
+    "productId": "c7653676-f02a-4c74-a311-ad7acde56c4d",
+    "slug": "nike-nike-x-peaceminusone-korea-g-dragon-anthem-jacket-multicolor",
+    "category": "outerwear"
+  },
+  {
+    "file": "Nike-x-USMNT-x-VAA-Anthem-Jacket-White.jpg",
+    "status": "created",
+    "productId": "442af350-cfd6-466c-9fd7-2de74684e535",
+    "slug": "nike-nike-x-usmnt-x-vaa-anthem-jacket-white",
+    "category": "outerwear"
+  },
+  {
+    "file": "Palace-x-Nike-England-Dri-FIT-Football-Jersey-Pewter-Grey-Bright-Crimson.jpg",
+    "status": "error",
+    "error": "\nInvalid `prisma.product.create()` invocation:\n\n\nUnique constraint failed on the fields: (`slug`)"
+  },
+  {
+    "file": "Supreme-Hanes-Boxer-Briefs-Black-v3.jpg",
+    "status": "error",
+    "error": "\nInvalid `prisma.product.create()` invocation:\n\n\nUnique constraint failed on the fields: (`slug`)"
+  },
+  {
+    "file": "Supreme-Hanes-Boxer-Briefs-White.jpg",
+    "status": "created",
+    "productId": "73ec08d6-d6be-4012-915a-46cb5e1fd35f",
+    "slug": "supreme-hanes-boxer-briefs-white",
+    "category": "undergarments"
+  },
+  {
+    "file": "Supreme-Hanes-Crew-Socks-4-Pack-White-Product-2.jpg",
+    "status": "created",
+    "productId": "57bd070c-f323-4bda-9a2b-9b3ac016ead1",
+    "slug": "supreme-hanes-crew-socks-4-pack-white",
+    "category": "undergarments"
+  },
+  {
+    "file": "Supreme-Hanes-Socks-4-Pack-Black.jpg",
+    "status": "created",
+    "productId": "9cf03346-704d-4378-960f-ccd0636e24a0",
+    "slug": "supreme-hanes-socks-4-pack-black",
+    "category": "undergarments"
+  },
+  {
+    "file": "Supreme-La-Martina-Rugby-Black-Product.jpg",
+    "status": "error",
+    "error": "\nInvalid `prisma.product.create()` invocation:\n\n\nUnique constraint failed on the fields: (`slug`)"
+  },
+  {
+    "file": "Supreme-Spider-Man-Tee-Black-Product.jpg",
+    "status": "created",
+    "productId": "fb92b631-1b91-42ac-a7f2-06f056d9d950",
+    "slug": "supreme-spider-man-tee-black",
+    "category": "tops"
+  },
+  {
+    "file": "Travis-Scott-Cactus-Jack-x-Spongebob-Mr-Krabs-Tee-Black.jpg",
+    "status": "skipped",
+    "reason": "brand_unmatched"
+  },
+  {
+    "file": "Vale-Forever-Classico-Zip-Up-Hoodie-Black.jpg",
+    "status": "skipped",
+    "reason": "brand_unmatched"
+  },
+  {
+    "file": "adidas-Argentina-26-Home-Authentic-Messi-Jersey-White-Icey-Blue-Light-Blue.jpg",
+    "status": "error",
+    "error": "\nInvalid `prisma.product.create()` invocation:\n\n\nUnique constraint failed on the fields: (`slug`)"
+  },
+  {
+    "file": "adidas-Belgium-26-Away-Jersey-Frozen-Blue-Black.jpg",
+    "status": "error",
+    "error": "\nInvalid `prisma.product.create()` invocation:\n\n\nUnique constraint failed on the fields: (`slug`)"
+  },
+  {
+    "file": "adidas-Japan-26-Away-Jersey-Off-White-Black.jpg",
+    "status": "error",
+    "error": "\nInvalid `prisma.product.create()` invocation:\n\n\nUnique constraint failed on the fields: (`slug`)"
+  },
+  {
+    "file": "adidas-Mexico-2026-Home-Jersey-Bold-Green.jpg",
+    "status": "error",
+    "error": "\nInvalid `prisma.product.create()` invocation:\n\n\nUnique constraint failed on the fields: (`slug`)"
+  },
+  {
+    "file": "adidas-Mexico-26-Third-Jersey-Black.jpg",
+    "status": "error",
+    "error": "\nInvalid `prisma.product.create()` invocation:\n\n\nUnique constraint failed on the fields: (`slug`)"
+  },
+  {
+    "file": "adidas-Spain-26-Away-Jersey-Off-White.jpg",
+    "status": "error",
+    "error": "\nInvalid `prisma.product.create()` invocation:\n\n\nUnique constraint failed on the fields: (`slug`)"
+  },
+  {
+    "file": "adidas-Womens-Satin-Polka-Dots-Wide-Leg-Pant-Off-White.jpg",
+    "status": "error",
+    "error": "\nInvalid `prisma.product.create()` invocation:\n\n\nUnique constraint failed on the fields: (`slug`)"
+  },
+  {
+    "file": "adidas-x-Thrasher-Argentina-Jersey-Black-Blue.jpg",
+    "status": "error",
+    "error": "\nInvalid `prisma.product.create()` invocation:\n\n\nUnique constraint failed on the fields: (`slug`)"
+  },
+  {
+    "file": "adidas-x-Willy-Chavarria-WC-Soccer-Jersey-Green-v2.jpg",
+    "status": "error",
+    "error": "\nInvalid `prisma.product.create()` invocation:\n\n\nUnique constraint failed on the fields: (`slug`)"
+  }
+]

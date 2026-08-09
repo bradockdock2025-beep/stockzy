@@ -1,0 +1,215 @@
+{
+  "info": {
+    "name": "Stockzy - Make Offer (Fase 1)",
+    "description": "Endpoints novos do PLANO_MAKE_OFFER.md (Fase 1 — revisão manual, sem auto-aceite). Usa o mesmo environment do restante da API (stockzy-ecommerce-api.postman_environment.json): base_url, access_token (admin), customer_access_token. Pré-requisito: rodar prisma/migrations/20260809_add_offers/migration.sql em produção antes de usar.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Guest",
+      "item": [
+        {
+          "name": "Criar oferta (guest)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const json = pm.response.json();",
+                  "if (json.offerId) pm.environment.set('offer_id', json.offerId);",
+                  "if (json.guestToken) pm.environment.set('offer_guest_token', json.guestToken);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": {
+              "raw": "{{base_url}}/products/{{variant_id}}/offers",
+              "host": ["{{base_url}}"],
+              "path": ["products", "{{variant_id}}", "offers"]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"offeredPrice\": 150,\n  \"guestEmail\": \"buyer@example.com\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Consultar status da oferta (guest)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/orders/offers/{{offer_id}}?token={{offer_guest_token}}",
+              "host": ["{{base_url}}"],
+              "path": ["orders", "offers", "{{offer_id}}"],
+              "query": [{ "key": "token", "value": "{{offer_guest_token}}" }]
+            }
+          }
+        },
+        {
+          "name": "Checkout a partir da oferta aceita (guest)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const json = pm.response.json();",
+                  "if (json.orderId) pm.environment.set('order_id', json.orderId);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "x-offer-token", "value": "{{offer_guest_token}}" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/orders/guest/from-offer",
+              "host": ["{{base_url}}"],
+              "path": ["orders", "guest", "from-offer"]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"offerId\": \"{{offer_id}}\",\n  \"phone\": \"+351911222333\",\n  \"country\": \"PT\",\n  \"locale\": \"pt\"\n}"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Customer",
+      "item": [
+        {
+          "name": "Criar oferta (cliente autenticado)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const json = pm.response.json();",
+                  "if (json.offerId) pm.environment.set('offer_id', json.offerId);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{customer_access_token}}" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/customers/offers",
+              "host": ["{{base_url}}"],
+              "path": ["customers", "offers"]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"variantId\": \"{{variant_id}}\",\n  \"offeredPrice\": 150\n}"
+            }
+          }
+        },
+        {
+          "name": "Consultar status da oferta (cliente)",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{customer_access_token}}" }],
+            "url": {
+              "raw": "{{base_url}}/customers/offers/{{offer_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["customers", "offers", "{{offer_id}}"]
+            }
+          }
+        },
+        {
+          "name": "Checkout a partir da oferta aceita (cliente)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const json = pm.response.json();",
+                  "if (json.id) pm.environment.set('order_id', json.id);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{customer_access_token}}" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/customers/orders/from-offer",
+              "host": ["{{base_url}}"],
+              "path": ["customers", "orders", "from-offer"]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"offerId\": \"{{offer_id}}\",\n  \"shippingAddress\": {\n    \"country\": \"PT\",\n    \"city\": \"Lisboa\",\n    \"street\": \"Rua X\",\n    \"zipcode\": \"1000-001\"\n  },\n  \"paymentMethod\": \"cod\",\n  \"locale\": \"pt\"\n}"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Admin",
+      "item": [
+        {
+          "name": "Listar ofertas pendentes",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{access_token}}" }],
+            "url": {
+              "raw": "{{base_url}}/admin/offers?status=pending",
+              "host": ["{{base_url}}"],
+              "path": ["admin", "offers"],
+              "query": [{ "key": "status", "value": "pending" }]
+            }
+          }
+        },
+        {
+          "name": "Aceitar oferta",
+          "request": {
+            "method": "PATCH",
+            "header": [{ "key": "Authorization", "value": "Bearer {{access_token}}" }],
+            "url": {
+              "raw": "{{base_url}}/admin/offers/{{offer_id}}/accept",
+              "host": ["{{base_url}}"],
+              "path": ["admin", "offers", "{{offer_id}}", "accept"]
+            }
+          }
+        },
+        {
+          "name": "Rejeitar oferta",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{access_token}}" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/admin/offers/{{offer_id}}/reject",
+              "host": ["{{base_url}}"],
+              "path": ["admin", "offers", "{{offer_id}}", "reject"]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"reason\": \"below_minimum\"\n}"
+            }
+          }
+        }
+      ]
+    }
+  ]
+}

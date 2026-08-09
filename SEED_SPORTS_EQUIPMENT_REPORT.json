@@ -1,0 +1,242 @@
+[
+  {
+    "file": "Adidas-FIFA-World-Cup-Historical-Mini-Ball-Set.jpg",
+    "status": "created",
+    "productId": "ff1dd580-2649-456e-b38b-3b4146feda6e",
+    "slug": "adidas-fifa-world-cup-historical-mini-ball-set"
+  },
+  {
+    "file": "Air-Jordan-XI-Premium-8P-Basketball-Cool-Grey.jpg",
+    "status": "created",
+    "productId": "03dc5e1c-b60f-40b2-b4d6-4ec5fdf80682",
+    "slug": "jordan-xi-premium-8p-basketball-cool-grey"
+  },
+  {
+    "file": "Fanatics-x-Kaws-New-York-Yankees-Baseball.png",
+    "status": "skipped",
+    "reason": "brand_unmatched"
+  },
+  {
+    "file": "Jordan-Premium-Basketball.jpg",
+    "status": "created",
+    "productId": "2228d09d-ba0d-41ff-80e1-5ed3f8396a6d",
+    "slug": "jordan-premium-basketball"
+  },
+  {
+    "file": "Kith-TaylorMade-Golf-Ball-12-Pack-Multi.jpg",
+    "status": "created",
+    "productId": "79eb5ef5-c2ce-47b9-8adb-a5c9cc075e43",
+    "slug": "kith-taylormade-golf-ball-12-pack-multi"
+  },
+  {
+    "file": "Kith-TaylorMade-Mallet-Headcover-Multicolor.jpg",
+    "status": "created",
+    "productId": "43d5afd5-7f3e-4329-b79a-eb76abe77d6b",
+    "slug": "kith-taylormade-mallet-headcover-multicolor"
+  },
+  {
+    "file": "Kith-TaylorMade-TP-Glove-Black.jpg",
+    "status": "created",
+    "productId": "be2eda95-6a20-4d93-96d1-b77e48e12f74",
+    "slug": "kith-taylormade-tp-glove-black"
+  },
+  {
+    "file": "Kith-TaylorMade-TP-Glove-Silk.jpg",
+    "status": "created",
+    "productId": "641bab14-55dd-4986-8dae-aaa0439fe423",
+    "slug": "kith-taylormade-tp-glove-silk"
+  },
+  {
+    "file": "Kith-TaylorMade-TP5-Golf-Ball-12-Pack-Multicolor.jpg",
+    "status": "created",
+    "productId": "356605ef-3b5f-4cbe-9092-72ce36f913a2",
+    "slug": "kith-taylormade-tp5-golf-ball-12-pack-multicolor"
+  },
+  {
+    "file": "Kith-x-TaylorMade-Perfect-Practice-Putting-Mat-Green.jpg",
+    "status": "created",
+    "productId": "c37b4cef-af70-4526-baa0-8c045448be55",
+    "slug": "kith-kith-x-taylormade-perfect-practice-putting-mat-green"
+  },
+  {
+    "file": "Nike-What-The-Kobe-Premium-8P-Basketball.jpg",
+    "status": "created",
+    "productId": "be9a62dd-5481-46b1-9094-58a97cb8469b",
+    "slug": "nike-what-the-kobe-premium-8p-basketball"
+  },
+  {
+    "file": "OVO-x-Callaway-Chrome-Soft-Dozen-Golf-Balls-12-Packs-White.jpg",
+    "status": "skipped",
+    "reason": "brand_unmatched"
+  },
+  {
+    "file": "Odyssey-Happy-Gilmore-2-Limited-Edition-Putter.jpg",
+    "status": "created",
+    "productId": "1a516b38-e827-4877-aa6d-52a22d2d7eca",
+    "slug": "odyssey-happy-gilmore-2-limited-edition-putter"
+  },
+  {
+    "file": "Spalding-x-Kobe-Bryant-94-Silver-Series-Snakeskin-Basketball-1.jpg",
+    "status": "created",
+    "productId": "8ac896b8-01e7-4612-9e4a-d8594fb7f2a0",
+    "slug": "spalding-spalding-x-kobe-bryant-94-silver-series-snakeskin-basketball"
+  },
+  {
+    "file": "Stanley-x-The-Kacey-Musgraves-1913-Quencher-ProTour-Flip-Straw-40oz-Tumbler-Kacey-Musgraves-Rodeo.jpg",
+    "status": "created",
+    "productId": "5c1a61f9-21fc-4c6e-b39d-165739a21b14",
+    "slug": "stanley-stanley-x-the-kacey-musgraves-1913-quencher-protour-flip-straw-40oz-tumbler-kacey-musgraves-rodeo"
+  },
+  {
+    "file": "Supreme-Advanced-Elements-Packlite-Kayak-Red.jpg",
+    "status": "created",
+    "productId": "256f7161-690f-4ac5-8aa0-9c25043a4b04",
+    "slug": "supreme-advanced-elements-packlite-kayak-red"
+  },
+  {
+    "file": "Supreme-Butterfly-Table-Tennis-Racket-Set-Checkerboard.jpg",
+    "status": "created",
+    "productId": "3184659d-48d0-46cb-873d-db1830e1a0ef",
+    "slug": "supreme-butterfly-table-tennis-racket-set-checkerboard"
+  },
+  {
+    "file": "Supreme-ENO-DoubleNest-Hammock-Red.jpg",
+    "status": "created",
+    "productId": "fc5a4eed-7c62-48cf-9f3c-8c7d674dba7c",
+    "slug": "supreme-eno-doublenest-hammock-red"
+  },
+  {
+    "file": "Supreme-Everlast-Folding-Exercise-Mat-Red.jpg",
+    "status": "created",
+    "productId": "9ab880da-a2af-41e2-b155-319a9e2c9a79",
+    "slug": "supreme-everlast-folding-exercise-mat-red"
+  },
+  {
+    "file": "Supreme-Franklin-Playground-Ball-White.jpg",
+    "status": "created",
+    "productId": "50dc0bb7-6d16-49e1-86d8-ce20ebe5120b",
+    "slug": "supreme-franklin-playground-ball-white"
+  },
+  {
+    "file": "Supreme-Giro-Syntax-MIPS-Helmet-Red-Sample-Image.jpg",
+    "status": "created",
+    "productId": "c8c141f7-675c-4b00-b028-2c7367aaee81",
+    "slug": "supreme-giro-syntax-mips-helmet-red"
+  },
+  {
+    "file": "Supreme-Jordan-Basketball-Black.jpg",
+    "status": "created",
+    "productId": "2f141370-6351-4324-97f8-7a176d33880c",
+    "slug": "supreme-jordan-basketball-black"
+  },
+  {
+    "file": "Supreme-Leatherman-Rebar-Red.jpg",
+    "status": "created",
+    "productId": "6d9e3411-1fcc-43a9-a25f-77a8fffeb52e",
+    "slug": "supreme-leatherman-rebar-red"
+  },
+  {
+    "file": "Supreme-McDermott-Pool-Cue-Red-v2.jpg",
+    "status": "created",
+    "productId": "7ad92215-ea6b-4307-92b0-b2a44dc48ea9",
+    "slug": "supreme-mcdermott-pool-cue-red"
+  },
+  {
+    "file": "Supreme-Morey-Mach-7-Bodyboard-Red.jpg",
+    "status": "created",
+    "productId": "0d81d267-bc54-409a-a760-0b2546892918",
+    "slug": "supreme-morey-mach-7-bodyboard-red"
+  },
+  {
+    "file": "Supreme-Prism-Zenith-5-Kite-Silver.jpg",
+    "status": "created",
+    "productId": "350b6813-bd41-4096-b3c7-9251e36a7fbe",
+    "slug": "supreme-prism-zenith-5-kite-silver"
+  },
+  {
+    "file": "Supreme-Rawlings-Chrome-Maple-Wood-Baseball-Bat-Red.jpg",
+    "status": "created",
+    "productId": "466851e8-38a0-45ab-99e6-1f726c3974ea",
+    "slug": "supreme-rawlings-chrome-maple-wood-baseball-bat-red"
+  },
+  {
+    "file": "Supreme-Rawlings-REV1X-Aerial-Baseball-Multicolor.jpg",
+    "status": "created",
+    "productId": "e8a2336e-ebc8-4acb-8570-34eb9c2e6b21",
+    "slug": "supreme-rawlings-rev1x-aerial-baseball-multicolor"
+  },
+  {
+    "file": "Supreme-Storm-Bowling-Ball-White.jpg",
+    "status": "created",
+    "productId": "62b22f10-e7e1-4a02-abda-bc42445b1536",
+    "slug": "supreme-storm-bowling-ball-white"
+  },
+  {
+    "file": "Supreme-Umbro-Soccer-Ball-White.jpg",
+    "status": "created",
+    "productId": "58a51620-7d85-4e90-a062-b6336f090e46",
+    "slug": "supreme-umbro-soccer-ball-white"
+  },
+  {
+    "file": "Supreme-Wilson-Tennis-Balls-White.jpg",
+    "status": "created",
+    "productId": "635e5a57-f691-4979-a566-030e537979c3",
+    "slug": "supreme-wilson-tennis-balls-white"
+  },
+  {
+    "file": "Takashi-Murakami-MLB-World-Tour-Tokyo-Series-2025-Rawlings-Cubs-Baseball.jpg",
+    "status": "skipped",
+    "reason": "brand_unmatched"
+  },
+  {
+    "file": "Takashi-Murakami-MLB-World-Tour-Tokyo-Series-2025-Rawlings-Dodgers-Baseball.jpg",
+    "status": "skipped",
+    "reason": "brand_unmatched"
+  },
+  {
+    "file": "Tesla-x-Selkirk-Plaid-Pickleball-Paddle.jpg",
+    "status": "created",
+    "productId": "58261b2c-46df-4052-a114-a4a331da98da",
+    "slug": "selkirk-tesla-x-selkirk-plaid-pickleball-paddle"
+  },
+  {
+    "file": "Travis-Scott-Cactus-Jack-Portable-Hammock-Olive.jpg",
+    "status": "skipped",
+    "reason": "brand_unmatched"
+  },
+  {
+    "file": "Travis-Scott-Circus-Maximus-Soccer-Ball-Multicolor.jpg",
+    "status": "skipped",
+    "reason": "brand_unmatched"
+  },
+  {
+    "file": "Travis-Scott-x-Nike-Basketball-Multicolor.jpg",
+    "status": "created",
+    "productId": "2ce32daf-59cf-41ab-8d4c-6b4b9d2ca1a3",
+    "slug": "nike-travis-scott-x-nike-basketball-multicolor"
+  },
+  {
+    "file": "adidas-FIFA-World-Cup-26-Historical-Pro-Ball-Set.jpg",
+    "status": "created",
+    "productId": "ba783bea-0c90-4915-846d-3901b8d48b62",
+    "slug": "adidas-fifa-world-cup-26-historical-pro-ball-set"
+  },
+  {
+    "file": "adidas-FIFA-World-Cup-Historical-Club-Ball-Set.jpg",
+    "status": "created",
+    "productId": "81c78999-5219-47f0-b80c-5bbb4158c3b0",
+    "slug": "adidas-fifa-world-cup-historical-club-ball-set"
+  },
+  {
+    "file": "adidas-Fifa-World-Cup-26-Trionda-Finals-Pro-Ball.jpg",
+    "status": "created",
+    "productId": "e81268f5-5d86-4a8b-9937-26b9570d07de",
+    "slug": "adidas-fifa-world-cup-26-trionda-finals-pro-ball"
+  },
+  {
+    "file": "adidas-Historical-Soccer-Mini-Ball-Set.jpg",
+    "status": "created",
+    "productId": "6e796d8e-6990-489e-821f-86999894cbf5",
+    "slug": "adidas-historical-soccer-mini-ball-set"
+  }
+]

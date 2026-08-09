@@ -1,0 +1,174 @@
+{
+  "info": {
+    "name": "Stockzy — Cart",
+    "description": "Endpoints do carrinho: ver, adicionar, actualizar quantidade, remover item e limpar.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:3000",
+      "description": "URL base da API"
+    },
+    {
+      "key": "cartToken",
+      "value": "",
+      "description": "Preenchido automaticamente após o primeiro request"
+    },
+    {
+      "key": "variantId",
+      "value": "101df4dc-0bac-4b91-acc4-83f94611f948",
+      "description": "ID da variante a adicionar ao carrinho (não o productId)"
+    }
+  ],
+  "item": [
+    {
+      "name": "1. Ver carrinho",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "const token = pm.response.headers.get('x-cart-token');",
+              "if (token) {",
+              "    pm.collectionVariables.set('cartToken', token);",
+              "    console.log('cartToken guardado:', token);",
+              "}"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "x-cart-token",
+            "value": "{{cartToken}}",
+            "description": "Deixa vazio na primeira vez — o servidor cria um token novo e devolve no header x-cart-token"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/cart",
+          "host": ["{{baseUrl}}"],
+          "path": ["cart"]
+        },
+        "description": "Devolve o estado actual do carrinho.\n\nSe ainda não tens token:\n- Remove o header x-cart-token (ou deixa vazio)\n- O servidor devolve um token novo no header x-cart-token da resposta\n- O script Tests guarda-o automaticamente em {{cartToken}}\n\nResponse esperado:\n{\n  \"token\": \"uuid\",\n  \"items\": [],\n  \"updatedAt\": \"...\"\n}"
+      }
+    },
+    {
+      "name": "2. Adicionar item ao carrinho",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "const token = pm.response.headers.get('x-cart-token');",
+              "if (token) {",
+              "    pm.collectionVariables.set('cartToken', token);",
+              "    console.log('cartToken guardado:', token);",
+              "}"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "x-cart-token",
+            "value": "{{cartToken}}",
+            "description": "Token do carrinho obtido no request 1"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/cart/items",
+          "host": ["{{baseUrl}}"],
+          "path": ["cart", "items"]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"variantId\": \"{{variantId}}\",\n  \"quantity\": 1\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "description": "Adiciona um artigo ao carrinho.\n\nIMPORTANTE: o campo variantId deve ser o ID da VARIANTE,\nnão o ID do produto.\n\nExemplo de IDs:\n- productId:  4ad44a53-949c-482f-8935-fca1d1f9037b  ← ERRADO\n- variantId:  101df4dc-0bac-4b91-acc4-83f94611f948  ← CORRECTO\n\nSe o item já existir no carrinho, a quantidade é somada.\nSe a variante for de pré-venda, o checkout cria uma order com status presale."
+      }
+    },
+    {
+      "name": "3. Actualizar quantidade de um item",
+      "request": {
+        "method": "PATCH",
+        "header": [
+          {
+            "key": "x-cart-token",
+            "value": "{{cartToken}}"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/cart/items/{{variantId}}",
+          "host": ["{{baseUrl}}"],
+          "path": ["cart", "items", "{{variantId}}"]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"quantity\": 2\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "description": "Actualiza a quantidade de um item já existente no carrinho.\n\nEnviar quantity: 0 remove o item do carrinho."
+      }
+    },
+    {
+      "name": "4. Remover item do carrinho",
+      "request": {
+        "method": "DELETE",
+        "header": [
+          {
+            "key": "x-cart-token",
+            "value": "{{cartToken}}"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/cart/items/{{variantId}}",
+          "host": ["{{baseUrl}}"],
+          "path": ["cart", "items", "{{variantId}}"]
+        },
+        "description": "Remove um item específico do carrinho pelo variantId."
+      }
+    },
+    {
+      "name": "5. Limpar carrinho (todos os items)",
+      "request": {
+        "method": "DELETE",
+        "header": [
+          {
+            "key": "x-cart-token",
+            "value": "{{cartToken}}"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/cart",
+          "host": ["{{baseUrl}}"],
+          "path": ["cart"]
+        },
+        "description": "Remove todos os items do carrinho de uma vez.\n\nÚtil para limpar antes de testar um novo fluxo."
+      }
+    }
+  ]
+}

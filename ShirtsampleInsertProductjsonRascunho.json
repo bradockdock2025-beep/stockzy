@@ -1,0 +1,274 @@
+{
+  "categoryId": "ea76cc5d-7c25-4371-9622-4fd36c4aa8e4",
+  "name": "STOCKZY — FROM 75",
+  "slug": "stockzy-from-75",
+  "description": "A timeless STOCKZY — FROM 75 shirt crafted from premium cotton.",
+  "status": "active",
+  "featured": false,
+  "variants": [
+    {
+      "title": "Black / S",
+      "price": 89.99,
+      "compareAtPrice": 110,
+      "stockQuantity": 20,
+      "attributes": [
+        { "attributeId": "2040d8f4-e8ce-498c-b30a-01838f8c979f", "value": "Black" },
+        { "attributeId": "db1738c1-61dc-48e0-b668-cb23e84b6388", "value": "S" },
+        { "attributeId": "73111ba4-4925-4933-b2dc-d56fd85d101b", "value": "Women" }
+      ]
+    },
+    {
+      "title": "Black / M",
+      "price": 89.99,
+      "compareAtPrice": 110,
+      "stockQuantity": 20,
+      "attributes": [
+        { "attributeId": "2040d8f4-e8ce-498c-b30a-01838f8c979f", "value": "Black" },
+        { "attributeId": "db1738c1-61dc-48e0-b668-cb23e84b6388", "value": "M" },
+        { "attributeId": "73111ba4-4925-4933-b2dc-d56fd85d101b", "value": "Women" }
+      ]
+    },
+    {
+      "title": "Black / L",
+      "price": 89.99,
+      "compareAtPrice": 110,
+      "stockQuantity": 20,
+      "attributes": [
+        { "attributeId": "2040d8f4-e8ce-498c-b30a-01838f8c979f", "value": "Black" },
+        { "attributeId": "db1738c1-61dc-48e0-b668-cb23e84b6388", "value": "L" },
+        { "attributeId": "73111ba4-4925-4933-b2dc-d56fd85d101b", "value": "Women" }
+      ]
+    },
+    {
+      "title": "Black / XL",
+      "price": 89.99,
+      "compareAtPrice": 110,
+      "stockQuantity": 20,
+      "attributes": [
+        { "attributeId": "2040d8f4-e8ce-498c-b30a-01838f8c979f", "value": "Black" },
+        { "attributeId": "db1738c1-61dc-48e0-b668-cb23e84b6388", "value": "XL" },
+        { "attributeId": "73111ba4-4925-4933-b2dc-d56fd85d101b", "value": "Women" }
+      ]
+    },
+    {
+      "title": "White / S",
+      "price": 89.99,
+      "compareAtPrice": 110,
+      "stockQuantity": 20,
+      "attributes": [
+        { "attributeId": "2040d8f4-e8ce-498c-b30a-01838f8c979f", "value": "White" },
+        { "attributeId": "db1738c1-61dc-48e0-b668-cb23e84b6388", "value": "S" },
+        { "attributeId": "73111ba4-4925-4933-b2dc-d56fd85d101b", "value": "Women" }
+      ]
+    },
+    {
+      "title": "White / M",
+      "price": 89.99,
+      "compareAtPrice": 110,
+      "stockQuantity": 20,
+      "attributes": [
+        { "attributeId": "2040d8f4-e8ce-498c-b30a-01838f8c979f", "value": "White" },
+        { "attributeId": "db1738c1-61dc-48e0-b668-cb23e84b6388", "value": "M" },
+        { "attributeId": "73111ba4-4925-4933-b2dc-d56fd85d101b", "value": "Women" }
+      ]
+    },
+    {
+      "title": "White / L",
+      "price": 89.99,
+      "compareAtPrice": 110,
+      "stockQuantity": 20,
+      "attributes": [
+        { "attributeId": "2040d8f4-e8ce-498c-b30a-01838f8c979f", "value": "White" },
+        { "attributeId": "db1738c1-61dc-48e0-b668-cb23e84b6388", "value": "L" },
+        { "attributeId": "73111ba4-4925-4933-b2dc-d56fd85d101b", "value": "Women" }
+      ]
+    },
+    {
+      "title": "White / XL",
+      "price": 89.99,
+      "compareAtPrice": 110,
+      "stockQuantity": 20,
+      "attributes": [
+        { "attributeId": "2040d8f4-e8ce-498c-b30a-01838f8c979f", "value": "White" },
+        { "attributeId": "db1738c1-61dc-48e0-b668-cb23e84b6388", "value": "XL" },
+        { "attributeId": "73111ba4-4925-4933-b2dc-d56fd85d101b", "value": "Women" }
+      ]
+    },
+    {
+      "title": "Navy / S",
+      "price": 89.99,
+      "compareAtPrice": 110,
+      "stockQuantity": 20,
+      "attributes": [
+        { "attributeId": "2040d8f4-e8ce-498c-b30a-01838f8c979f", "value": "Navy" },
+        { "attributeId": "db1738c1-61dc-48e0-b668-cb23e84b6388", "value": "S" },
+        { "attributeId": "73111ba4-4925-4933-b2dc-d56fd85d101b", "value": "Women" }
+      ]
+    },
+    {
+      "title": "Navy / M",
+      "price": 89.99,
+      "compareAtPrice": 110,
+      "stockQuantity": 20,
+      "attributes": [
+        { "attributeId": "2040d8f4-e8ce-498c-b30a-01838f8c979f", "value": "Navy" },
+        { "attributeId": "db1738c1-61dc-48e0-b668-cb23e84b6388", "value": "M" },
+        { "attributeId": "73111ba4-4925-4933-b2dc-d56fd85d101b", "value": "Women" }
+      ]
+    },
+    {
+      "title": "Navy / L",
+      "price": 89.99,
+      "compareAtPrice": 110,
+      "stockQuantity": 20,
+      "attributes": [
+        { "attributeId": "2040d8f4-e8ce-498c-b30a-01838f8c979f", "value": "Navy" },
+        { "attributeId": "db1738c1-61dc-48e0-b668-cb23e84b6388", "value": "L" },
+        { "attributeId": "73111ba4-4925-4933-b2dc-d56fd85d101b", "value": "Women" }
+      ]
+    },
+    {
+      "title": "Navy / XL",
+      "price": 89.99,
+      "compareAtPrice": 110,
+      "stockQuantity": 20,
+      "attributes": [
+        { "attributeId": "2040d8f4-e8ce-498c-b30a-01838f8c979f", "value": "Navy" },
+        { "attributeId": "db1738c1-61dc-48e0-b668-cb23e84b6388", "value": "XL" },
+        { "attributeId": "73111ba4-4925-4933-b2dc-d56fd85d101b", "value": "Women" }
+      ]
+    },
+    {
+      "title": "Grey / S",
+      "price": 89.99,
+      "compareAtPrice": 110,
+      "stockQuantity": 20,
+      "attributes": [
+        { "attributeId": "2040d8f4-e8ce-498c-b30a-01838f8c979f", "value": "Grey" },
+        { "attributeId": "db1738c1-61dc-48e0-b668-cb23e84b6388", "value": "S" },
+        { "attributeId": "73111ba4-4925-4933-b2dc-d56fd85d101b", "value": "Women" }
+      ]
+    },
+    {
+      "title": "Grey / M",
+      "price": 89.99,
+      "compareAtPrice": 110,
+      "stockQuantity": 20,
+      "attributes": [
+        { "attributeId": "2040d8f4-e8ce-498c-b30a-01838f8c979f", "value": "Grey" },
+        { "attributeId": "db1738c1-61dc-48e0-b668-cb23e84b6388", "value": "M" },
+        { "attributeId": "73111ba4-4925-4933-b2dc-d56fd85d101b", "value": "Women" }
+      ]
+    },
+    {
+      "title": "Grey / L",
+      "price": 89.99,
+      "compareAtPrice": 110,
+      "stockQuantity": 20,
+      "attributes": [
+        { "attributeId": "2040d8f4-e8ce-498c-b30a-01838f8c979f", "value": "Grey" },
+        { "attributeId": "db1738c1-61dc-48e0-b668-cb23e84b6388", "value": "L" },
+        { "attributeId": "73111ba4-4925-4933-b2dc-d56fd85d101b", "value": "Women" }
+      ]
+    },
+    {
+      "title": "Grey / XL",
+      "price": 89.99,
+      "compareAtPrice": 110,
+      "stockQuantity": 20,
+      "attributes": [
+        { "attributeId": "2040d8f4-e8ce-498c-b30a-01838f8c979f", "value": "Grey" },
+        { "attributeId": "db1738c1-61dc-48e0-b668-cb23e84b6388", "value": "XL" },
+        { "attributeId": "73111ba4-4925-4933-b2dc-d56fd85d101b", "value": "Women" }
+      ]
+    },
+    {
+      "title": "Brown / S",
+      "price": 89.99,
+      "compareAtPrice": 110,
+      "stockQuantity": 20,
+      "attributes": [
+        { "attributeId": "2040d8f4-e8ce-498c-b30a-01838f8c979f", "value": "Brown" },
+        { "attributeId": "db1738c1-61dc-48e0-b668-cb23e84b6388", "value": "S" },
+        { "attributeId": "73111ba4-4925-4933-b2dc-d56fd85d101b", "value": "Unisex" }
+      ]
+    },
+    {
+      "title": "Brown / M",
+      "price": 89.99,
+      "compareAtPrice": 110,
+      "stockQuantity": 20,
+      "attributes": [
+        { "attributeId": "2040d8f4-e8ce-498c-b30a-01838f8c979f", "value": "Brown" },
+        { "attributeId": "db1738c1-61dc-48e0-b668-cb23e84b6388", "value": "M" },
+        { "attributeId": "73111ba4-4925-4933-b2dc-d56fd85d101b", "value": "Unisex" }
+      ]
+    },
+    {
+      "title": "Brown / L",
+      "price": 89.99,
+      "compareAtPrice": 110,
+      "stockQuantity": 20,
+      "attributes": [
+        { "attributeId": "2040d8f4-e8ce-498c-b30a-01838f8c979f", "value": "Brown" },
+        { "attributeId": "db1738c1-61dc-48e0-b668-cb23e84b6388", "value": "L" },
+        { "attributeId": "73111ba4-4925-4933-b2dc-d56fd85d101b", "value": "Unisex" }
+      ]
+    },
+    {
+      "title": "Brown / XL",
+      "price": 89.99,
+      "compareAtPrice": 110,
+      "stockQuantity": 20,
+      "attributes": [
+        { "attributeId": "2040d8f4-e8ce-498c-b30a-01838f8c979f", "value": "Brown" },
+        { "attributeId": "db1738c1-61dc-48e0-b668-cb23e84b6388", "value": "XL" },
+        { "attributeId": "73111ba4-4925-4933-b2dc-d56fd85d101b", "value": "Unisex" }
+      ]
+    },
+    {
+      "title": "Blue / S",
+      "price": 89.99,
+      "compareAtPrice": 110,
+      "stockQuantity": 20,
+      "attributes": [
+        { "attributeId": "2040d8f4-e8ce-498c-b30a-01838f8c979f", "value": "Blue" },
+        { "attributeId": "db1738c1-61dc-48e0-b668-cb23e84b6388", "value": "S" },
+        { "attributeId": "73111ba4-4925-4933-b2dc-d56fd85d101b", "value": "Women" }
+      ]
+    },
+    {
+      "title": "Blue / M",
+      "price": 89.99,
+      "compareAtPrice": 110,
+      "stockQuantity": 20,
+      "attributes": [
+        { "attributeId": "2040d8f4-e8ce-498c-b30a-01838f8c979f", "value": "Blue" },
+        { "attributeId": "db1738c1-61dc-48e0-b668-cb23e84b6388", "value": "M" },
+        { "attributeId": "73111ba4-4925-4933-b2dc-d56fd85d101b", "value": "Women" }
+      ]
+    },
+    {
+      "title": "Blue / L",
+      "price": 89.99,
+      "compareAtPrice": 110,
+      "stockQuantity": 20,
+      "attributes": [
+        { "attributeId": "2040d8f4-e8ce-498c-b30a-01838f8c979f", "value": "Blue" },
+        { "attributeId": "db1738c1-61dc-48e0-b668-cb23e84b6388", "value": "L" },
+        { "attributeId": "73111ba4-4925-4933-b2dc-d56fd85d101b", "value": "Women" }
+      ]
+    },
+    {
+      "title": "Blue / XL",
+      "price": 89.99,
+      "compareAtPrice": 110,
+      "stockQuantity": 20,
+      "attributes": [
+        { "attributeId": "2040d8f4-e8ce-498c-b30a-01838f8c979f", "value": "Blue" },
+        { "attributeId": "db1738c1-61dc-48e0-b668-cb23e84b6388", "value": "XL" },
+        { "attributeId": "73111ba4-4925-4933-b2dc-d56fd85d101b", "value": "Women" }
+      ]
+    }
+  ]
+}

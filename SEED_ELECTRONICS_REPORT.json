@@ -1,0 +1,282 @@
+[
+  {
+    "file": "Apple-Airpods-4-MXP63LL-A.jpg",
+    "status": "created",
+    "productId": "b3ef1fd8-dd1d-435c-a063-a653c7727c93",
+    "slug": "apple-airpods-4-mxp63ll-a",
+    "category": "audio"
+  },
+  {
+    "file": "Apple-Airpods-4-with-Active-Noise-Cancellation-MXP93LL-A.jpg",
+    "status": "created",
+    "productId": "d012b793-01d3-431a-8867-30faba0ea283",
+    "slug": "apple-airpods-4-with-active-noise-cancellation-mxp93ll-a",
+    "category": "audio"
+  },
+  {
+    "file": "Apple-Airpods-Max-2024-MWW43AM-A-Midnight.jpg",
+    "status": "created",
+    "productId": "1c425692-e6c7-40a5-a003-99d950c4e3c2",
+    "slug": "apple-airpods-max-2024-mww43am-a-midnight",
+    "category": "audio"
+  },
+  {
+    "file": "Apple-Airpods-Pro-3-MFHP4LL-A.jpg",
+    "status": "created",
+    "productId": "b2b18177-8a6f-4566-80e0-9dfeb425c4dd",
+    "slug": "apple-airpods-pro-3-mfhp4ll-a",
+    "category": "audio"
+  },
+  {
+    "file": "Apple-Pencil-Pro-MX2D3AM-A.jpg",
+    "status": "created",
+    "productId": "91a77143-d7c3-41a6-86e2-c625fa1b4e6f",
+    "slug": "apple-pencil-pro-mx2d3am-a",
+    "category": "computer-gaming-peripherals"
+  },
+  {
+    "file": "Canon-PowerShot-G7-X-Mark-III-3637C001-Black-Product.jpg",
+    "status": "created",
+    "productId": "ac75dc81-ee1f-4274-9300-67021ab9bade",
+    "slug": "canon-powershot-g7-x-mark-iii-3637c001-black",
+    "category": "other-electronics"
+  },
+  {
+    "file": "Canon-PowerShot-G7-X-Mark-III-Camera-3638C011-Silver-Product.jpg",
+    "status": "created",
+    "productId": "2f3545bc-842b-449b-a15c-0df6ad31cf93",
+    "slug": "canon-powershot-g7-x-mark-iii-camera-3638c011-silver",
+    "category": "other-electronics"
+  },
+  {
+    "file": "Canon-PowerShot-SX740-HS-203-Megapixel-Digital-Camera-2955C001-Black-Product.jpg",
+    "status": "created",
+    "productId": "8cf31f15-30c1-4570-8a99-3dcfde1f03fc",
+    "slug": "canon-powershot-sx740-hs-203-megapixel-digital-camera-2955c001-black",
+    "category": "other-electronics"
+  },
+  {
+    "file": "Canon-PowerShot-SX740-HS-2956C001-Silver.jpg",
+    "status": "created",
+    "productId": "2763477e-32c2-46b2-a526-334d573e48f7",
+    "slug": "canon-powershot-sx740-hs-2956c001-silver",
+    "category": "other-electronics"
+  },
+  {
+    "file": "Fujifilm-X-Series-X100VI-402MP-Digital-Camera-16821822-Silver.jpg",
+    "status": "created",
+    "productId": "f2ac8682-5363-459d-926a-47cac9066aff",
+    "slug": "fujifilm-x-series-x100vi-402mp-digital-camera-16821822-silver",
+    "category": "other-electronics"
+  },
+  {
+    "file": "Meta-Quest-3-512GB-VR-Headset-5.jpg",
+    "status": "created",
+    "productId": "8ea7abc4-910e-4a7c-bffd-35d0e6329937",
+    "slug": "meta-quest-3-512gb-vr-headset",
+    "category": "other-electronics"
+  },
+  {
+    "file": "Meta-x-Ray-Ban-Display-Neural-Band-AI-Glasses-Standard-Size-1-SK-1001152-01.jpg",
+    "status": "created",
+    "productId": "335e7902-5def-4d20-bfe9-48936ce127d2",
+    "slug": "meta-meta-x-ray-ban-display-neural-band-ai-glasses-standard-size-1-sk-1001152",
+    "category": "other-electronics"
+  },
+  {
+    "file": "Meta-x-Ray-Ban-Display-Neural-Band-AI-Glasses-Standard-Size-2-SK-1001153-01.jpg",
+    "status": "created",
+    "productId": "c6c6aacd-3527-4c3e-9a54-6fdca8be2f39",
+    "slug": "meta-meta-x-ray-ban-display-neural-band-ai-glasses-standard-size-2-sk-1001153",
+    "category": "other-electronics"
+  },
+  {
+    "file": "Meta-x-Ray-Ban-Display-Neural-Band-AI-Glasses-Standard-Size-3-SK-1001154-01.jpg",
+    "status": "created",
+    "productId": "01bc26d8-08d8-4766-864c-ec44b5b0ed7e",
+    "slug": "meta-meta-x-ray-ban-display-neural-band-ai-glasses-standard-size-3-sk-1001154",
+    "category": "other-electronics"
+  },
+  {
+    "file": "Meta-x-Ray-Ban-Wayfarer-Glasses-Gen-2-Large-0RW4012_601S1Z53-Matte-Black-Clear-to-Grey-Transition.jpg",
+    "status": "created",
+    "productId": "c494f829-3e08-4a3b-9f0d-051faf8fa1d2",
+    "slug": "meta-meta-x-ray-ban-wayfarer-glasses-gen-2-large-0rw4012-601s1z53-matte-black-clear-to-grey-transition",
+    "category": "other-electronics"
+  },
+  {
+    "file": "Meta-x-Ray-Ban-Wayfarer-Glasses-Gen-2-Standard-0RW4012_601SSB50-Matte-Black-Clear.jpg",
+    "status": "created",
+    "productId": "673c3021-2c88-4392-824c-823b8c753451",
+    "slug": "meta-meta-x-ray-ban-wayfarer-glasses-gen-2-standard-0rw4012-601ssb50-matte-black-clear",
+    "category": "other-electronics"
+  },
+  {
+    "file": "Microsoft-Xbox-Series-S-Console-White.jpg",
+    "status": "created",
+    "productId": "a3c222a5-287e-49b0-92f9-fb0cc9ca7d9b",
+    "slug": "microsoft-xbox-series-s-console-white",
+    "category": "gaming-consoles"
+  },
+  {
+    "file": "Microsoft-Xbox-Series-X-Console-Black.jpg",
+    "status": "created",
+    "productId": "124a2ba1-cae2-43dc-8db0-3cb412756ee1",
+    "slug": "microsoft-xbox-series-x-console-black",
+    "category": "gaming-consoles"
+  },
+  {
+    "file": "NVIDIA-GeForce-RTX-5080-16GB-Graphics-Card-900-1G144-2545-000-Product.jpg",
+    "status": "created",
+    "productId": "4a3f1cd7-7110-4766-bc3c-69abc536b4ef",
+    "slug": "nvidia-geforce-rtx-5080-16gb-graphics-card-900-1g144-2545",
+    "category": "computer-components"
+  },
+  {
+    "file": "NVIDIA-GeForce-RTX-5090-32GB-Graphics-Card-900-1G144-2530-000-Product.jpg",
+    "status": "created",
+    "productId": "fec5aa4c-f333-4e7a-87be-f07e2eafa39e",
+    "slug": "nvidia-geforce-rtx-5090-32gb-graphics-card-900-1g144-2530",
+    "category": "computer-components"
+  },
+  {
+    "file": "Nintendo-Switch-2-Console-6614313-2-Product.jpg",
+    "status": "created",
+    "productId": "6fe88bac-c20e-4c31-94df-5261545aae51",
+    "slug": "nintendo-switch-2-console-6614313",
+    "category": "gaming-consoles"
+  },
+  {
+    "file": "Nintendo-Switch-2-MarioKart-World-Console-Bundle-6614325-Product.jpg",
+    "status": "created",
+    "productId": "72335275-56b0-44ac-a444-a817721f9783",
+    "slug": "nintendo-switch-2-mariokart-world-console-bundle",
+    "category": "gaming-consoles"
+  },
+  {
+    "file": "Paris-Saint-x-Teenage-Engineering-YZY-2019-OG-Stem-Player-Product.jpg",
+    "status": "created",
+    "productId": "ec069f4b-a39e-49a6-8e53-e9101d3d20ba",
+    "slug": "teenage-engineering-paris-saint-x-teenage-engineering-yzy-2019-og-stem-player",
+    "category": "other-electronics"
+  },
+  {
+    "file": "Sony-PS5-Playstation-5-Blu-Ray-Edition-Console-White-Product.jpg",
+    "status": "created",
+    "productId": "96870f03-3900-4832-b9d4-159ea23e5a20",
+    "slug": "sony-ps5-playstation-5-blu-ray-edition-console-white",
+    "category": "gaming-consoles"
+  },
+  {
+    "file": "Sony-PS5-Playstation-5-DualSense-Wireless-Controller-White.png",
+    "status": "created",
+    "productId": "d94c8c90-1d87-45b8-9760-a3dc6a2a025d",
+    "slug": "sony-ps5-playstation-5-dualsense-wireless-controller-white",
+    "category": "computer-gaming-peripherals"
+  },
+  {
+    "file": "Sony-PlayStation-5-PS5-Digital-Edition-Console-US-Plug.jpg",
+    "status": "created",
+    "productId": "1841ca98-911c-40d2-9fe7-b9b878239e67",
+    "slug": "sony-playstation-5-ps5-digital-edition-console-us-plug",
+    "category": "gaming-consoles"
+  },
+  {
+    "file": "Sony-PlayStation-5-PS5-Pro-30th-Anniversary-Limited-Edition-BundIe-US-Plug.jpg",
+    "status": "created",
+    "productId": "0a1fd7cb-b30e-45cf-8d9b-f736cf1c451b",
+    "slug": "sony-playstation-5-ps5-pro-30th-anniversary-limited-edition-bundie-us-plug",
+    "category": "gaming-consoles"
+  },
+  {
+    "file": "Sony-PlayStation-5-PS5-Pro-Console-US-Plug.jpg",
+    "status": "created",
+    "productId": "019ea892-b36b-4c57-895f-89c572890a7e",
+    "slug": "sony-playstation-5-ps5-pro-console-us-plug",
+    "category": "gaming-consoles"
+  },
+  {
+    "file": "Sony-PlayStation-5-PS5-Pro-Digital-Edition-30th-Anniversary-Limited-Edition-BundIe-US-Plug.jpg",
+    "status": "created",
+    "productId": "dc877b23-ff70-4485-84a7-72a064099835",
+    "slug": "sony-playstation-5-ps5-pro-digital-edition-30th-anniversary-limited-edition-bundie-us-plug",
+    "category": "gaming-consoles"
+  },
+  {
+    "file": "Sony-PlayStation-5-PS5-Ultra-HD-Blu-ray-Edition-Console-US-Plug.jpg",
+    "status": "created",
+    "productId": "33439bc3-62d1-4414-8677-b1d41c8a9b97",
+    "slug": "sony-playstation-5-ps5-ultra-hd-blu-ray-edition-console-us-plug",
+    "category": "gaming-consoles"
+  },
+  {
+    "file": "Sony-PlayStation-PS5-Disc-Edition-Marvel-Spider-Man-2-Cover.jpg",
+    "status": "created",
+    "productId": "e15182dc-2792-40ca-8d33-010db0ec096f",
+    "slug": "sony-playstation-ps5-disc-edition-marvel-spider-man-2-cover",
+    "category": "gaming-consoles"
+  },
+  {
+    "file": "Sony-PlayStation-Portal-Remote-Player-30th-Anniversary-Limited-Edition.jpg",
+    "status": "created",
+    "productId": "9ca75fc2-6680-4b4b-90ba-a7f1ee1878a9",
+    "slug": "sony-playstation-portal-remote-player-30th-anniversary-limited-edition",
+    "category": "gaming-consoles"
+  },
+  {
+    "file": "Sony-PlayStation-Portal-Remote-Player-White-01.jpg",
+    "status": "created",
+    "productId": "144049a6-756c-4db4-a69a-135217587b2d",
+    "slug": "sony-playstation-portal-remote-player-white",
+    "category": "gaming-consoles"
+  },
+  {
+    "file": "Sony-Playstation-PS5-DualSense-30th-Anniversary-Limited-Edition-Wirelress-Controller-Product.jpg",
+    "status": "created",
+    "productId": "f924d656-a9ac-4dfb-bfe5-ad6af1b49a2c",
+    "slug": "sony-playstation-ps5-dualsense-30th-anniversary-limited-edition-wirelress-controller",
+    "category": "computer-gaming-peripherals"
+  },
+  {
+    "file": "Sony-Playstation-PS5-DualSense-The-Last-of-Us-Edition-Wireless-Controller-Product.jpg",
+    "status": "created",
+    "productId": "a66d0255-e1b6-4646-bb9e-46aac87f938c",
+    "slug": "sony-playstation-ps5-dualsense-the-last-of-us-edition-wireless-controller",
+    "category": "computer-gaming-peripherals"
+  },
+  {
+    "file": "Steam-Generation-2-Controller-Black.jpg",
+    "status": "created",
+    "productId": "35ed49dd-5190-4af4-babe-068a1c4fddd5",
+    "slug": "valve-generation-2-controller-black",
+    "category": "computer-gaming-peripherals"
+  },
+  {
+    "file": "Valves-Steam-Machine-2TB-With-Controller-US-Plug.jpg",
+    "status": "created",
+    "productId": "0896a0cb-cb44-48b0-9ed6-028a44614522",
+    "slug": "valve-steam-machine-2tb-with-controller-us-plug",
+    "category": "gaming-consoles"
+  },
+  {
+    "file": "Valves-Steam-Machine-512GB-US-Plug.jpg",
+    "status": "created",
+    "productId": "7780c76f-4839-49ca-815e-2e98728b7cf3",
+    "slug": "valve-steam-machine-512gb-us-plug",
+    "category": "gaming-consoles"
+  },
+  {
+    "file": "Valves-Steam-Machine-512GB-With-Controller-US-Plug.jpg",
+    "status": "created",
+    "productId": "13c7cec8-ad7e-4e11-9351-a2fe0b8d7d3f",
+    "slug": "valve-steam-machine-512gb-with-controller-us-plug",
+    "category": "gaming-consoles"
+  },
+  {
+    "file": "finalmouse-Centerpiece-Pro-Founders-Edition-Gaming-Keyboard.jpg",
+    "status": "created",
+    "productId": "45a85d0c-78e4-40e8-9c31-f5031577cc9d",
+    "slug": "finalmouse-centerpiece-pro-founders-edition-gaming-keyboard",
+    "category": "computer-gaming-peripherals"
+  }
+]

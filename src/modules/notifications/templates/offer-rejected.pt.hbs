@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Sobre a sua oferta</title>
+</head>
+<body style="margin:0;padding:0;background:#f5f5f5;font-family:Arial,Helvetica,sans-serif;">
+  <table width="100%" cellpadding="0" cellspacing="0" style="background:#f5f5f5;padding:40px 0;">
+    <tr><td align="center">
+      <table width="600" cellpadding="0" cellspacing="0" style="background:#ffffff;border-radius:8px;overflow:hidden;max-width:600px;width:100%;">
+
+        <tr>
+          <td style="background:#000000;padding:24px 40px;text-align:center;">
+            <img src="https://lpowjerychcsqrtodvoh.supabase.co/storage/v1/object/public/email-assets/logo.png" alt="Stockzy" width="160" style="display:block;margin:0 auto;max-width:160px;" />
+          </td>
+        </tr>
+
+        <tr>
+          <td style="padding:40px 40px 0 40px;">
+            <p style="color:#333;font-size:16px;margin:0 0 8px 0;">Olá, {{firstName}},</p>
+            <p style="color:#333;font-size:16px;margin:0 0 24px 0;">A sua oferta para <strong>{{productName}}</strong> não foi aceite desta vez.</p>
+
+            <div style="background:#f9f9f9;border-radius:6px;padding:20px;margin-bottom:24px;">
+              <p style="margin:0;color:#333;font-size:14px;">{{rejectionMessage}}</p>
+            </div>
+
+            <table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:24px;">
+              <tr>
+                <td style="padding:8px 0;color:#666;font-size:13px;">Sua oferta</td>
+                <td style="padding:8px 0;color:#333;font-size:13px;text-align:right;">€ {{offeredPrice}}</td>
+              </tr>
+              <tr>
+                <td style="padding:8px 0;color:#666;font-size:13px;">Preço listado</td>
+                <td style="padding:8px 0;color:#333;font-size:13px;text-align:right;">€ {{listedPrice}}</td>
+              </tr>
+            </table>
+
+            <p style="color:#666;font-size:14px;margin:0 0 32px 0;">Ainda pode comprar este item pelo preço cheio, ou ficar de olho em outras oportunidades na loja.</p>
+
+            <a href="{{storeUrl}}" style="display:inline-block;background:#fff;color:#000;text-decoration:none;padding:12px 24px;border-radius:4px;font-size:13px;letter-spacing:1px;text-transform:uppercase;border:1px solid #000;">Ver Loja</a>
+          </td>
+        </tr>
+
+        <tr>
+          <td style="background:#f9f9f9;padding:24px 40px;text-align:center;border-top:1px solid #eee;margin-top:24px;">
+            <p style="color:#999;font-size:12px;margin:0 0 4px 0;">Dúvidas? <a href="mailto:{{supportEmail}}" style="color:#000;">{{supportEmail}}</a></p>
+            <p style="color:#ccc;font-size:11px;margin:0;">Stockzy © {{year}}</p>
+          </td>
+        </tr>
+
+      </table>
+    </td></tr>
+  </table>
+</body>
+</html>

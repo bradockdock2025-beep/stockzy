@@ -1,0 +1,538 @@
+{
+  "info": {
+    "name": "Stockzy — Pré-venda",
+    "description": "Testa o fluxo completo de pré-venda: activar no admin, comprar como cliente, fulfillment e cancelamento.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:3000",
+      "description": "URL base da API"
+    },
+    {
+      "key": "adminToken",
+      "value": "SEU_TOKEN_ADMIN_AQUI",
+      "description": "JWT do admin (Bearer)"
+    },
+    {
+      "key": "customerToken",
+      "value": "SEU_TOKEN_CLIENTE_AQUI",
+      "description": "JWT do cliente (Bearer)"
+    },
+    {
+      "key": "variantId",
+      "value": "UUID_DA_VARIANTE_AQUI",
+      "description": "ID da variante do produto a testar"
+    },
+    {
+      "key": "productSlug",
+      "value": "slug-do-produto",
+      "description": "Slug do produto no catálogo"
+    },
+    {
+      "key": "orderId",
+      "value": "",
+      "description": "Preenchido automaticamente após criar encomenda (ou coloca manualmente)"
+    }
+  ],
+  "item": [
+    {
+      "name": "1. Admin — Configurar Pré-venda",
+      "description": "Endpoints de administração para activar, configurar e desactivar pré-venda numa variante.",
+      "item": [
+        {
+          "name": "1.1 Activar pré-venda (com preço e limite)",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/admin/products/variants/{{variantId}}/presale",
+              "host": ["{{baseUrl}}"],
+              "path": ["admin", "products", "variants", "{{variantId}}", "presale"]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"presaleEnabled\": true,\n  \"presalePrice\": 69.00,\n  \"presaleLimit\": 50,\n  \"expectedAvailableAt\": \"2026-09-01T00:00:00.000Z\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "description": "Activa pré-venda com preço especial de 69€, limite de 50 unidades e data estimada de envio.\n\nREGRA: só funciona se o stockQuantity da variante for 0.\nSe houver stock, o backend retorna 400 com mensagem de erro."
+          }
+        },
+        {
+          "name": "1.2 Activar pré-venda (sem limite e sem data)",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/admin/products/variants/{{variantId}}/presale",
+              "host": ["{{baseUrl}}"],
+              "path": ["admin", "products", "variants", "{{variantId}}", "presale"]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"presaleEnabled\": true\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "description": "Activa pré-venda sem preço especial (usa o preço normal), sem limite de unidades e sem data estimada."
+          }
+        },
+        {
+          "name": "1.3 Desactivar pré-venda",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/admin/products/variants/{{variantId}}/presale",
+              "host": ["{{baseUrl}}"],
+              "path": ["admin", "products", "variants", "{{variantId}}", "presale"]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"presaleEnabled\": false\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "description": "Desactiva pré-venda. Os campos presalePrice, presaleLimit e expectedAvailableAt são limpos automaticamente no banco."
+          }
+        },
+        {
+          "name": "1.4 [ERRO ESPERADO] Activar pré-venda com stock disponível",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/admin/products/variants/{{variantId}}/presale",
+              "host": ["{{baseUrl}}"],
+              "path": ["admin", "products", "variants", "{{variantId}}", "presale"]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"presaleEnabled\": true\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "description": "Deve retornar 400. Usar este request com uma variante que tem stock > 0.\n\nResposta esperada:\n{\n  \"statusCode\": 400,\n  \"message\": \"Cannot enable presale while variant has stock available. Set stock to 0 first.\"\n}"
+          }
+        }
+      ]
+    },
+    {
+      "name": "2. Catálogo — Verificar purchaseMode",
+      "description": "Endpoints públicos para verificar o campo purchaseMode nas variantes após activar pré-venda.",
+      "item": [
+        {
+          "name": "2.1 Ver produto por slug",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/products/slug/{{productSlug}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["products", "slug", "{{productSlug}}"]
+            },
+            "description": "Verificar campo purchaseMode nas variantes.\n\nValores esperados na variante após activar pré-venda:\n- purchaseMode: \"presale\" (se ainda houver vagas)\n- purchaseMode: \"presale_sold_out\" (se limite atingido)\n- presaleEnabled: true\n- presalePrice: 69.00 (ou null)\n- presaleLimit: 50 (ou null)\n- expectedAvailableAt: \"2026-09-01T00:00:00.000Z\" (ou null)\n- availableQuantity: 0 (sempre 0 em pré-venda)"
+          }
+        },
+        {
+          "name": "2.2 Ver produto por ID",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/products/{{variantId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["products", "{{variantId}}"]
+            },
+            "description": "Alternativa ao slug — verificar os mesmos campos purchaseMode e presale na variante."
+          }
+        }
+      ]
+    },
+    {
+      "name": "3. Cliente — Simular Checkout de Pré-venda",
+      "description": "Fluxo do cliente: cotação, criação de encomenda e listagem. Requer token de cliente válido.",
+      "item": [
+        {
+          "name": "3.1 Cotação (Quote) — ver preço antes de confirmar",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{customerToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "x-cart-token",
+                "value": "TOKEN_DO_CARRINHO",
+                "description": "Token do carrinho do cliente (se aplicável)"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/customers/orders/quote",
+              "host": ["{{baseUrl}}"],
+              "path": ["customers", "orders", "quote"]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"shippingAddress\": {\n    \"firstName\": \"João\",\n    \"lastName\": \"Silva\",\n    \"address1\": \"Rua das Flores, 123\",\n    \"city\": \"Lisboa\",\n    \"postalCode\": \"1000-001\",\n    \"country\": \"PT\",\n    \"phone\": \"+351910000000\"\n  },\n  \"locale\": \"pt\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "description": "Pré-visualiza o total da encomenda sem a confirmar. Útil para mostrar o resumo ao cliente antes do pagamento.\n\nO response inclui o preço de pré-venda (presalePrice) se configurado."
+          }
+        },
+        {
+          "name": "3.2 Criar encomenda de pré-venda",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const res = pm.response.json();",
+                  "if (res.order && res.order.id) {",
+                  "    pm.collectionVariables.set('orderId', res.order.id);",
+                  "    console.log('orderId guardado:', res.order.id);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{customerToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "idempotency-key",
+                "value": "presale-test-001",
+                "description": "Chave de idempotência — evita criar a mesma encomenda duas vezes"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/customers/orders",
+              "host": ["{{baseUrl}}"],
+              "path": ["customers", "orders"]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"shippingAddress\": {\n    \"firstName\": \"João\",\n    \"lastName\": \"Silva\",\n    \"address1\": \"Rua das Flores, 123\",\n    \"city\": \"Lisboa\",\n    \"postalCode\": \"1000-001\",\n    \"country\": \"PT\",\n    \"phone\": \"+351910000000\"\n  },\n  \"paymentMethod\": \"stripe\",\n  \"locale\": \"pt\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "description": "Cria a encomenda de pré-venda.\n\nO script Tests guarda o orderId automaticamente na variável {{orderId}}.\n\nResposta esperada:\n- order.status: \"presale\" (em vez de \"pending\")\n- Email \"Pré-venda confirmada\" enviado ao cliente\n\nO fluxo de pagamento (Stripe) é idêntico ao de uma encomenda normal."
+          }
+        },
+        {
+          "name": "3.3 Ver as minhas encomendas (filtrar por presale)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{customerToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/customers/orders?status=presale",
+              "host": ["{{baseUrl}}"],
+              "path": ["customers", "orders"],
+              "query": [
+                {
+                  "key": "status",
+                  "value": "presale"
+                }
+              ]
+            },
+            "description": "Lista as encomendas do cliente com status presale.\n\nRemover o query param para ver todas as encomendas."
+          }
+        },
+        {
+          "name": "3.4 Ver detalhe da encomenda de pré-venda",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{customerToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/customers/orders/{{orderId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["customers", "orders", "{{orderId}}"]
+            },
+            "description": "Ver o detalhe de uma encomenda de pré-venda.\n\nVerificar que:\n- status é \"presale\"\n- items contêm os artigos com isPresale: true\n- totalAmount reflecte o preço de pré-venda"
+          }
+        },
+        {
+          "name": "3.5 Cancelar encomenda de pré-venda (cliente)",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{customerToken}}"
+              },
+              {
+                "key": "idempotency-key",
+                "value": "cancel-presale-001"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/customers/orders/{{orderId}}/cancel",
+              "host": ["{{baseUrl}}"],
+              "path": ["customers", "orders", "{{orderId}}", "cancel"]
+            },
+            "description": "Cancela uma encomenda com status presale.\n\nEmail \"Pré-venda cancelada\" enviado ao cliente.\nO reembolso deve ser processado manualmente no Stripe."
+          }
+        }
+      ]
+    },
+    {
+      "name": "4. Admin — Gestão de Encomendas em Pré-venda",
+      "description": "Endpoints de administração para monitorizar e activar o fulfillment das encomendas em pré-venda.",
+      "item": [
+        {
+          "name": "4.1 Listar encomendas em pré-venda",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/admin/orders?status=presale",
+              "host": ["{{baseUrl}}"],
+              "path": ["admin", "orders"],
+              "query": [
+                {
+                  "key": "status",
+                  "value": "presale"
+                }
+              ]
+            },
+            "description": "Lista todas as encomendas com status presale.\n\nUsar antes de activar o batch para saber quantas encomendas e quantas unidades existem."
+          }
+        },
+        {
+          "name": "4.2 Ver detalhe de encomenda presale (admin)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/admin/orders/{{orderId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["admin", "orders", "{{orderId}}"]
+            },
+            "description": "Ver detalhe completo de uma encomenda de pré-venda no painel de admin."
+          }
+        },
+        {
+          "name": "4.3 Activar fulfillment em batch (stock chegou)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/admin/orders/presale/activate",
+              "host": ["{{baseUrl}}"],
+              "path": ["admin", "orders", "presale", "activate"]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"variantId\": \"{{variantId}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "description": "Activa o fulfillment de TODAS as encomendas presale desta variante.\n\nO que acontece:\n1. Backend verifica se o stock disponível cobre todas as encomendas\n2. Todas as orders presale → status processing\n3. Stock decrementado pela quantidade total\n4. presaleEnabled = false na variante\n5. Email \"Pré-venda cumprida\" enviado a cada cliente\n\nPRÉ-REQUISITO: O stockQuantity da variante deve estar actualizado no sistema antes de chamar este endpoint.\n\nResposta de sucesso:\n{\n  \"activated\": 12\n}\n\nErro se stock insuficiente:\n{\n  \"statusCode\": 400,\n  \"message\": \"Insufficient stock to fulfill all presale orders. Available: 30, required: 45\"\n}"
+          }
+        },
+        {
+          "name": "4.4 [ERRO ESPERADO] Activar fulfillment sem stock suficiente",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/admin/orders/presale/activate",
+              "host": ["{{baseUrl}}"],
+              "path": ["admin", "orders", "presale", "activate"]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"variantId\": \"{{variantId}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "description": "Testar o cenário em que o stock disponível é inferior ao total de unidades em pré-venda.\n\nNENHUMA encomenda é alterada — a operação é atómica.\n\nResposta esperada:\n{\n  \"statusCode\": 400,\n  \"message\": \"Insufficient stock to fulfill all presale orders. Available: X, required: Y\"\n}"
+          }
+        },
+        {
+          "name": "4.5 Cancelar encomenda presale (admin)",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/admin/orders/{{orderId}}/cancel",
+              "host": ["{{baseUrl}}"],
+              "path": ["admin", "orders", "{{orderId}}", "cancel"]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "description": "Cancela uma encomenda de pré-venda pelo admin.\n\nEmail \"Pré-venda cancelada\" enviado ao cliente.\nO reembolso é processado manualmente no Stripe."
+          }
+        }
+      ]
+    },
+    {
+      "name": "5. Erros — Carrinho Misto",
+      "description": "Testar a rejeição de carrinho com artigos normais e de pré-venda misturados.",
+      "item": [
+        {
+          "name": "5.1 [ERRO ESPERADO] Checkout com carrinho misto",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{customerToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/customers/orders/quote",
+              "host": ["{{baseUrl}}"],
+              "path": ["customers", "orders", "quote"]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"shippingAddress\": {\n    \"firstName\": \"João\",\n    \"lastName\": \"Silva\",\n    \"address1\": \"Rua das Flores, 123\",\n    \"city\": \"Lisboa\",\n    \"postalCode\": \"1000-001\",\n    \"country\": \"PT\"\n  },\n  \"locale\": \"pt\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "description": "Para testar este cenário:\n1. Adicionar ao carrinho 1 artigo de pré-venda + 1 artigo normal\n2. Chamar este endpoint com o cartToken do carrinho misto\n\nResposta esperada:\n{\n  \"statusCode\": 400,\n  \"code\": \"MIXED_CART_NOT_ALLOWED\",\n  \"message\": \"Cannot mix presale items with regular items. Please checkout separately.\"\n}"
+          }
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Offre Acceptée</title>
+</head>
+<body style="margin:0;padding:0;background:#f5f5f5;font-family:Arial,Helvetica,sans-serif;">
+  <table width="100%" cellpadding="0" cellspacing="0" style="background:#f5f5f5;padding:40px 0;">
+    <tr><td align="center">
+      <table width="600" cellpadding="0" cellspacing="0" style="background:#ffffff;border-radius:8px;overflow:hidden;max-width:600px;width:100%;">
+
+        <tr>
+          <td style="background:#000000;padding:24px 40px;text-align:center;">
+            <img src="https://lpowjerychcsqrtodvoh.supabase.co/storage/v1/object/public/email-assets/logo.png" alt="Stockzy" width="160" style="display:block;margin:0 auto;max-width:160px;" />
+          </td>
+        </tr>
+
+        <tr>
+          <td style="padding:32px 40px 0 40px;text-align:center;">
+            <div style="display:inline-block;background:#e8f5e9;border-radius:50px;padding:8px 20px;">
+              <p style="margin:0;color:#2e7d32;font-size:13px;font-weight:bold;">✓ Offre acceptée</p>
+            </div>
+          </td>
+        </tr>
+
+        <tr>
+          <td style="padding:24px 40px 0 40px;">
+            <p style="color:#333;font-size:16px;margin:0 0 8px 0;">Bonjour {{firstName}},</p>
+            <p style="color:#333;font-size:16px;margin:0 0 24px 0;">Bonne nouvelle — votre offre pour <strong>{{productName}}</strong> a été acceptée !</p>
+
+            <table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:20px;">
+              <tr>
+                <td style="padding:8px 0;color:#666;font-size:13px;">Prix affiché</td>
+                <td style="padding:8px 0;color:#999;font-size:13px;text-align:right;text-decoration:line-through;">€ {{listedPrice}}</td>
+              </tr>
+              <tr>
+                <td style="padding:8px 0;border-top:2px solid #000;color:#000;font-size:16px;font-weight:bold;">Votre prix</td>
+                <td style="padding:8px 0;border-top:2px solid #000;color:#000;font-size:16px;font-weight:bold;text-align:right;">€ {{offeredPrice}}</td>
+              </tr>
+            </table>
+
+            <div style="background:#fff8e1;border-left:4px solid #f9a825;padding:16px 20px;border-radius:0 6px 6px 0;margin-bottom:24px;">
+              <p style="margin:0;color:#5d4037;font-size:14px;">Finalisez votre achat avant le <strong>{{checkoutDeadline}}</strong> — passé ce délai, la réservation est libérée et le prix convenu n'est plus valable.</p>
+            </div>
+
+            <p style="color:#666;font-size:14px;margin:0 0 32px 0;">Pour toute question, notre équipe est à votre disposition.</p>
+
+            <a href="{{storeUrl}}" style="display:inline-block;background:#000;color:#fff;text-decoration:none;padding:12px 24px;border-radius:4px;font-size:13px;letter-spacing:1px;text-transform:uppercase;">Finaliser l'achat</a>
+          </td>
+        </tr>
+
+        <tr>
+          <td style="background:#f9f9f9;padding:24px 40px;text-align:center;border-top:1px solid #eee;">
+            <p style="color:#999;font-size:12px;margin:0 0 4px 0;">Des questions ? <a href="mailto:{{supportEmail}}" style="color:#000;">{{supportEmail}}</a></p>
+            <p style="color:#ccc;font-size:11px;margin:0;">Stockzy © {{year}}</p>
+          </td>
+        </tr>
+
+      </table>
+    </td></tr>
+  </table>
+</body>
+</html>

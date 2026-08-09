@@ -1,0 +1,619 @@
+{
+  "info": {
+    "name": "Stockzy Ecommerce API",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Admin Auth",
+      "item": [
+        {
+          "name": "Login",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const json = pm.response.json();",
+                  "if (json.accessToken) pm.environment.set('access_token', json.accessToken);",
+                  "if (json.refreshToken) pm.environment.set('refresh_token', json.refreshToken);"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/admin/auth/login",
+              "host": ["{{base_url}}"],
+              "path": ["admin", "auth", "login"]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"{{admin_email}}\",\n  \"password\": \"{{admin_password}}\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Refresh",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/admin/auth/refresh",
+              "host": ["{{base_url}}"],
+              "path": ["admin", "auth", "refresh"]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"refreshToken\": \"{{refresh_token}}\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Logout",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/admin/auth/logout",
+              "host": ["{{base_url}}"],
+              "path": ["admin", "auth", "logout"]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"refreshToken\": \"{{refresh_token}}\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Me",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{access_token}}" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/admin/auth/me",
+              "host": ["{{base_url}}"],
+              "path": ["admin", "auth", "me"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Customers",
+      "item": [
+        {
+          "name": "Register",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/customers/register",
+              "host": ["{{base_url}}"],
+              "path": ["customers", "register"]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"{{customer_email}}\",\n  \"password\": \"{{customer_password}}\",\n  \"firstName\": \"Maria\",\n  \"lastName\": \"Silva\",\n  \"phoneNumber\": \"+244900000000\"\n}\n"
+            }
+          }
+        },
+        {
+          "name": "Login",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const json = pm.response.json();",
+                  "if (json.accessToken) pm.environment.set('customer_access_token', json.accessToken);",
+                  "if (json.refreshToken) pm.environment.set('customer_refresh_token', json.refreshToken);"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/customers/login",
+              "host": ["{{base_url}}"],
+              "path": ["customers", "login"]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"{{customer_email}}\",\n  \"password\": \"{{customer_password}}\"\n}\n"
+            }
+          }
+        },
+        {
+          "name": "Refresh",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/customers/refresh",
+              "host": ["{{base_url}}"],
+              "path": ["customers", "refresh"]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"refreshToken\": \"{{customer_refresh_token}}\"\n}\n"
+            }
+          }
+        },
+        {
+          "name": "Logout",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{customer_access_token}}" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/customers/logout",
+              "host": ["{{base_url}}"],
+              "path": ["customers", "logout"]
+            }
+          }
+        },
+        {
+          "name": "Me",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{customer_access_token}}" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/customers/me",
+              "host": ["{{base_url}}"],
+              "path": ["customers", "me"]
+            }
+          }
+        },
+        {
+          "name": "Update Profile",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{customer_access_token}}" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/customers/me",
+              "host": ["{{base_url}}"],
+              "path": ["customers", "me"]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"phoneNumber\": \"+244900111222\"\n}\n"
+            }
+          }
+        },
+        {
+          "name": "List Addresses",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{customer_access_token}}" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/customers/addresses",
+              "host": ["{{base_url}}"],
+              "path": ["customers", "addresses"]
+            }
+          }
+        },
+        {
+          "name": "Create Address",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{customer_access_token}}" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/customers/addresses",
+              "host": ["{{base_url}}"],
+              "path": ["customers", "addresses"]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"type\": \"shipping\",\n  \"street\": \"Rua das Flores, 123\",\n  \"city\": \"Luanda\",\n  \"state\": \"Luanda\",\n  \"zipcode\": \"00000-000\",\n  \"country\": \"AO\"\n}\n"
+            }
+          }
+        },
+        {
+          "name": "Update Address",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{customer_access_token}}" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/customers/addresses/{{address_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["customers", "addresses", "{{address_id}}"]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"street\": \"Rua das Flores, 456\"\n}\n"
+            }
+          }
+        },
+        {
+          "name": "Delete Address",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{customer_access_token}}" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/customers/addresses/{{address_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["customers", "addresses", "{{address_id}}"]
+            }
+          }
+        },
+        {
+          "name": "Create Order",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{customer_access_token}}" },
+              { "key": "x-cart-token", "value": "{{cart_token}}" },
+              { "key": "Idempotency-Key", "value": "order-{{cart_token}}" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/customers/orders",
+              "host": ["{{base_url}}"],
+              "path": ["customers", "orders"]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"addressId\": \"{{address_id}}\"\n}\n"
+            }
+          }
+        },
+        {
+          "name": "Quote Order",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{customer_access_token}}" },
+              { "key": "x-cart-token", "value": "{{cart_token}}" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/customers/orders/quote",
+              "host": ["{{base_url}}"],
+              "path": ["customers", "orders", "quote"]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"addressId\": \"{{address_id}}\"\n}\n"
+            }
+          }
+        },
+        {
+          "name": "List Orders",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{customer_access_token}}" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/customers/orders?page=1&limit=20",
+              "host": ["{{base_url}}"],
+              "path": ["customers", "orders"],
+              "query": [
+                { "key": "page", "value": "1" },
+                { "key": "limit", "value": "20" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Order",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{customer_access_token}}" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/customers/orders/{{order_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["customers", "orders", "{{order_id}}"]
+            }
+          }
+        },
+        {
+          "name": "Cancel Order",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{customer_access_token}}" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/customers/orders/{{order_id}}/cancel",
+              "host": ["{{base_url}}"],
+              "path": ["customers", "orders", "{{order_id}}", "cancel"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Customers Admin",
+      "item": [
+        {
+          "name": "List Customers",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{access_token}}" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/admin/customers?page=1&limit=20&search={{customer_search}}",
+              "host": ["{{base_url}}"],
+              "path": ["admin", "customers"],
+              "query": [
+                { "key": "page", "value": "1" },
+                { "key": "limit", "value": "20" },
+                { "key": "search", "value": "{{customer_search}}" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "List Customers Full",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{access_token}}" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/admin/customers/full?page=1&limit=20&search={{customer_search}}",
+              "host": ["{{base_url}}"],
+              "path": ["admin", "customers", "full"],
+              "query": [
+                { "key": "page", "value": "1" },
+                { "key": "limit", "value": "20" },
+                { "key": "search", "value": "{{customer_search}}" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Customer (Full)",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{access_token}}" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/admin/customers/{{customer_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["admin", "customers", "{{customer_id}}"]
+            }
+          }
+        },
+        {
+          "name": "Update Customer",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{access_token}}" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/admin/customers/{{customer_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["admin", "customers", "{{customer_id}}"]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"firstName\": \"Maria\",\n  \"lastName\": \"Santos\",\n  \"phoneNumber\": \"+244912000000\",\n  \"isActive\": true\n}\n"
+            }
+          }
+        },
+        {
+          "name": "Deactivate Customer",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{access_token}}" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/admin/customers/{{customer_id}}/deactivate",
+              "host": ["{{base_url}}"],
+              "path": ["admin", "customers", "{{customer_id}}", "deactivate"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Filters",
+      "item": [
+        {
+          "name": "Get Filters",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/filters?categoryId={{category_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["filters"],
+              "query": [
+                { "key": "categoryId", "value": "{{category_id}}" }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Products Public",
+      "item": [
+        {
+          "name": "List Products",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/products?categoryId={{category_id}}&minPrice=100&maxPrice=500&cor=Preto&tamanho=42",
+              "host": ["{{base_url}}"],
+              "path": ["products"],
+              "query": [
+                { "key": "categoryId", "value": "{{category_id}}" },
+                { "key": "minPrice", "value": "100" },
+                { "key": "maxPrice", "value": "500" },
+                { "key": "cor", "value": "Preto" },
+                { "key": "tamanho", "value": "42" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Product by Id",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/products/{{product_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["products", "{{product_id}}"]
+            }
+          }
+        },
+        {
+          "name": "Get Product by Slug",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/products/slug/{{product_slug}}",
+              "host": ["{{base_url}}"],
+              "path": ["products", "slug", "{{product_slug}}"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Products Admin",
+      "item": [
+        {
+          "name": "Create Product",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{access_token}}" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/admin/products",
+              "host": ["{{base_url}}"],
+              "path": ["admin", "products"]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"categoryId\": \"{{category_id}}\",\n  \"name\": \"Tenis Runner X\",\n  \"slug\": \"tenis-runner-x\",\n  \"description\": \"Tênis esportivo\",\n  \"status\": \"active\",\n  \"featured\": true,\n  \"variants\": [\n    {\n      \"title\": \"Preto 42\",\n      \"price\": 199.9,\n      \"stockQuantity\": 10,\n      \"attributes\": [\n        { \"attributeId\": \"{{attribute_cor_id}}\", \"value\": \"Preto\" },\n        { \"attributeId\": \"{{attribute_tamanho_id}}\", \"value\": \"42\" }\n      ]\n    }\n  ]\n}\n"
+            }
+          }
+        },
+        {
+          "name": "Update Product",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{access_token}}" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/admin/products/{{product_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["admin", "products", "{{product_id}}"]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"featured\": false\n}\n"
+            }
+          }
+        },
+        {
+          "name": "Archive Product",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{access_token}}" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/admin/products/{{product_id}}/archive",
+              "host": ["{{base_url}}"],
+              "path": ["admin", "products", "{{product_id}}", "archive"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Admin Attribute Options",
+      "item": [
+        {
+          "name": "List Attribute Options",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{access_token}}" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/admin/attribute-options?attributeName=Cor&isActive=true",
+              "host": ["{{base_url}}"],
+              "path": ["admin", "attribute-options"],
+              "query": [
+                { "key": "attributeName", "value": "Cor" },
+                { "key": "isActive", "value": "true" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Deactivate Attribute Option",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{access_token}}" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/admin/attribute-options/{{attribute_option_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["admin", "attribute-options", "{{attribute_option_id}}"]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"isActive\": false\n}\n"
+            }
+          }
+        }
+      ]
+    }
+  ]
+}

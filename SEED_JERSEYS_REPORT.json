@@ -1,0 +1,235 @@
+[
+  {
+    "file": "Jordan-BIKE-AIR-x-Nigel-Sylvester-Jersey-Sail.jpg",
+    "status": "created",
+    "productId": "dea10aaa-4147-4f84-86a4-7bd34b5da69f",
+    "slug": "jordan-jordan-bike-air-x-nigel-sylvester-jersey-sail"
+  },
+  {
+    "file": "KAWS-Nike-MLB-Stadium-Los-Angeles-Dodgers-Jersey-White.jpg",
+    "status": "skipped",
+    "reason": "brand not found in DB: KAWS"
+  },
+  {
+    "file": "Kith-x-adidas-Messi-Football-Jersey-Blue-White-v2.jpg",
+    "status": "created",
+    "productId": "199113f4-cde4-4b07-b74b-5750d9fadf5a",
+    "slug": "kith-kith-x-adidas-messi-football-jersey-blue-white"
+  },
+  {
+    "file": "Nike-FC-Barcelona-2005-06-Ronaldinho-10-Home-Jersey-Multicolor-Product-2.png",
+    "status": "created",
+    "productId": "7a8339ba-bd28-44a0-8cb7-2b21a171f53c",
+    "slug": "nike-fc-barcelona-2005-06-ronaldinho-10-home-jersey-multicolor"
+  },
+  {
+    "file": "Nike-France-National-Team-2026-Stadium-Away-Jersey-Igloo-Monarch-Monarch.jpg",
+    "status": "created",
+    "productId": "0759d170-ad2a-48a0-9369-13e7b035b713",
+    "slug": "nike-france-national-team-2026-stadium-away-jersey-igloo-monarch-monarch"
+  },
+  {
+    "file": "Nike-France-National-Team-2026-Stadium-Home-Jersey-Blue.jpg",
+    "status": "created",
+    "productId": "5a460f5a-ff25-49f6-a538-733c7e0165bb",
+    "slug": "nike-france-national-team-2026-stadium-home-jersey-blue"
+  },
+  {
+    "file": "Nike-Kobe-Mamba-Mentality-Los-Angeles-Lakers-City-Edition-Swingman-Jersey-Black-ProductX.jpg",
+    "status": "created",
+    "productId": "d6d1c051-e992-4d2f-b1d0-76d1dd65faa5",
+    "slug": "nike-kobe-mamba-mentality-los-angeles-lakers-city-edition-swingman-jersey-black-productx"
+  },
+  {
+    "file": "Nike-New-York-Knicks-2026-NBA-Finals-Champions-Authentic-On-Court-T-shirt-Grey.jpg",
+    "status": "created",
+    "productId": "1d187a98-396d-4c23-8e59-b7de5bbd10ed",
+    "slug": "nike-new-york-knicks-2026-nba-finals-champions-authentic-on-court-t-shirt-grey"
+  },
+  {
+    "file": "Nike-Total-90-Brazil-Ronaldinho-2004-Reissue-Jersey-Opti-Yellow-Apple-Green-Product.jpg",
+    "status": "created",
+    "productId": "601bdec1-29b4-451f-8e8c-f2f7ad7e0dba",
+    "slug": "nike-total-90-brazil-ronaldinho-2004-reissue-jersey-opti-yellow-apple-green"
+  },
+  {
+    "file": "Nike-USMNT-2026-Dri-Fit-Stadium-Away-Replica-Jersey-Dark-Obsidian-Pure-Platinum.jpg",
+    "status": "created",
+    "productId": "bc77b795-ed63-481a-a253-4ec77a7930da",
+    "slug": "nike-usmnt-2026-dri-fit-stadium-away-replica-jersey-dark-obsidian-pure-platinum"
+  },
+  {
+    "file": "Nike-USMNT-2026-Dri-Fit-Stadium-Home-Replica-Jersey-Sail-Midnight-Navy-Midnight-Navy.jpg",
+    "status": "created",
+    "productId": "f51d2e99-cf06-43ad-90c8-4702755ad4e5",
+    "slug": "nike-usmnt-2026-dri-fit-stadium-home-replica-jersey-sail-midnight-navy-midnight-navy"
+  },
+  {
+    "file": "Nike-x-Jacquemus-x-France-Pre-Match-Jersey-Blue-Stripe.jpg",
+    "status": "created",
+    "productId": "bcae5790-bc80-4e38-85a0-7c287d0c5708",
+    "slug": "nike-nike-x-jacquemus-x-france-pre-match-jersey-blue-stripe"
+  },
+  {
+    "file": "Palace-x-Nike-England-Dri-FIT-Football-Jersey-Bright-Crimson.jpg",
+    "status": "created",
+    "productId": "7c2ea98f-5abf-44a8-8708-88aaae35ac15",
+    "slug": "palace-palace-x-nike-england-dri-fit-football-jersey-bright-crimson"
+  },
+  {
+    "file": "Palace-x-Nike-England-Dri-FIT-Football-Jersey-Pewter-Grey-Bright-Crimson.jpg",
+    "status": "created",
+    "productId": "07caf279-d6da-41f0-9b25-0b43deacae8b",
+    "slug": "palace-palace-x-nike-england-dri-fit-football-jersey-pewter-grey-bright-crimson"
+  },
+  {
+    "file": "Supreme-Bones-Football-Jersey-Black-Product.jpg",
+    "status": "created",
+    "productId": "9d94570a-50bc-47d9-8cee-faf6796fca9a",
+    "slug": "supreme-bones-football-jersey-black"
+  },
+  {
+    "file": "Supreme-Fiji-Soccer-Jersey-Multicolor-Product.jpg",
+    "status": "created",
+    "productId": "eafea53a-32f1-4a4e-b6d4-9eb9fc0554f9",
+    "slug": "supreme-fiji-soccer-jersey-multicolor"
+  },
+  {
+    "file": "Travis-Scott-x-Nike-x-FC-Barcelona-Retro-2000-01-Home-Skeleton-Jersey-Multicolor-Product.jpg",
+    "status": "created",
+    "productId": "cd3c14ac-d541-4ca2-89d3-7e749528fcb4",
+    "slug": "nike-travis-scott-x-nike-x-fc-barcelona-retro-2000-01-home-skeleton-jersey-multicolor"
+  },
+  {
+    "file": "adidas-Argentina-2026-Home-Jersey-Messi-White-Icey-Blue-Light-Blue.jpg",
+    "status": "created",
+    "productId": "465042b7-abb2-4f14-a62c-8cdc8bb27b43",
+    "slug": "adidas-argentina-2026-home-jersey-messi-white-icey-blue-light-blue"
+  },
+  {
+    "file": "adidas-Argentina-26-Away-Messi-Jersey-Black-Lucid-Blue-Blue-Burst.jpg",
+    "status": "created",
+    "productId": "2afd902f-6cf2-41df-aa92-2a568bfd5c79",
+    "slug": "adidas-argentina-26-away-messi-jersey-black-lucid-blue-blue-burst"
+  },
+  {
+    "file": "adidas-Argentina-26-Home-Authentic-Messi-Jersey-White-Icey-Blue-Light-Blue.jpg",
+    "status": "created",
+    "productId": "87b08b0e-c2e2-4555-a88d-b55987776f02",
+    "slug": "adidas-argentina-26-home-authentic-messi-jersey-white-icey-blue-light-blue"
+  },
+  {
+    "file": "adidas-Argentina-Away-2006-Messi-Jersey-Dark-Blue.jpg",
+    "status": "created",
+    "productId": "73f23c07-af51-4ca3-a098-786066a3ea65",
+    "slug": "adidas-argentina-away-2006-messi-jersey-dark-blue"
+  },
+  {
+    "file": "adidas-Belgium-26-Away-Authentic-Jersey-Frozen-Blue-Black.jpg",
+    "status": "created",
+    "productId": "1f76f3ba-ab09-4936-b4af-a95793db8147",
+    "slug": "adidas-belgium-26-away-authentic-jersey-frozen-blue-black"
+  },
+  {
+    "file": "adidas-Belgium-26-Away-Jersey-Frozen-Blue-Black.jpg",
+    "status": "created",
+    "productId": "f0b032ab-6986-4d9c-8392-632f4cc62845",
+    "slug": "adidas-belgium-26-away-jersey-frozen-blue-black"
+  },
+  {
+    "file": "adidas-Bringbacks-Remixed-Mexico-Jersey-Bold-Green.jpg",
+    "status": "created",
+    "productId": "91e6fe38-8fe9-42dd-8189-da2e3ba1e3cf",
+    "slug": "adidas-bringbacks-remixed-mexico-jersey-bold-green"
+  },
+  {
+    "file": "adidas-Japan-26-Away-Authentic-Jersey-Off-White-Black.jpg",
+    "status": "created",
+    "productId": "c03ecd20-924b-42b6-935b-d42bbf33a18b",
+    "slug": "adidas-japan-26-away-authentic-jersey-off-white-black"
+  },
+  {
+    "file": "adidas-Japan-26-Away-Jersey-Off-White-Black.jpg",
+    "status": "created",
+    "productId": "eba4e231-b760-49e5-a393-20c568d08614",
+    "slug": "adidas-japan-26-away-jersey-off-white-black"
+  },
+  {
+    "file": "adidas-Mexico-2026-Home-Authentic-Jersey-Bold-Green.jpg",
+    "status": "created",
+    "productId": "eabbaad1-5201-49a5-96a3-fa59bafaee6d",
+    "slug": "adidas-mexico-2026-home-authentic-jersey-bold-green"
+  },
+  {
+    "file": "adidas-Mexico-2026-Home-Jersey-Bold-Green.jpg",
+    "status": "created",
+    "productId": "881c2663-756f-446c-a94b-f60caa416cec",
+    "slug": "adidas-mexico-2026-home-jersey-bold-green"
+  },
+  {
+    "file": "adidas-Mexico-2026-Home-Replica-World-Cup-Jersey-Green.jpg",
+    "status": "created",
+    "productId": "9c6fcdde-3442-4069-a8fc-ba9be2b722f8",
+    "slug": "adidas-mexico-2026-home-replica-world-cup-jersey-green"
+  },
+  {
+    "file": "adidas-Mexico-26-Away-Authentic-Jersey-White.jpg",
+    "status": "created",
+    "productId": "08861681-4998-45fc-a042-24e3dc07495d",
+    "slug": "adidas-mexico-26-away-authentic-jersey-white"
+  },
+  {
+    "file": "adidas-Mexico-26-Third-Authentic-Jersey-Black.jpg",
+    "status": "created",
+    "productId": "6822b00b-0c3f-4e37-a1ed-d0b7f7a8b439",
+    "slug": "adidas-mexico-26-third-authentic-jersey-black"
+  },
+  {
+    "file": "adidas-Mexico-26-Third-Jersey-Black.jpg",
+    "status": "created",
+    "productId": "6d777bd3-4b1f-4607-a344-57a412009f85",
+    "slug": "adidas-mexico-26-third-jersey-black"
+  },
+  {
+    "file": "adidas-Mexico-26-Third-Long-Sleeve-Jersey-Black.jpg",
+    "status": "created",
+    "productId": "5c87852b-6e72-48ec-8efd-d767fa622593",
+    "slug": "adidas-mexico-26-third-long-sleeve-jersey-black"
+  },
+  {
+    "file": "adidas-Mexico-Gold-Jersey-Black-Product.jpg",
+    "status": "created",
+    "productId": "15c9c1de-38dd-44eb-8544-0d42b57038ab",
+    "slug": "adidas-mexico-gold-jersey-black"
+  },
+  {
+    "file": "adidas-Spain-26-Away-Authentic-Jersey-Off-White.jpg",
+    "status": "created",
+    "productId": "edf1725d-bb76-4388-9a8f-dfcc0a8e04b0",
+    "slug": "adidas-spain-26-away-authentic-jersey-off-white"
+  },
+  {
+    "file": "adidas-Spain-26-Away-Jersey-Off-White.jpg",
+    "status": "created",
+    "productId": "541b046a-6f44-45fa-b268-b9995cc9539c",
+    "slug": "adidas-spain-26-away-jersey-off-white"
+  },
+  {
+    "file": "adidas-x-Oasis-Tour-Jacquard-Jersey-Black-Product.jpg",
+    "status": "created",
+    "productId": "776cf3c7-ab95-42f2-8c1f-e56ba0dc5871",
+    "slug": "adidas-adidas-x-oasis-tour-jacquard-jersey-black"
+  },
+  {
+    "file": "adidas-x-Thrasher-Argentina-Jersey-Black-Blue.jpg",
+    "status": "created",
+    "productId": "82f77abc-b6e6-452c-9257-6cc182e8c2c3",
+    "slug": "adidas-adidas-x-thrasher-argentina-jersey-black-blue"
+  },
+  {
+    "file": "adidas-x-Willy-Chavarria-WC-Soccer-Jersey-Green-v2.jpg",
+    "status": "created",
+    "productId": "957a69b9-a201-4dba-8de8-0a97170366aa",
+    "slug": "adidas-adidas-x-willy-chavarria-wc-soccer-jersey-green"
+  }
+]

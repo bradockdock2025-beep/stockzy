@@ -1,0 +1,487 @@
+{
+  "info": {
+    "name": "Stockzy — API Completa",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "baseUrl",       "value": "http://localhost:3000" },
+    { "key": "adminToken",    "value": "" },
+    { "key": "customerToken", "value": "" },
+    { "key": "productId",     "value": "" },
+    { "key": "variantId",     "value": "" },
+    { "key": "categoryId",    "value": "" },
+    { "key": "orderId",       "value": "" },
+    { "key": "customerId",    "value": "" },
+    { "key": "userId",        "value": "" },
+    { "key": "shipmentId",    "value": "" },
+    { "key": "paymentId",     "value": "" },
+    { "key": "promotionId",   "value": "" },
+    { "key": "bannerId",      "value": "" },
+    { "key": "announcementId","value": "" },
+    { "key": "couponCode",    "value": "" },
+    { "key": "cartToken",     "value": "" }
+  ],
+  "item": [
+
+    {
+      "name": "System",
+      "item": [
+        { "name": "Health", "request": { "method": "GET", "url": "{{baseUrl}}/health" } },
+        { "name": "Metrics", "request": { "method": "GET", "url": "{{baseUrl}}/metrics" } }
+      ]
+    },
+
+    {
+      "name": "Auth — Admin",
+      "item": [
+        {
+          "name": "Login",
+          "event": [{ "listen": "test", "script": { "exec": ["const r=pm.response.json();if(r.accessToken)pm.collectionVariables.set('adminToken',r.accessToken);"] } }],
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/admin/auth/login",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"email\": \"admin@stockzy.com\",\n  \"password\": \"sua-senha\"\n}" }
+          }
+        },
+        {
+          "name": "Refresh Token",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/admin/auth/refresh",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"refreshToken\": \"...\"\n}" }
+          }
+        },
+        { "name": "Logout", "request": { "method": "POST", "url": "{{baseUrl}}/admin/auth/logout", "header": [{ "key": "Authorization", "value": "Bearer {{adminToken}}" }] } },
+        { "name": "Me", "request": { "method": "GET", "url": "{{baseUrl}}/admin/auth/me", "header": [{ "key": "Authorization", "value": "Bearer {{adminToken}}" }] } },
+        {
+          "name": "Change Password",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/admin/auth/change-password",
+            "header": [{ "key": "Authorization", "value": "Bearer {{adminToken}}" }, { "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"currentPassword\": \"antiga\",\n  \"newPassword\": \"nova\"\n}" }
+          }
+        }
+      ]
+    },
+
+    {
+      "name": "Users — Admin",
+      "item": [
+        { "name": "Listar", "request": { "method": "GET", "url": "{{baseUrl}}/admin/users", "header": [{ "key": "Authorization", "value": "Bearer {{adminToken}}" }] } },
+        { "name": "Detalhe", "request": { "method": "GET", "url": "{{baseUrl}}/admin/users/{{userId}}", "header": [{ "key": "Authorization", "value": "Bearer {{adminToken}}" }] } },
+        {
+          "name": "Criar",
+          "request": {
+            "method": "POST", "url": "{{baseUrl}}/admin/users",
+            "header": [{ "key": "Authorization", "value": "Bearer {{adminToken}}" }, { "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"name\": \"Nome\",\n  \"email\": \"user@stockzy.com\",\n  \"password\": \"senha123\",\n  \"role\": \"admin\"\n}" }
+          }
+        },
+        {
+          "name": "Actualizar",
+          "request": {
+            "method": "PATCH", "url": "{{baseUrl}}/admin/users/{{userId}}",
+            "header": [{ "key": "Authorization", "value": "Bearer {{adminToken}}" }, { "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"name\": \"Novo Nome\"\n}" }
+          }
+        },
+        { "name": "Desactivar", "request": { "method": "PATCH", "url": "{{baseUrl}}/admin/users/{{userId}}/deactivate", "header": [{ "key": "Authorization", "value": "Bearer {{adminToken}}" }] } },
+        { "name": "Eliminar", "request": { "method": "DELETE", "url": "{{baseUrl}}/admin/users/{{userId}}", "header": [{ "key": "Authorization", "value": "Bearer {{adminToken}}" }] } }
+      ]
+    },
+
+    {
+      "name": "Customers — Admin",
+      "item": [
+        { "name": "Listar", "request": { "method": "GET", "url": "{{baseUrl}}/admin/customers", "header": [{ "key": "Authorization", "value": "Bearer {{adminToken}}" }] } },
+        { "name": "Listar (Full)", "request": { "method": "GET", "url": "{{baseUrl}}/admin/customers/full", "header": [{ "key": "Authorization", "value": "Bearer {{adminToken}}" }] } },
+        { "name": "Exportar CSV", "request": { "method": "GET", "url": "{{baseUrl}}/admin/customers/export", "header": [{ "key": "Authorization", "value": "Bearer {{adminToken}}" }] } },
+        { "name": "Exportar por ID", "request": { "method": "GET", "url": "{{baseUrl}}/admin/customers/{{customerId}}/export", "header": [{ "key": "Authorization", "value": "Bearer {{adminToken}}" }] } },
+        { "name": "Detalhe", "request": { "method": "GET", "url": "{{baseUrl}}/admin/customers/{{customerId}}", "header": [{ "key": "Authorization", "value": "Bearer {{adminToken}}" }] } },
+        {
+          "name": "Actualizar",
+          "request": {
+            "method": "PATCH", "url": "{{baseUrl}}/admin/customers/{{customerId}}",
+            "header": [{ "key": "Authorization", "value": "Bearer {{adminToken}}" }, { "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"firstName\": \"Nome\",\n  \"lastName\": \"Sobrenome\"\n}" }
+          }
+        },
+        { "name": "Desactivar", "request": { "method": "PATCH", "url": "{{baseUrl}}/admin/customers/{{customerId}}/deactivate", "header": [{ "key": "Authorization", "value": "Bearer {{adminToken}}" }] } }
+      ]
+    },
+
+    {
+      "name": "Customers — Público",
+      "item": [
+        {
+          "name": "Registar",
+          "request": {
+            "method": "POST", "url": "{{baseUrl}}/customers/register",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"firstName\": \"Nome\",\n  \"lastName\": \"Sobrenome\",\n  \"email\": \"cliente@email.com\",\n  \"password\": \"senha123\"\n}" }
+          }
+        },
+        {
+          "name": "Login",
+          "event": [{ "listen": "test", "script": { "exec": ["const r=pm.response.json();if(r.accessToken)pm.collectionVariables.set('customerToken',r.accessToken);"] } }],
+          "request": {
+            "method": "POST", "url": "{{baseUrl}}/customers/login",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"email\": \"cliente@email.com\",\n  \"password\": \"senha123\"\n}" }
+          }
+        },
+        { "name": "Login OTP (Solicitar)", "request": { "method": "POST", "url": "{{baseUrl}}/customers/login/otp", "header": [{ "key": "Content-Type", "value": "application/json" }], "body": { "mode": "raw", "raw": "{\n  \"email\": \"cliente@email.com\"\n}" } } },
+        { "name": "Login OTP (Verificar)", "request": { "method": "POST", "url": "{{baseUrl}}/customers/login/otp/verify", "header": [{ "key": "Content-Type", "value": "application/json" }], "body": { "mode": "raw", "raw": "{\n  \"email\": \"cliente@email.com\",\n  \"otp\": \"123456\"\n}" } } },
+        { "name": "Login OTP (Link)", "request": { "method": "POST", "url": "{{baseUrl}}/customers/login/otp/verify-link", "header": [{ "key": "Content-Type", "value": "application/json" }], "body": { "mode": "raw", "raw": "{\n  \"token\": \"...\"\n}" } } },
+        { "name": "Refresh Token", "request": { "method": "POST", "url": "{{baseUrl}}/customers/refresh", "header": [{ "key": "Content-Type", "value": "application/json" }], "body": { "mode": "raw", "raw": "{\n  \"refreshToken\": \"...\"\n}" } } },
+        { "name": "Logout", "request": { "method": "POST", "url": "{{baseUrl}}/customers/logout", "header": [{ "key": "Authorization", "value": "Bearer {{customerToken}}" }] } },
+        { "name": "Password Reset — Solicitar", "request": { "method": "POST", "url": "{{baseUrl}}/customers/password-reset/request", "header": [{ "key": "Content-Type", "value": "application/json" }], "body": { "mode": "raw", "raw": "{\n  \"email\": \"cliente@email.com\"\n}" } } },
+        { "name": "Password Reset — Confirmar", "request": { "method": "POST", "url": "{{baseUrl}}/customers/password-reset/confirm", "header": [{ "key": "Content-Type", "value": "application/json" }], "body": { "mode": "raw", "raw": "{\n  \"token\": \"...\",\n  \"newPassword\": \"novaSenha123\"\n}" } } },
+        { "name": "Perfil (Me)", "request": { "method": "GET", "url": "{{baseUrl}}/customers/me", "header": [{ "key": "Authorization", "value": "Bearer {{customerToken}}" }] } },
+        { "name": "Actualizar Me", "request": { "method": "PATCH", "url": "{{baseUrl}}/customers/me", "header": [{ "key": "Authorization", "value": "Bearer {{customerToken}}" }, { "key": "Content-Type", "value": "application/json" }], "body": { "mode": "raw", "raw": "{\n  \"firstName\": \"Nome\"\n}" } } },
+        { "name": "Actualizar Perfil", "request": { "method": "PATCH", "url": "{{baseUrl}}/customers/profile", "header": [{ "key": "Authorization", "value": "Bearer {{customerToken}}" }, { "key": "Content-Type", "value": "application/json" }], "body": { "mode": "raw", "raw": "{\n  \"phoneNumber\": \"+351912345678\"\n}" } } },
+        { "name": "Verificar Email", "request": { "method": "POST", "url": "{{baseUrl}}/customers/verify/email", "header": [{ "key": "Authorization", "value": "Bearer {{customerToken}}" }, { "key": "Content-Type", "value": "application/json" }], "body": { "mode": "raw", "raw": "{\n  \"token\": \"...\"\n}" } } },
+        { "name": "Verificar Telefone (Solicitar)", "request": { "method": "POST", "url": "{{baseUrl}}/customers/verify/phone", "header": [{ "key": "Authorization", "value": "Bearer {{customerToken}}" } ] } },
+        { "name": "Verificar Telefone (Confirmar)", "request": { "method": "POST", "url": "{{baseUrl}}/customers/verify/phone/confirm", "header": [{ "key": "Authorization", "value": "Bearer {{customerToken}}" }, { "key": "Content-Type", "value": "application/json" }], "body": { "mode": "raw", "raw": "{\n  \"otp\": \"123456\"\n}" } } },
+        { "name": "MFA — Actualizar", "request": { "method": "PATCH", "url": "{{baseUrl}}/customers/mfa", "header": [{ "key": "Authorization", "value": "Bearer {{customerToken}}" }, { "key": "Content-Type", "value": "application/json" }], "body": { "mode": "raw", "raw": "{\n  \"enabled\": true\n}" } } },
+        { "name": "Alterar Password", "request": { "method": "PATCH", "url": "{{baseUrl}}/customers/password", "header": [{ "key": "Authorization", "value": "Bearer {{customerToken}}" }, { "key": "Content-Type", "value": "application/json" }], "body": { "mode": "raw", "raw": "{\n  \"currentPassword\": \"antiga\",\n  \"newPassword\": \"nova\"\n}" } } },
+        { "name": "Alterar Email", "request": { "method": "PATCH", "url": "{{baseUrl}}/customers/email", "header": [{ "key": "Authorization", "value": "Bearer {{customerToken}}" }, { "key": "Content-Type", "value": "application/json" }], "body": { "mode": "raw", "raw": "{\n  \"newEmail\": \"novo@email.com\",\n  \"password\": \"senha123\"\n}" } } },
+        { "name": "Consentimentos — Listar", "request": { "method": "GET", "url": "{{baseUrl}}/customers/consents", "header": [{ "key": "Authorization", "value": "Bearer {{customerToken}}" }] } },
+        { "name": "Consentimentos — Actualizar", "request": { "method": "POST", "url": "{{baseUrl}}/customers/consents", "header": [{ "key": "Authorization", "value": "Bearer {{customerToken}}" }, { "key": "Content-Type", "value": "application/json" }], "body": { "mode": "raw", "raw": "{\n  \"marketing\": true,\n  \"analytics\": false\n}" } } },
+        { "name": "Exportar Dados (GDPR)", "request": { "method": "GET", "url": "{{baseUrl}}/customers/export", "header": [{ "key": "Authorization", "value": "Bearer {{customerToken}}" }] } },
+        { "name": "Eliminar Conta", "request": { "method": "DELETE", "url": "{{baseUrl}}/customers/me", "header": [{ "key": "Authorization", "value": "Bearer {{customerToken}}" }] } },
+        { "name": "Moradas — Listar", "request": { "method": "GET", "url": "{{baseUrl}}/customers/addresses", "header": [{ "key": "Authorization", "value": "Bearer {{customerToken}}" }] } },
+        { "name": "Moradas — Criar", "request": { "method": "POST", "url": "{{baseUrl}}/customers/addresses", "header": [{ "key": "Authorization", "value": "Bearer {{customerToken}}" }, { "key": "Content-Type", "value": "application/json" }], "body": { "mode": "raw", "raw": "{\n  \"street\": \"Rua Exemplo, 123\",\n  \"city\": \"Lisboa\",\n  \"zipcode\": \"1000-001\",\n  \"country\": \"PT\"\n}" } } },
+        { "name": "Moradas — Actualizar", "request": { "method": "PATCH", "url": "{{baseUrl}}/customers/addresses/:id", "header": [{ "key": "Authorization", "value": "Bearer {{customerToken}}" }, { "key": "Content-Type", "value": "application/json" }], "body": { "mode": "raw", "raw": "{\n  \"city\": \"Porto\"\n}" } } },
+        { "name": "Moradas — Eliminar", "request": { "method": "DELETE", "url": "{{baseUrl}}/customers/addresses/:id", "header": [{ "key": "Authorization", "value": "Bearer {{customerToken}}" }] } }
+      ]
+    },
+
+    {
+      "name": "Products — Admin",
+      "item": [
+        { "name": "Listar", "request": { "method": "GET", "url": "{{baseUrl}}/admin/products", "header": [{ "key": "Authorization", "value": "Bearer {{adminToken}}" }] } },
+        { "name": "Detalhe", "request": { "method": "GET", "url": "{{baseUrl}}/admin/products/{{productId}}", "header": [{ "key": "Authorization", "value": "Bearer {{adminToken}}" }] } },
+        {
+          "name": "Criar",
+          "request": {
+            "method": "POST", "url": "{{baseUrl}}/admin/products",
+            "header": [{ "key": "Authorization", "value": "Bearer {{adminToken}}" }, { "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"name\": \"Nome do Produto\",\n  \"slug\": \"nome-do-produto\",\n  \"description\": \"Descrição\",\n  \"categoryId\": \"{{categoryId}}\",\n  \"variants\": [\n    {\n      \"price\": 89.90,\n      \"stockQuantity\": 10,\n      \"attributes\": [\n        { \"attributeId\": \"...\", \"value\": \"Brown\" },\n        { \"attributeId\": \"...\", \"value\": \"M\" }\n      ]\n    }\n  ]\n}" }
+          }
+        },
+        {
+          "name": "Actualizar",
+          "request": {
+            "method": "PATCH", "url": "{{baseUrl}}/admin/products/{{productId}}",
+            "header": [{ "key": "Authorization", "value": "Bearer {{adminToken}}" }, { "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"name\": \"Novo Nome\",\n  \"variants\": [\n    {\n      \"id\": \"{{variantId}}\",\n      \"stockQuantity\": 0\n    }\n  ]\n}" }
+          }
+        },
+        { "name": "Arquivar", "request": { "method": "PATCH", "url": "{{baseUrl}}/admin/products/{{productId}}/archive", "header": [{ "key": "Authorization", "value": "Bearer {{adminToken}}" }] } },
+        { "name": "Reordenar", "request": { "method": "PATCH", "url": "{{baseUrl}}/admin/products/reorder", "header": [{ "key": "Authorization", "value": "Bearer {{adminToken}}" }, { "key": "Content-Type", "value": "application/json" }], "body": { "mode": "raw", "raw": "{\n  \"ids\": [\"id1\", \"id2\", \"id3\"]\n}" } } },
+        { "name": "Histórico de Preços", "request": { "method": "GET", "url": "{{baseUrl}}/admin/products/{{productId}}/price-history", "header": [{ "key": "Authorization", "value": "Bearer {{adminToken}}" }] } },
+        { "name": "Eliminar", "request": { "method": "DELETE", "url": "{{baseUrl}}/admin/products/{{productId}}", "header": [{ "key": "Authorization", "value": "Bearer {{adminToken}}" }] } },
+        {
+          "name": "Upload Imagens",
+          "request": {
+            "method": "POST", "url": "{{baseUrl}}/admin/products/{{productId}}/images",
+            "header": [{ "key": "Authorization", "value": "Bearer {{adminToken}}" }],
+            "body": { "mode": "formdata", "formdata": [{ "key": "files", "type": "file", "src": "" }] }
+          }
+        }
+      ]
+    },
+
+    {
+      "name": "Products — Público",
+      "item": [
+        { "name": "Listar", "request": { "method": "GET", "url": { "raw": "{{baseUrl}}/products?page=1&limit=20", "query": [{ "key": "page", "value": "1" }, { "key": "limit", "value": "20" }] } } },
+        { "name": "Ofertas", "request": { "method": "GET", "url": "{{baseUrl}}/products/offers" } },
+        { "name": "Highlights", "request": { "method": "GET", "url": "{{baseUrl}}/products/highlights" } },
+        { "name": "Novidades", "request": { "method": "GET", "url": "{{baseUrl}}/products/new-arrivals" } },
+        { "name": "Mais Vendidos", "request": { "method": "GET", "url": "{{baseUrl}}/products/best-sellers" } },
+        { "name": "Melhores Preços", "request": { "method": "GET", "url": "{{baseUrl}}/products/best-prices" } },
+        { "name": "Detalhe por ID", "request": { "method": "GET", "url": "{{baseUrl}}/products/{{productId}}" } },
+        { "name": "Detalhe por Slug", "request": { "method": "GET", "url": "{{baseUrl}}/products/slug/nome-do-produto" } },
+        { "name": "Também Vistos", "request": { "method": "GET", "url": "{{baseUrl}}/products/{{productId}}/also-viewed" } },
+        { "name": "Registar View", "request": { "method": "POST", "url": "{{baseUrl}}/products/{{productId}}/view" } },
+        { "name": "Filtros", "request": { "method": "GET", "url": "{{baseUrl}}/filters" } }
+      ]
+    },
+
+    {
+      "name": "Attribute Options — Admin",
+      "item": [
+        { "name": "Listar", "request": { "method": "GET", "url": { "raw": "{{baseUrl}}/admin/attribute-options?attributeId=...", "query": [{ "key": "attributeId", "value": "" }] }, "header": [{ "key": "Authorization", "value": "Bearer {{adminToken}}" }] } },
+        {
+          "name": "Criar",
+          "request": {
+            "method": "POST", "url": "{{baseUrl}}/admin/attribute-options",
+            "header": [{ "key": "Authorization", "value": "Bearer {{adminToken}}" }, { "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"attributeId\": \"...\",\n  \"value\": \"XL\"\n}" }
+          }
+        },
+        { "name": "Actualizar", "request": { "method": "PATCH", "url": "{{baseUrl}}/admin/attribute-options/:id", "header": [{ "key": "Authorization", "value": "Bearer {{adminToken}}" }, { "key": "Content-Type", "value": "application/json" }], "body": { "mode": "raw", "raw": "{\n  \"value\": \"XXL\"\n}" } } },
+        { "name": "Eliminar", "request": { "method": "DELETE", "url": "{{baseUrl}}/admin/attribute-options/:id", "header": [{ "key": "Authorization", "value": "Bearer {{adminToken}}" }] } }
+      ]
+    },
+
+    {
+      "name": "Categories — Admin",
+      "item": [
+        { "name": "Listar", "request": { "method": "GET", "url": "{{baseUrl}}/admin/categories", "header": [{ "key": "Authorization", "value": "Bearer {{adminToken}}" }] } },
+        { "name": "Detalhe", "request": { "method": "GET", "url": "{{baseUrl}}/admin/categories/{{categoryId}}", "header": [{ "key": "Authorization", "value": "Bearer {{adminToken}}" }] } },
+        { "name": "Criar", "request": { "method": "POST", "url": "{{baseUrl}}/admin/categories", "header": [{ "key": "Authorization", "value": "Bearer {{adminToken}}" }, { "key": "Content-Type", "value": "application/json" }], "body": { "mode": "raw", "raw": "{\n  \"name\": \"Vestuário\",\n  \"slug\": \"vestuario\"\n}" } } },
+        { "name": "Actualizar", "request": { "method": "PATCH", "url": "{{baseUrl}}/admin/categories/{{categoryId}}", "header": [{ "key": "Authorization", "value": "Bearer {{adminToken}}" }, { "key": "Content-Type", "value": "application/json" }], "body": { "mode": "raw", "raw": "{\n  \"name\": \"Novo Nome\"\n}" } } },
+        { "name": "Desactivar", "request": { "method": "PATCH", "url": "{{baseUrl}}/admin/categories/{{categoryId}}/deactivate", "header": [{ "key": "Authorization", "value": "Bearer {{adminToken}}" }] } },
+        { "name": "Eliminar", "request": { "method": "DELETE", "url": "{{baseUrl}}/admin/categories/{{categoryId}}", "header": [{ "key": "Authorization", "value": "Bearer {{adminToken}}" }] } },
+        { "name": "Fundir", "request": { "method": "POST", "url": "{{baseUrl}}/admin/categories/{{categoryId}}/merge", "header": [{ "key": "Authorization", "value": "Bearer {{adminToken}}" }, { "key": "Content-Type", "value": "application/json" }], "body": { "mode": "raw", "raw": "{\n  \"targetCategoryId\": \"...\"\n}" } } }
+      ]
+    },
+
+    {
+      "name": "Orders — Admin",
+      "item": [
+        { "name": "Listar", "request": { "method": "GET", "url": { "raw": "{{baseUrl}}/admin/orders?page=1&limit=20", "query": [{ "key": "page", "value": "1" }, { "key": "limit", "value": "20" }] }, "header": [{ "key": "Authorization", "value": "Bearer {{adminToken}}" }] } },
+        { "name": "Detalhe", "request": { "method": "GET", "url": "{{baseUrl}}/admin/orders/{{orderId}}", "header": [{ "key": "Authorization", "value": "Bearer {{adminToken}}" }] } },
+        {
+          "name": "Criar",
+          "request": {
+            "method": "POST", "url": "{{baseUrl}}/admin/orders",
+            "header": [{ "key": "Authorization", "value": "Bearer {{adminToken}}" }, { "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"customerId\": \"...\"\n}" }
+          }
+        },
+        { "name": "Actualizar", "request": { "method": "PATCH", "url": "{{baseUrl}}/admin/orders/{{orderId}}", "header": [{ "key": "Authorization", "value": "Bearer {{adminToken}}" }, { "key": "Content-Type", "value": "application/json" }], "body": { "mode": "raw", "raw": "{\n  \"notes\": \"Nota interna\"\n}" } } },
+        { "name": "Alterar Status", "request": { "method": "PATCH", "url": "{{baseUrl}}/admin/orders/{{orderId}}/status", "header": [{ "key": "Authorization", "value": "Bearer {{adminToken}}" }, { "key": "Content-Type", "value": "application/json" }], "body": { "mode": "raw", "raw": "{\n  \"status\": \"processing\"\n}" } } },
+        { "name": "Cancelar", "request": { "method": "PATCH", "url": "{{baseUrl}}/admin/orders/{{orderId}}/cancel", "header": [{ "key": "Authorization", "value": "Bearer {{adminToken}}" }] } },
+        { "name": "Eliminar", "request": { "method": "DELETE", "url": "{{baseUrl}}/admin/orders/{{orderId}}", "header": [{ "key": "Authorization", "value": "Bearer {{adminToken}}" }] } }
+      ]
+    },
+
+    {
+      "name": "Orders — Customer",
+      "item": [
+        {
+          "name": "Criar Pedido",
+          "event": [{ "listen": "test", "script": { "exec": ["const r=pm.response.json();if(r.id)pm.collectionVariables.set('orderId',r.id);"] } }],
+          "request": {
+            "method": "POST", "url": "{{baseUrl}}/customers/orders",
+            "header": [{ "key": "Authorization", "value": "Bearer {{customerToken}}" }, { "key": "Content-Type", "value": "application/json" }, { "key": "x-cart-token", "value": "{{cartToken}}" }],
+            "body": { "mode": "raw", "raw": "{\n  \"shippingAddress\": {\n    \"street\": \"Rua Exemplo, 123\",\n    \"city\": \"Lisboa\",\n    \"zipcode\": \"1000-001\",\n    \"country\": \"PT\"\n  },\n  \"locale\": \"pt\"\n}" }
+          }
+        },
+        {
+          "name": "Quote (Pré-visualizar)",
+          "request": {
+            "method": "POST", "url": "{{baseUrl}}/customers/orders/quote",
+            "header": [{ "key": "Authorization", "value": "Bearer {{customerToken}}" }, { "key": "Content-Type", "value": "application/json" }, { "key": "x-cart-token", "value": "{{cartToken}}" }],
+            "body": { "mode": "raw", "raw": "{\n  \"couponCode\": \"\"\n}" }
+          }
+        },
+        { "name": "Listar Meus Pedidos", "request": { "method": "GET", "url": "{{baseUrl}}/customers/orders", "header": [{ "key": "Authorization", "value": "Bearer {{customerToken}}" }] } },
+        { "name": "Detalhe", "request": { "method": "GET", "url": "{{baseUrl}}/customers/orders/{{orderId}}", "header": [{ "key": "Authorization", "value": "Bearer {{customerToken}}" }] } },
+        { "name": "Tracking", "request": { "method": "GET", "url": "{{baseUrl}}/customers/orders/{{orderId}}/tracking", "header": [{ "key": "Authorization", "value": "Bearer {{customerToken}}" }] } },
+        { "name": "Cancelar", "request": { "method": "PATCH", "url": "{{baseUrl}}/customers/orders/{{orderId}}/cancel", "header": [{ "key": "Authorization", "value": "Bearer {{customerToken}}" }] } }
+      ]
+    },
+
+    {
+      "name": "Payments — Customer",
+      "item": [
+        {
+          "name": "Iniciar Pagamento (Stripe)",
+          "request": {
+            "method": "POST", "url": "{{baseUrl}}/customers/orders/{{orderId}}/payment",
+            "header": [{ "key": "Authorization", "value": "Bearer {{customerToken}}" }, { "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"method\": \"stripe\"\n}" }
+          }
+        },
+        {
+          "name": "Confirmar Pagamento",
+          "request": {
+            "method": "POST", "url": "{{baseUrl}}/customers/orders/{{orderId}}/payment/confirm",
+            "header": [{ "key": "Authorization", "value": "Bearer {{customerToken}}" }, { "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"paymentIntentId\": \"pi_...\"\n}" }
+          }
+        }
+      ]
+    },
+
+    {
+      "name": "Payments — Admin",
+      "item": [
+        { "name": "Listar", "request": { "method": "GET", "url": "{{baseUrl}}/admin/payments", "header": [{ "key": "Authorization", "value": "Bearer {{adminToken}}" }] } },
+        { "name": "Detalhe", "request": { "method": "GET", "url": "{{baseUrl}}/admin/payments/{{paymentId}}", "header": [{ "key": "Authorization", "value": "Bearer {{adminToken}}" }] } }
+      ]
+    },
+
+    {
+      "name": "Receipt — PDF",
+      "item": [
+        { "name": "Download Recibo PDF", "request": { "method": "GET", "url": { "raw": "{{baseUrl}}/orders/{{orderId}}/receipt?token=TOKEN_HMAC", "query": [{ "key": "token", "value": "TOKEN_HMAC" }] } } }
+      ]
+    },
+
+    {
+      "name": "Shipments — Admin",
+      "item": [
+        { "name": "Listar", "request": { "method": "GET", "url": "{{baseUrl}}/admin/shipments", "header": [{ "key": "Authorization", "value": "Bearer {{adminToken}}" }] } },
+        { "name": "Detalhe", "request": { "method": "GET", "url": "{{baseUrl}}/admin/shipments/{{shipmentId}}", "header": [{ "key": "Authorization", "value": "Bearer {{adminToken}}" }] } },
+        {
+          "name": "Criar",
+          "request": {
+            "method": "POST", "url": "{{baseUrl}}/admin/shipments",
+            "header": [{ "key": "Authorization", "value": "Bearer {{adminToken}}" }, { "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"orderId\": \"{{orderId}}\",\n  \"carrier\": \"CTT\",\n  \"trackingNumber\": \"CT123456789PT\"\n}" }
+          }
+        },
+        { "name": "Actualizar", "request": { "method": "PATCH", "url": "{{baseUrl}}/admin/shipments/{{shipmentId}}", "header": [{ "key": "Authorization", "value": "Bearer {{adminToken}}" }, { "key": "Content-Type", "value": "application/json" }], "body": { "mode": "raw", "raw": "{\n  \"trackingNumber\": \"CT987654321PT\"\n}" } } },
+        { "name": "Adicionar Evento", "request": { "method": "POST", "url": "{{baseUrl}}/admin/shipments/{{shipmentId}}/events", "header": [{ "key": "Authorization", "value": "Bearer {{adminToken}}" }, { "key": "Content-Type", "value": "application/json" }], "body": { "mode": "raw", "raw": "{\n  \"status\": \"delivered\",\n  \"description\": \"Entregue ao destinatário\"\n}" } } }
+      ]
+    },
+
+    {
+      "name": "Promotions — Admin",
+      "item": [
+        { "name": "Listar", "request": { "method": "GET", "url": "{{baseUrl}}/admin/promotions", "header": [{ "key": "Authorization", "value": "Bearer {{adminToken}}" }] } },
+        { "name": "Detalhe", "request": { "method": "GET", "url": "{{baseUrl}}/admin/promotions/{{promotionId}}", "header": [{ "key": "Authorization", "value": "Bearer {{adminToken}}" }] } },
+        {
+          "name": "Criar",
+          "request": {
+            "method": "POST", "url": "{{baseUrl}}/admin/promotions",
+            "header": [{ "key": "Authorization", "value": "Bearer {{adminToken}}" }, { "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"name\": \"Desconto Verão\",\n  \"code\": \"VERAO20\",\n  \"type\": \"percentage\",\n  \"value\": 20,\n  \"isActive\": true\n}" }
+          }
+        },
+        { "name": "Actualizar", "request": { "method": "PATCH", "url": "{{baseUrl}}/admin/promotions/{{promotionId}}", "header": [{ "key": "Authorization", "value": "Bearer {{adminToken}}" }, { "key": "Content-Type", "value": "application/json" }], "body": { "mode": "raw", "raw": "{\n  \"value\": 25\n}" } } },
+        { "name": "Desactivar", "request": { "method": "PATCH", "url": "{{baseUrl}}/admin/promotions/{{promotionId}}/deactivate", "header": [{ "key": "Authorization", "value": "Bearer {{adminToken}}" }] } }
+      ]
+    },
+
+    {
+      "name": "Coupons — Público",
+      "item": [
+        { "name": "Validar Cupão", "request": { "method": "GET", "url": { "raw": "{{baseUrl}}/coupons/validate?code={{couponCode}}", "query": [{ "key": "code", "value": "{{couponCode}}" }] } } }
+      ]
+    },
+
+    {
+      "name": "Announcements — Admin",
+      "item": [
+        { "name": "Listar", "request": { "method": "GET", "url": "{{baseUrl}}/admin/announcements", "header": [{ "key": "Authorization", "value": "Bearer {{adminToken}}" }] } },
+        { "name": "Detalhe", "request": { "method": "GET", "url": "{{baseUrl}}/admin/announcements/{{announcementId}}", "header": [{ "key": "Authorization", "value": "Bearer {{adminToken}}" }] } },
+        { "name": "Criar", "request": { "method": "POST", "url": "{{baseUrl}}/admin/announcements", "header": [{ "key": "Authorization", "value": "Bearer {{adminToken}}" }, { "key": "Content-Type", "value": "application/json" }], "body": { "mode": "raw", "raw": "{\n  \"message\": \"Envio gratuito acima de €50\",\n  \"isActive\": true\n}" } } },
+        { "name": "Actualizar", "request": { "method": "PATCH", "url": "{{baseUrl}}/admin/announcements/{{announcementId}}", "header": [{ "key": "Authorization", "value": "Bearer {{adminToken}}" }, { "key": "Content-Type", "value": "application/json" }], "body": { "mode": "raw", "raw": "{\n  \"message\": \"Novo texto\"\n}" } } },
+        { "name": "Desactivar", "request": { "method": "PATCH", "url": "{{baseUrl}}/admin/announcements/{{announcementId}}/deactivate", "header": [{ "key": "Authorization", "value": "Bearer {{adminToken}}" }] } },
+        { "name": "Eliminar", "request": { "method": "DELETE", "url": "{{baseUrl}}/admin/announcements/{{announcementId}}", "header": [{ "key": "Authorization", "value": "Bearer {{adminToken}}" }] } }
+      ]
+    },
+
+    {
+      "name": "Announcements — Público",
+      "item": [
+        { "name": "Listar Activos", "request": { "method": "GET", "url": "{{baseUrl}}/announcements" } }
+      ]
+    },
+
+    {
+      "name": "Banners — Admin",
+      "item": [
+        { "name": "Listar", "request": { "method": "GET", "url": "{{baseUrl}}/admin/banners", "header": [{ "key": "Authorization", "value": "Bearer {{adminToken}}" }] } },
+        { "name": "Detalhe", "request": { "method": "GET", "url": "{{baseUrl}}/admin/banners/{{bannerId}}", "header": [{ "key": "Authorization", "value": "Bearer {{adminToken}}" }] } },
+        { "name": "Criar", "request": { "method": "POST", "url": "{{baseUrl}}/admin/banners", "header": [{ "key": "Authorization", "value": "Bearer {{adminToken}}" }, { "key": "Content-Type", "value": "application/json" }], "body": { "mode": "raw", "raw": "{\n  \"title\": \"Banner Verão\",\n  \"isActive\": true\n}" } } },
+        { "name": "Upload Imagem", "request": { "method": "POST", "url": "{{baseUrl}}/admin/banners/{{bannerId}}/image", "header": [{ "key": "Authorization", "value": "Bearer {{adminToken}}" }], "body": { "mode": "formdata", "formdata": [{ "key": "file", "type": "file", "src": "" }] } } },
+        { "name": "Actualizar", "request": { "method": "PATCH", "url": "{{baseUrl}}/admin/banners/{{bannerId}}", "header": [{ "key": "Authorization", "value": "Bearer {{adminToken}}" }, { "key": "Content-Type", "value": "application/json" }], "body": { "mode": "raw", "raw": "{\n  \"title\": \"Novo Título\"\n}" } } },
+        { "name": "Desactivar", "request": { "method": "PATCH", "url": "{{baseUrl}}/admin/banners/{{bannerId}}/deactivate", "header": [{ "key": "Authorization", "value": "Bearer {{adminToken}}" }] } },
+        { "name": "Eliminar", "request": { "method": "DELETE", "url": "{{baseUrl}}/admin/banners/{{bannerId}}", "header": [{ "key": "Authorization", "value": "Bearer {{adminToken}}" }] } }
+      ]
+    },
+
+    {
+      "name": "Banners — Público",
+      "item": [
+        { "name": "Listar Activos", "request": { "method": "GET", "url": "{{baseUrl}}/banners" } }
+      ]
+    },
+
+    {
+      "name": "Homepage — Admin",
+      "item": [
+        { "name": "Hero — Actualizar", "request": { "method": "PUT", "url": "{{baseUrl}}/admin/homepage/hero", "header": [{ "key": "Authorization", "value": "Bearer {{adminToken}}" }, { "key": "Content-Type", "value": "application/json" }], "body": { "mode": "raw", "raw": "{\n  \"title\": \"Nova Colecção\",\n  \"subtitle\": \"Descubra o estilo\"\n}" } } },
+        { "name": "Hero — Upload Imagem", "request": { "method": "POST", "url": "{{baseUrl}}/admin/homepage/hero/upload", "header": [{ "key": "Authorization", "value": "Bearer {{adminToken}}" }], "body": { "mode": "formdata", "formdata": [{ "key": "file", "type": "file", "src": "" }] } } },
+        { "name": "Tiles — Criar", "request": { "method": "POST", "url": "{{baseUrl}}/admin/homepage/tiles", "header": [{ "key": "Authorization", "value": "Bearer {{adminToken}}" }, { "key": "Content-Type", "value": "application/json" }], "body": { "mode": "raw", "raw": "{\n  \"title\": \"Tile\",\n  \"link\": \"/products\"\n}" } } },
+        { "name": "Tiles — Actualizar", "request": { "method": "PATCH", "url": "{{baseUrl}}/admin/homepage/tiles/:id", "header": [{ "key": "Authorization", "value": "Bearer {{adminToken}}" }, { "key": "Content-Type", "value": "application/json" }], "body": { "mode": "raw", "raw": "{\n  \"title\": \"Novo Título\"\n}" } } },
+        { "name": "Tiles — Eliminar", "request": { "method": "DELETE", "url": "{{baseUrl}}/admin/homepage/tiles/:id", "header": [{ "key": "Authorization", "value": "Bearer {{adminToken}}" }] } },
+        { "name": "Social — Config", "request": { "method": "PATCH", "url": "{{baseUrl}}/admin/homepage/social/config", "header": [{ "key": "Authorization", "value": "Bearer {{adminToken}}" }, { "key": "Content-Type", "value": "application/json" }], "body": { "mode": "raw", "raw": "{\n  \"instagram\": \"@stockzy\"\n}" } } },
+        { "name": "Social — Upload Imagem", "request": { "method": "POST", "url": "{{baseUrl}}/admin/homepage/social/images", "header": [{ "key": "Authorization", "value": "Bearer {{adminToken}}" }], "body": { "mode": "formdata", "formdata": [{ "key": "file", "type": "file", "src": "" }] } } },
+        { "name": "Social — Actualizar Imagem", "request": { "method": "PATCH", "url": "{{baseUrl}}/admin/homepage/social/images/:id", "header": [{ "key": "Authorization", "value": "Bearer {{adminToken}}" }, { "key": "Content-Type", "value": "application/json" }], "body": { "mode": "raw", "raw": "{\n  \"link\": \"https://instagram.com/p/...\"\n}" } } },
+        { "name": "Social — Eliminar Imagem", "request": { "method": "DELETE", "url": "{{baseUrl}}/admin/homepage/social/images/:id", "header": [{ "key": "Authorization", "value": "Bearer {{adminToken}}" }] } }
+      ]
+    },
+
+    {
+      "name": "Homepage — Público",
+      "item": [
+        { "name": "Hero", "request": { "method": "GET", "url": "{{baseUrl}}/homepage/hero" } },
+        { "name": "Tiles", "request": { "method": "GET", "url": "{{baseUrl}}/homepage/tiles" } },
+        { "name": "Social", "request": { "method": "GET", "url": "{{baseUrl}}/homepage/social" } }
+      ]
+    },
+
+    {
+      "name": "Newsletter — Admin",
+      "item": [
+        { "name": "Listar Subscrições", "request": { "method": "GET", "url": "{{baseUrl}}/admin/newsletter/subscriptions", "header": [{ "key": "Authorization", "value": "Bearer {{adminToken}}" }] } },
+        { "name": "Exportar CSV", "request": { "method": "GET", "url": "{{baseUrl}}/admin/newsletter/subscriptions/export", "header": [{ "key": "Authorization", "value": "Bearer {{adminToken}}" }] } },
+        { "name": "Eliminar Subscrição", "request": { "method": "DELETE", "url": "{{baseUrl}}/admin/newsletter/subscriptions/:id", "header": [{ "key": "Authorization", "value": "Bearer {{adminToken}}" }] } }
+      ]
+    },
+
+    {
+      "name": "Newsletter — Público",
+      "item": [
+        { "name": "Subscrever", "request": { "method": "POST", "url": "{{baseUrl}}/newsletter/subscribe", "header": [{ "key": "Content-Type", "value": "application/json" }], "body": { "mode": "raw", "raw": "{\n  \"email\": \"cliente@email.com\"\n}" } } },
+        { "name": "Cancelar Subscrição", "request": { "method": "POST", "url": "{{baseUrl}}/newsletter/unsubscribe", "header": [{ "key": "Content-Type", "value": "application/json" }], "body": { "mode": "raw", "raw": "{\n  \"email\": \"cliente@email.com\"\n}" } } }
+      ]
+    },
+
+    {
+      "name": "Search",
+      "item": [
+        { "name": "Pesquisar", "request": { "method": "GET", "url": { "raw": "{{baseUrl}}/search?q=brown", "query": [{ "key": "q", "value": "brown" }] } } },
+        { "name": "Sugestões", "request": { "method": "GET", "url": { "raw": "{{baseUrl}}/search/suggestions?q=bro", "query": [{ "key": "q", "value": "bro" }] } } }
+      ]
+    },
+
+    {
+      "name": "Wishlist — Customer",
+      "item": [
+        { "name": "Ver Wishlist", "request": { "method": "GET", "url": "{{baseUrl}}/customers/wishlist", "header": [{ "key": "Authorization", "value": "Bearer {{customerToken}}" }] } },
+        { "name": "Adicionar Item", "request": { "method": "POST", "url": "{{baseUrl}}/customers/wishlist/items", "header": [{ "key": "Authorization", "value": "Bearer {{customerToken}}" }, { "key": "Content-Type", "value": "application/json" }], "body": { "mode": "raw", "raw": "{\n  \"productId\": \"{{productId}}\"\n}" } } },
+        { "name": "Remover Item", "request": { "method": "DELETE", "url": "{{baseUrl}}/customers/wishlist/items/{{productId}}", "header": [{ "key": "Authorization", "value": "Bearer {{customerToken}}" }] } },
+        { "name": "Mover para Cart", "request": { "method": "POST", "url": "{{baseUrl}}/customers/wishlist/items/{{productId}}/move-to-cart", "header": [{ "key": "Authorization", "value": "Bearer {{customerToken}}" } ] } }
+      ]
+    },
+
+    {
+      "name": "Reports — Admin",
+      "item": [
+        { "name": "Relatório de Pedidos", "request": { "method": "GET", "url": { "raw": "{{baseUrl}}/admin/reports/orders?from=2026-01-01&to=2026-12-31", "query": [{ "key": "from", "value": "2026-01-01" }, { "key": "to", "value": "2026-12-31" }] }, "header": [{ "key": "Authorization", "value": "Bearer {{adminToken}}" }] } },
+        { "name": "Detalhe de Pedido (Report)", "request": { "method": "GET", "url": "{{baseUrl}}/admin/reports/orders/{{orderId}}", "header": [{ "key": "Authorization", "value": "Bearer {{adminToken}}" }] } },
+        { "name": "Relatório de Vendas", "request": { "method": "GET", "url": { "raw": "{{baseUrl}}/admin/reports/sales?from=2026-01-01&to=2026-12-31", "query": [{ "key": "from", "value": "2026-01-01" }, { "key": "to", "value": "2026-12-31" }] }, "header": [{ "key": "Authorization", "value": "Bearer {{adminToken}}" }] } }
+      ]
+    },
+
+    {
+      "name": "Audit Logs — Admin",
+      "item": [
+        { "name": "Listar", "request": { "method": "GET", "url": { "raw": "{{baseUrl}}/admin/audit-logs?page=1&limit=50", "query": [{ "key": "page", "value": "1" }, { "key": "limit", "value": "50" }] }, "header": [{ "key": "Authorization", "value": "Bearer {{adminToken}}" }] } }
+      ]
+    }
+  ]
+}
