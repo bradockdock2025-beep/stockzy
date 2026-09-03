@@ -49,27 +49,27 @@
                 {
                   "key": "page",
                   "value": "1",
-                  "disabled": true
+                  "disabled": false
                 },
                 {
                   "key": "limit",
-                  "value": "1",
-                  "disabled": true
+                  "value": "12",
+                  "disabled": false
                 },
                 {
                   "key": "isActive",
                   "value": "true",
-                  "disabled": true
+                  "disabled": false
                 },
                 {
                   "key": "cursor",
-                  "value": "00000000-0000-0000-0000-000000000000",
-                  "disabled": true
+                  "value": "",
+                  "disabled": false
                 },
                 {
                   "key": "locale",
                   "value": "pt",
-                  "disabled": true
+                  "disabled": false
                 }
               ]
             }
@@ -137,7 +137,8 @@
               "variable": [
                 {
                   "key": "id",
-                  "value": ""
+                  "value": "",
+                  "description": "Nenhum registro real existe ainda nesta tabela (0 linhas em 2026-08-23) — crie um via POST correspondente primeiro e cole o ID real aqui. Não preenchi com um UUID inventado."
                 }
               ],
               "query": []
@@ -168,7 +169,8 @@
               "variable": [
                 {
                   "key": "id",
-                  "value": ""
+                  "value": "",
+                  "description": "Nenhum registro real existe ainda nesta tabela (0 linhas em 2026-08-23) — crie um via POST correspondente primeiro e cole o ID real aqui. Não preenchi com um UUID inventado."
                 }
               ],
               "query": []
@@ -204,7 +206,8 @@
               "variable": [
                 {
                   "key": "id",
-                  "value": ""
+                  "value": "",
+                  "description": "Nenhum registro real existe ainda nesta tabela (0 linhas em 2026-08-23) — crie um via POST correspondente primeiro e cole o ID real aqui. Não preenchi com um UUID inventado."
                 }
               ],
               "query": []
@@ -250,7 +253,8 @@
               "variable": [
                 {
                   "key": "id",
-                  "value": ""
+                  "value": "",
+                  "description": "Nenhum registro real existe ainda nesta tabela (0 linhas em 2026-08-23) — crie um via POST correspondente primeiro e cole o ID real aqui. Não preenchi com um UUID inventado."
                 }
               ],
               "query": []
@@ -294,48 +298,50 @@
               "query": [
                 {
                   "key": "actorId",
-                  "value": "00000000-0000-0000-0000-000000000000",
-                  "disabled": true
+                  "value": "",
+                  "disabled": true,
+                  "description": "Todos os audit_logs atuais têm este campo nulo (script de seed rodou sem ator autenticado) — não há valor real pra filtrar ainda."
                 },
                 {
                   "key": "actorEmail",
-                  "value": "user@example.com",
-                  "disabled": true
+                  "value": "",
+                  "disabled": true,
+                  "description": "Todos os audit_logs atuais têm este campo nulo (script de seed rodou sem ator autenticado) — não há valor real pra filtrar ainda."
                 },
                 {
                   "key": "action",
-                  "value": "string",
-                  "disabled": true
+                  "value": "create",
+                  "disabled": false
                 },
                 {
                   "key": "entity",
-                  "value": "string",
-                  "disabled": true
+                  "value": "product",
+                  "disabled": false
                 },
                 {
                   "key": "entityId",
-                  "value": "string",
-                  "disabled": true
+                  "value": "a6f78187-8b1e-441e-8175-fd44774ad8fc",
+                  "disabled": false
                 },
                 {
                   "key": "from",
                   "value": "2026-01-01T00:00:00.000Z",
-                  "disabled": true
+                  "disabled": false
                 },
                 {
                   "key": "to",
-                  "value": "2026-01-01T00:00:00.000Z",
-                  "disabled": true
+                  "value": "2026-08-23T23:59:59.000Z",
+                  "disabled": false
                 },
                 {
                   "key": "limit",
-                  "value": "1",
-                  "disabled": true
+                  "value": "12",
+                  "disabled": false
                 },
                 {
                   "key": "cursor",
-                  "value": "00000000-0000-0000-0000-000000000000",
-                  "disabled": true
+                  "value": "",
+                  "disabled": false
                 }
               ]
             }
@@ -546,32 +552,32 @@
                 {
                   "key": "page",
                   "value": "1",
-                  "disabled": true
+                  "disabled": false
                 },
                 {
                   "key": "limit",
-                  "value": "1",
-                  "disabled": true
+                  "value": "12",
+                  "disabled": false
                 },
                 {
                   "key": "isActive",
                   "value": "true",
-                  "disabled": true
+                  "disabled": false
                 },
                 {
                   "key": "active",
                   "value": "true",
-                  "disabled": true
+                  "disabled": false
                 },
                 {
                   "key": "cursor",
-                  "value": "00000000-0000-0000-0000-000000000000",
-                  "disabled": true
+                  "value": "",
+                  "disabled": false
                 },
                 {
                   "key": "context",
-                  "value": "string",
-                  "disabled": true
+                  "value": "homepage",
+                  "disabled": false
                 }
               ]
             }
@@ -639,7 +645,8 @@
               "variable": [
                 {
                   "key": "id",
-                  "value": ""
+                  "value": "",
+                  "description": "Nenhum registro real existe ainda nesta tabela (0 linhas em 2026-08-23) — crie um via POST correspondente primeiro e cole o ID real aqui. Não preenchi com um UUID inventado."
                 }
               ],
               "query": []
@@ -670,7 +677,8 @@
               "variable": [
                 {
                   "key": "id",
-                  "value": ""
+                  "value": "",
+                  "description": "Nenhum registro real existe ainda nesta tabela (0 linhas em 2026-08-23) — crie um via POST correspondente primeiro e cole o ID real aqui. Não preenchi com um UUID inventado."
                 }
               ],
               "query": []
@@ -706,7 +714,8 @@
               "variable": [
                 {
                   "key": "id",
-                  "value": ""
+                  "value": "",
+                  "description": "Nenhum registro real existe ainda nesta tabela (0 linhas em 2026-08-23) — crie um via POST correspondente primeiro e cole o ID real aqui. Não preenchi com um UUID inventado."
                 }
               ],
               "query": []
@@ -752,7 +761,8 @@
               "variable": [
                 {
                   "key": "id",
-                  "value": ""
+                  "value": "",
+                  "description": "Nenhum registro real existe ainda nesta tabela (0 linhas em 2026-08-23) — crie um via POST correspondente primeiro e cole o ID real aqui. Não preenchi com um UUID inventado."
                 }
               ],
               "query": []
@@ -798,7 +808,8 @@
               "variable": [
                 {
                   "key": "id",
-                  "value": ""
+                  "value": "",
+                  "description": "Nenhum registro real existe ainda nesta tabela (0 linhas em 2026-08-23) — crie um via POST correspondente primeiro e cole o ID real aqui. Não preenchi com um UUID inventado."
                 }
               ],
               "query": []
@@ -843,22 +854,22 @@
                 {
                   "key": "page",
                   "value": "1",
-                  "disabled": true
+                  "disabled": false
                 },
                 {
                   "key": "limit",
-                  "value": "1",
-                  "disabled": true
+                  "value": "12",
+                  "disabled": false
                 },
                 {
                   "key": "search",
-                  "value": "string",
-                  "disabled": true
+                  "value": "jordan",
+                  "disabled": false
                 },
                 {
                   "key": "isActive",
                   "value": "true",
-                  "disabled": true
+                  "disabled": false
                 }
               ]
             }
@@ -926,7 +937,7 @@
               "variable": [
                 {
                   "key": "id",
-                  "value": ""
+                  "value": "0b078db2-4232-4d26-91b4-5a46a3bcab78"
                 }
               ],
               "query": []
@@ -957,7 +968,7 @@
               "variable": [
                 {
                   "key": "id",
-                  "value": ""
+                  "value": "0b078db2-4232-4d26-91b4-5a46a3bcab78"
                 }
               ],
               "query": []
@@ -993,7 +1004,7 @@
               "variable": [
                 {
                   "key": "id",
-                  "value": ""
+                  "value": "0b078db2-4232-4d26-91b4-5a46a3bcab78"
                 }
               ],
               "query": []
@@ -1039,7 +1050,7 @@
               "variable": [
                 {
                   "key": "id",
-                  "value": ""
+                  "value": "0b078db2-4232-4d26-91b4-5a46a3bcab78"
                 }
               ],
               "query": []
@@ -1084,27 +1095,27 @@
                 {
                   "key": "page",
                   "value": "1",
-                  "disabled": true
+                  "disabled": false
                 },
                 {
                   "key": "limit",
-                  "value": "1",
-                  "disabled": true
+                  "value": "12",
+                  "disabled": false
                 },
                 {
                   "key": "parentId",
-                  "value": "00000000-0000-0000-0000-000000000000",
-                  "disabled": true
+                  "value": "8bc65a50-607c-4707-83c5-995ce8e5f289",
+                  "disabled": false
                 },
                 {
                   "key": "search",
-                  "value": "string",
-                  "disabled": true
+                  "value": "jordan",
+                  "disabled": false
                 },
                 {
                   "key": "isActive",
                   "value": "true",
-                  "disabled": true
+                  "disabled": false
                 }
               ]
             }
@@ -1172,7 +1183,7 @@
               "variable": [
                 {
                   "key": "id",
-                  "value": ""
+                  "value": "cef20acb-f27c-4b6f-8d4e-c23d5beb95d0"
                 }
               ],
               "query": []
@@ -1203,7 +1214,7 @@
               "variable": [
                 {
                   "key": "id",
-                  "value": ""
+                  "value": "cef20acb-f27c-4b6f-8d4e-c23d5beb95d0"
                 }
               ],
               "query": []
@@ -1239,7 +1250,7 @@
               "variable": [
                 {
                   "key": "id",
-                  "value": ""
+                  "value": "cef20acb-f27c-4b6f-8d4e-c23d5beb95d0"
                 }
               ],
               "query": []
@@ -1285,7 +1296,7 @@
               "variable": [
                 {
                   "key": "id",
-                  "value": ""
+                  "value": "cef20acb-f27c-4b6f-8d4e-c23d5beb95d0"
                 }
               ],
               "query": []
@@ -1331,7 +1342,7 @@
               "variable": [
                 {
                   "key": "id",
-                  "value": ""
+                  "value": "cef20acb-f27c-4b6f-8d4e-c23d5beb95d0"
                 }
               ],
               "query": []
@@ -1376,27 +1387,27 @@
                 {
                   "key": "page",
                   "value": "1",
-                  "disabled": true
+                  "disabled": false
                 },
                 {
                   "key": "limit",
-                  "value": "1",
-                  "disabled": true
+                  "value": "12",
+                  "disabled": false
                 },
                 {
                   "key": "isActive",
                   "value": "true",
-                  "disabled": true
+                  "disabled": false
                 },
                 {
                   "key": "search",
-                  "value": "string",
-                  "disabled": true
+                  "value": "jordan",
+                  "disabled": false
                 },
                 {
                   "key": "cursor",
-                  "value": "00000000-0000-0000-0000-000000000000",
-                  "disabled": true
+                  "value": "",
+                  "disabled": false
                 }
               ]
             }
@@ -1426,7 +1437,7 @@
               "variable": [
                 {
                   "key": "id",
-                  "value": ""
+                  "value": "5ab66f66-539c-48d2-8856-17b7e176e715"
                 }
               ],
               "query": []
@@ -1462,7 +1473,7 @@
               "variable": [
                 {
                   "key": "id",
-                  "value": ""
+                  "value": "5ab66f66-539c-48d2-8856-17b7e176e715"
                 }
               ],
               "query": []
@@ -1508,7 +1519,7 @@
               "variable": [
                 {
                   "key": "id",
-                  "value": ""
+                  "value": "5ab66f66-539c-48d2-8856-17b7e176e715"
                 }
               ],
               "query": []
@@ -1549,7 +1560,7 @@
               "variable": [
                 {
                   "key": "id",
-                  "value": ""
+                  "value": "5ab66f66-539c-48d2-8856-17b7e176e715"
                 }
               ],
               "query": []
@@ -1581,27 +1592,27 @@
                 {
                   "key": "page",
                   "value": "1",
-                  "disabled": true
+                  "disabled": false
                 },
                 {
                   "key": "limit",
-                  "value": "1",
-                  "disabled": true
+                  "value": "12",
+                  "disabled": false
                 },
                 {
                   "key": "isActive",
                   "value": "true",
-                  "disabled": true
+                  "disabled": false
                 },
                 {
                   "key": "search",
-                  "value": "string",
-                  "disabled": true
+                  "value": "jordan",
+                  "disabled": false
                 },
                 {
                   "key": "cursor",
-                  "value": "00000000-0000-0000-0000-000000000000",
-                  "disabled": true
+                  "value": "",
+                  "disabled": false
                 }
               ]
             }
@@ -1632,27 +1643,27 @@
                 {
                   "key": "page",
                   "value": "1",
-                  "disabled": true
+                  "disabled": false
                 },
                 {
                   "key": "limit",
-                  "value": "1",
-                  "disabled": true
+                  "value": "12",
+                  "disabled": false
                 },
                 {
                   "key": "isActive",
                   "value": "true",
-                  "disabled": true
+                  "disabled": false
                 },
                 {
                   "key": "search",
-                  "value": "string",
-                  "disabled": true
+                  "value": "jordan",
+                  "disabled": false
                 },
                 {
                   "key": "cursor",
-                  "value": "00000000-0000-0000-0000-000000000000",
-                  "disabled": true
+                  "value": "",
+                  "disabled": false
                 }
               ]
             }
@@ -1687,12 +1698,12 @@
                 {
                   "key": "isActive",
                   "value": "true",
-                  "disabled": true
+                  "disabled": false
                 },
                 {
                   "key": "scope",
-                  "value": "<facet_scope>",
-                  "disabled": true
+                  "value": "product",
+                  "disabled": false
                 }
               ]
             }
@@ -1766,7 +1777,7 @@
               "variable": [
                 {
                   "key": "facetId",
-                  "value": ""
+                  "value": "4b568c2f-5d22-44e7-8502-2611a334de4e"
                 }
               ],
               "query": []
@@ -1808,11 +1819,11 @@
               "variable": [
                 {
                   "key": "facetId",
-                  "value": ""
+                  "value": "4b568c2f-5d22-44e7-8502-2611a334de4e"
                 },
                 {
                   "key": "id",
-                  "value": ""
+                  "value": "0e1cbc1c-42cd-433a-aa04-4dd0a2d4a8be"
                 }
               ],
               "query": []
@@ -1850,11 +1861,11 @@
               "variable": [
                 {
                   "key": "facetId",
-                  "value": ""
+                  "value": "4b568c2f-5d22-44e7-8502-2611a334de4e"
                 },
                 {
                   "key": "id",
-                  "value": ""
+                  "value": "0e1cbc1c-42cd-433a-aa04-4dd0a2d4a8be"
                 }
               ],
               "query": []
@@ -1894,7 +1905,7 @@
               "variable": [
                 {
                   "key": "id",
-                  "value": ""
+                  "value": "4b568c2f-5d22-44e7-8502-2611a334de4e"
                 }
               ],
               "query": []
@@ -1925,7 +1936,7 @@
               "variable": [
                 {
                   "key": "id",
-                  "value": ""
+                  "value": "4b568c2f-5d22-44e7-8502-2611a334de4e"
                 }
               ],
               "query": []
@@ -1961,7 +1972,7 @@
               "variable": [
                 {
                   "key": "id",
-                  "value": ""
+                  "value": "4b568c2f-5d22-44e7-8502-2611a334de4e"
                 }
               ],
               "query": []
@@ -2167,7 +2178,8 @@
               "variable": [
                 {
                   "key": "id",
-                  "value": ""
+                  "value": "",
+                  "description": "Nenhum registro real existe ainda nesta tabela (0 linhas em 2026-08-23) — crie um via POST correspondente primeiro e cole o ID real aqui. Não preenchi com um UUID inventado."
                 }
               ],
               "query": []
@@ -2205,7 +2217,8 @@
               "variable": [
                 {
                   "key": "id",
-                  "value": ""
+                  "value": "",
+                  "description": "Nenhum registro real existe ainda nesta tabela (0 linhas em 2026-08-23) — crie um via POST correspondente primeiro e cole o ID real aqui. Não preenchi com um UUID inventado."
                 }
               ],
               "query": []
@@ -2245,8 +2258,8 @@
               "query": [
                 {
                   "key": "section",
-                  "value": "string",
-                  "disabled": true
+                  "value": "featured",
+                  "disabled": false
                 }
               ]
             }
@@ -2316,7 +2329,8 @@
               "variable": [
                 {
                   "key": "id",
-                  "value": ""
+                  "value": "",
+                  "description": "Nenhum registro real existe ainda nesta tabela (0 linhas em 2026-08-23) — crie um via POST correspondente primeiro e cole o ID real aqui. Não preenchi com um UUID inventado."
                 }
               ],
               "query": []
@@ -2353,7 +2367,8 @@
               "variable": [
                 {
                   "key": "id",
-                  "value": ""
+                  "value": "",
+                  "description": "Nenhum registro real existe ainda nesta tabela (0 linhas em 2026-08-23) — crie um via POST correspondente primeiro e cole o ID real aqui. Não preenchi com um UUID inventado."
                 }
               ],
               "query": []
@@ -2397,33 +2412,33 @@
               "query": [
                 {
                   "key": "email",
-                  "value": "user@example.com",
-                  "disabled": true
+                  "value": "teste.1786299873@stockzy-test.com",
+                  "disabled": false
                 },
                 {
                   "key": "ip",
-                  "value": "string",
-                  "disabled": true
+                  "value": "127.0.0.1",
+                  "disabled": false
                 },
                 {
                   "key": "from",
                   "value": "2026-01-01T00:00:00.000Z",
-                  "disabled": true
+                  "disabled": false
                 },
                 {
                   "key": "to",
-                  "value": "2026-01-01T00:00:00.000Z",
-                  "disabled": true
+                  "value": "2026-08-23T23:59:59.000Z",
+                  "disabled": false
                 },
                 {
                   "key": "limit",
-                  "value": "1",
-                  "disabled": true
+                  "value": "12",
+                  "disabled": false
                 },
                 {
                   "key": "cursor",
-                  "value": "00000000-0000-0000-0000-000000000000",
-                  "disabled": true
+                  "value": "",
+                  "disabled": false
                 }
               ]
             }
@@ -2458,18 +2473,18 @@
               "query": [
                 {
                   "key": "page",
-                  "value": "string",
-                  "disabled": true
+                  "value": "1",
+                  "disabled": false
                 },
                 {
                   "key": "limit",
-                  "value": "string",
-                  "disabled": true
+                  "value": "12",
+                  "disabled": false
                 },
                 {
                   "key": "activeOnly",
-                  "value": "string",
-                  "disabled": true
+                  "value": "true",
+                  "disabled": false
                 }
               ]
             }
@@ -2500,7 +2515,8 @@
               "variable": [
                 {
                   "key": "id",
-                  "value": ""
+                  "value": "",
+                  "description": "Nenhum registro real existe ainda nesta tabela (0 linhas em 2026-08-23) — crie um via POST correspondente primeiro e cole o ID real aqui. Não preenchi com um UUID inventado."
                 }
               ],
               "query": []
@@ -2532,10 +2548,133 @@
               "query": [
                 {
                   "key": "activeOnly",
-                  "value": "string",
-                  "disabled": true
+                  "value": "true",
+                  "disabled": false
                 }
               ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "admin-offers",
+      "item": [
+        {
+          "name": "GET /admin/offers",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/admin/offers",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "admin",
+                "offers"
+              ],
+              "query": []
+            }
+          }
+        },
+        {
+          "name": "PATCH /admin/offers/:id/accept",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/admin/offers/{{id}}/accept",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "admin",
+                "offers",
+                "{{id}}",
+                "accept"
+              ],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "",
+                  "description": "A tabela 'offers' (feature Make Offer) ainda não existe no banco real — rode a migration antes de usar este endpoint. Não preenchi com um UUID inventado."
+                }
+              ],
+              "query": []
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "PATCH /admin/offers/:id/reject",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/admin/offers/{{id}}/reject",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "admin",
+                "offers",
+                "{{id}}",
+                "reject"
+              ],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "",
+                  "description": "A tabela 'offers' (feature Make Offer) ainda não existe no banco real — rode a migration antes de usar este endpoint. Não preenchi com um UUID inventado."
+                }
+              ],
+              "query": []
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"reason\": \"below_minimum\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
             }
           }
         }
@@ -2568,27 +2707,27 @@
                 {
                   "key": "page",
                   "value": "1",
-                  "disabled": true
+                  "disabled": false
                 },
                 {
                   "key": "limit",
-                  "value": "1",
-                  "disabled": true
+                  "value": "12",
+                  "disabled": false
                 },
                 {
                   "key": "customerId",
-                  "value": "00000000-0000-0000-0000-000000000000",
-                  "disabled": true
+                  "value": "5ab66f66-539c-48d2-8856-17b7e176e715",
+                  "disabled": false
                 },
                 {
                   "key": "status",
-                  "value": "<order_status>",
-                  "disabled": true
+                  "value": "pending",
+                  "disabled": false
                 },
                 {
                   "key": "cursor",
-                  "value": "00000000-0000-0000-0000-000000000000",
-                  "disabled": true
+                  "value": "",
+                  "disabled": false
                 }
               ]
             }
@@ -2656,7 +2795,8 @@
               "variable": [
                 {
                   "key": "id",
-                  "value": ""
+                  "value": "",
+                  "description": "Nenhum registro real existe ainda nesta tabela (0 linhas em 2026-08-23) — crie um via POST correspondente primeiro e cole o ID real aqui. Não preenchi com um UUID inventado."
                 }
               ],
               "query": []
@@ -2687,7 +2827,8 @@
               "variable": [
                 {
                   "key": "id",
-                  "value": ""
+                  "value": "",
+                  "description": "Nenhum registro real existe ainda nesta tabela (0 linhas em 2026-08-23) — crie um via POST correspondente primeiro e cole o ID real aqui. Não preenchi com um UUID inventado."
                 }
               ],
               "query": []
@@ -2723,7 +2864,8 @@
               "variable": [
                 {
                   "key": "id",
-                  "value": ""
+                  "value": "",
+                  "description": "Nenhum registro real existe ainda nesta tabela (0 linhas em 2026-08-23) — crie um via POST correspondente primeiro e cole o ID real aqui. Não preenchi com um UUID inventado."
                 }
               ],
               "query": []
@@ -2769,7 +2911,8 @@
               "variable": [
                 {
                   "key": "id",
-                  "value": ""
+                  "value": "",
+                  "description": "Nenhum registro real existe ainda nesta tabela (0 linhas em 2026-08-23) — crie um via POST correspondente primeiro e cole o ID real aqui. Não preenchi com um UUID inventado."
                 }
               ],
               "query": []
@@ -2815,7 +2958,8 @@
               "variable": [
                 {
                   "key": "id",
-                  "value": ""
+                  "value": "",
+                  "description": "Nenhum registro real existe ainda nesta tabela (0 linhas em 2026-08-23) — crie um via POST correspondente primeiro e cole o ID real aqui. Não preenchi com um UUID inventado."
                 }
               ],
               "query": []
@@ -2899,33 +3043,34 @@
               "query": [
                 {
                   "key": "status",
-                  "value": "<payment_status>",
-                  "disabled": true
+                  "value": "pending",
+                  "disabled": false
                 },
                 {
                   "key": "orderId",
-                  "value": "00000000-0000-0000-0000-000000000000",
-                  "disabled": true
+                  "value": "",
+                  "disabled": true,
+                  "description": "Nenhum registro real existe ainda neste recurso — não preenchi com um ID inventado."
                 },
                 {
                   "key": "customerId",
-                  "value": "00000000-0000-0000-0000-000000000000",
-                  "disabled": true
+                  "value": "5ab66f66-539c-48d2-8856-17b7e176e715",
+                  "disabled": false
                 },
                 {
                   "key": "cursor",
-                  "value": "string",
-                  "disabled": true
+                  "value": "",
+                  "disabled": false
                 },
                 {
                   "key": "page",
-                  "value": "string",
-                  "disabled": true
+                  "value": "1",
+                  "disabled": false
                 },
                 {
                   "key": "limit",
-                  "value": "string",
-                  "disabled": true
+                  "value": "12",
+                  "disabled": false
                 }
               ]
             }
@@ -2955,7 +3100,8 @@
               "variable": [
                 {
                   "key": "id",
-                  "value": ""
+                  "value": "",
+                  "description": "Nenhum registro real existe ainda nesta tabela (0 linhas em 2026-08-23) — crie um via POST correspondente primeiro e cole o ID real aqui. Não preenchi com um UUID inventado."
                 }
               ],
               "query": []
@@ -2991,62 +3137,62 @@
                 {
                   "key": "page",
                   "value": "1",
-                  "disabled": true
+                  "disabled": false
                 },
                 {
                   "key": "limit",
-                  "value": "1",
-                  "disabled": true
+                  "value": "12",
+                  "disabled": false
                 },
                 {
                   "key": "search",
-                  "value": "string",
-                  "disabled": true
+                  "value": "jordan",
+                  "disabled": false
                 },
                 {
                   "key": "status",
-                  "value": "<product_status>",
-                  "disabled": true
+                  "value": "draft",
+                  "disabled": false
                 },
                 {
                   "key": "featured",
                   "value": "true",
-                  "disabled": true
+                  "disabled": false
                 },
                 {
                   "key": "categoryId",
-                  "value": "00000000-0000-0000-0000-000000000000",
-                  "disabled": true
+                  "value": "8bc65a50-607c-4707-83c5-995ce8e5f289",
+                  "disabled": false
                 },
                 {
                   "key": "minPrice",
-                  "value": "99.99",
-                  "disabled": true
+                  "value": "0",
+                  "disabled": false
                 },
                 {
                   "key": "maxPrice",
-                  "value": "99.99",
-                  "disabled": true
+                  "value": "500",
+                  "disabled": false
                 },
                 {
                   "key": "sort",
                   "value": "featured",
-                  "disabled": true
+                  "disabled": false
                 },
                 {
                   "key": "inStock",
                   "value": "true",
-                  "disabled": true
+                  "disabled": false
                 },
                 {
                   "key": "belowRetail",
                   "value": "true",
-                  "disabled": true
+                  "disabled": false
                 },
                 {
                   "key": "facets",
                   "value": "color:black;gender:men",
-                  "disabled": true
+                  "disabled": false
                 }
               ]
             }
@@ -3114,7 +3260,7 @@
               "variable": [
                 {
                   "key": "id",
-                  "value": ""
+                  "value": "a6f78187-8b1e-441e-8175-fd44774ad8fc"
                 }
               ],
               "query": []
@@ -3145,69 +3291,69 @@
               "variable": [
                 {
                   "key": "id",
-                  "value": ""
+                  "value": "a6f78187-8b1e-441e-8175-fd44774ad8fc"
                 }
               ],
               "query": [
                 {
                   "key": "page",
                   "value": "1",
-                  "disabled": true
+                  "disabled": false
                 },
                 {
                   "key": "limit",
-                  "value": "1",
-                  "disabled": true
+                  "value": "12",
+                  "disabled": false
                 },
                 {
                   "key": "search",
-                  "value": "string",
-                  "disabled": true
+                  "value": "jordan",
+                  "disabled": false
                 },
                 {
                   "key": "status",
-                  "value": "<product_status>",
-                  "disabled": true
+                  "value": "draft",
+                  "disabled": false
                 },
                 {
                   "key": "featured",
                   "value": "true",
-                  "disabled": true
+                  "disabled": false
                 },
                 {
                   "key": "categoryId",
-                  "value": "00000000-0000-0000-0000-000000000000",
-                  "disabled": true
+                  "value": "8bc65a50-607c-4707-83c5-995ce8e5f289",
+                  "disabled": false
                 },
                 {
                   "key": "minPrice",
-                  "value": "99.99",
-                  "disabled": true
+                  "value": "0",
+                  "disabled": false
                 },
                 {
                   "key": "maxPrice",
-                  "value": "99.99",
-                  "disabled": true
+                  "value": "500",
+                  "disabled": false
                 },
                 {
                   "key": "sort",
                   "value": "featured",
-                  "disabled": true
+                  "disabled": false
                 },
                 {
                   "key": "inStock",
                   "value": "true",
-                  "disabled": true
+                  "disabled": false
                 },
                 {
                   "key": "belowRetail",
                   "value": "true",
-                  "disabled": true
+                  "disabled": false
                 },
                 {
                   "key": "facets",
                   "value": "color:black;gender:men",
-                  "disabled": true
+                  "disabled": false
                 }
               ]
             }
@@ -3242,7 +3388,7 @@
               "variable": [
                 {
                   "key": "id",
-                  "value": ""
+                  "value": "a6f78187-8b1e-441e-8175-fd44774ad8fc"
                 }
               ],
               "query": []
@@ -3288,7 +3434,7 @@
               "variable": [
                 {
                   "key": "id",
-                  "value": ""
+                  "value": "a6f78187-8b1e-441e-8175-fd44774ad8fc"
                 }
               ],
               "query": []
@@ -3334,7 +3480,7 @@
               "variable": [
                 {
                   "key": "id",
-                  "value": ""
+                  "value": "a6f78187-8b1e-441e-8175-fd44774ad8fc"
                 }
               ],
               "query": []
@@ -3375,7 +3521,7 @@
               "variable": [
                 {
                   "key": "id",
-                  "value": ""
+                  "value": "a6f78187-8b1e-441e-8175-fd44774ad8fc"
                 }
               ],
               "query": []
@@ -3452,7 +3598,7 @@
               "variable": [
                 {
                   "key": "id",
-                  "value": ""
+                  "value": "20a2318e-aab3-4f84-b88c-6966bd4cfaac"
                 }
               ],
               "query": []
@@ -3497,32 +3643,33 @@
                 {
                   "key": "page",
                   "value": "1",
-                  "disabled": true
+                  "disabled": false
                 },
                 {
                   "key": "limit",
-                  "value": "1",
-                  "disabled": true
+                  "value": "12",
+                  "disabled": false
                 },
                 {
                   "key": "isActive",
                   "value": "true",
-                  "disabled": true
+                  "disabled": false
                 },
                 {
                   "key": "search",
-                  "value": "string",
-                  "disabled": true
+                  "value": "jordan",
+                  "disabled": false
                 },
                 {
                   "key": "code",
-                  "value": "ABC",
-                  "disabled": true
+                  "value": "",
+                  "disabled": true,
+                  "description": "Nenhum registro real existe ainda neste recurso — não preenchi com um ID inventado."
                 },
                 {
                   "key": "cursor",
-                  "value": "00000000-0000-0000-0000-000000000000",
-                  "disabled": true
+                  "value": "",
+                  "disabled": false
                 }
               ]
             }
@@ -3590,7 +3737,8 @@
               "variable": [
                 {
                   "key": "id",
-                  "value": ""
+                  "value": "",
+                  "description": "Nenhum registro real existe ainda nesta tabela (0 linhas em 2026-08-23) — crie um via POST correspondente primeiro e cole o ID real aqui. Não preenchi com um UUID inventado."
                 }
               ],
               "query": []
@@ -3626,7 +3774,8 @@
               "variable": [
                 {
                   "key": "id",
-                  "value": ""
+                  "value": "",
+                  "description": "Nenhum registro real existe ainda nesta tabela (0 linhas em 2026-08-23) — crie um via POST correspondente primeiro e cole o ID real aqui. Não preenchi com um UUID inventado."
                 }
               ],
               "query": []
@@ -3672,7 +3821,8 @@
               "variable": [
                 {
                   "key": "id",
-                  "value": ""
+                  "value": "",
+                  "description": "Nenhum registro real existe ainda nesta tabela (0 linhas em 2026-08-23) — crie um via POST correspondente primeiro e cole o ID real aqui. Não preenchi com um UUID inventado."
                 }
               ],
               "query": []
@@ -3712,27 +3862,27 @@
                 {
                   "key": "page",
                   "value": "1",
-                  "disabled": true
+                  "disabled": false
                 },
                 {
                   "key": "limit",
-                  "value": "1",
-                  "disabled": true
+                  "value": "12",
+                  "disabled": false
                 },
                 {
                   "key": "customerId",
-                  "value": "00000000-0000-0000-0000-000000000000",
-                  "disabled": true
+                  "value": "5ab66f66-539c-48d2-8856-17b7e176e715",
+                  "disabled": false
                 },
                 {
                   "key": "status",
-                  "value": "<order_status>",
-                  "disabled": true
+                  "value": "pending",
+                  "disabled": false
                 },
                 {
                   "key": "cursor",
-                  "value": "00000000-0000-0000-0000-000000000000",
-                  "disabled": true
+                  "value": "",
+                  "disabled": false
                 }
               ]
             }
@@ -3757,7 +3907,8 @@
               "variable": [
                 {
                   "key": "id",
-                  "value": ""
+                  "value": "",
+                  "description": "Nenhum registro real existe ainda nesta tabela (0 linhas em 2026-08-23) — crie um via POST correspondente primeiro e cole o ID real aqui. Não preenchi com um UUID inventado."
                 }
               ],
               "query": []
@@ -3812,32 +3963,34 @@
                 {
                   "key": "page",
                   "value": "1",
-                  "disabled": true
+                  "disabled": false
                 },
                 {
                   "key": "limit",
-                  "value": "1",
-                  "disabled": true
+                  "value": "12",
+                  "disabled": false
                 },
                 {
                   "key": "orderId",
-                  "value": "00000000-0000-0000-0000-000000000000",
-                  "disabled": true
+                  "value": "",
+                  "disabled": true,
+                  "description": "Nenhum registro real existe ainda neste recurso — não preenchi com um ID inventado."
                 },
                 {
                   "key": "status",
-                  "value": "<shipment_status>",
-                  "disabled": true
+                  "value": "pending",
+                  "disabled": false
                 },
                 {
                   "key": "trackingNumber",
-                  "value": "string",
-                  "disabled": true
+                  "value": "",
+                  "disabled": true,
+                  "description": "Nenhum registro real existe ainda neste recurso — não preenchi com um ID inventado."
                 },
                 {
                   "key": "cursor",
-                  "value": "00000000-0000-0000-0000-000000000000",
-                  "disabled": true
+                  "value": "",
+                  "disabled": false
                 }
               ]
             }
@@ -3905,7 +4058,8 @@
               "variable": [
                 {
                   "key": "id",
-                  "value": ""
+                  "value": "",
+                  "description": "Nenhum registro real existe ainda nesta tabela (0 linhas em 2026-08-23) — crie um via POST correspondente primeiro e cole o ID real aqui. Não preenchi com um UUID inventado."
                 }
               ],
               "query": []
@@ -3941,7 +4095,8 @@
               "variable": [
                 {
                   "key": "id",
-                  "value": ""
+                  "value": "",
+                  "description": "Nenhum registro real existe ainda nesta tabela (0 linhas em 2026-08-23) — crie um via POST correspondente primeiro e cole o ID real aqui. Não preenchi com um UUID inventado."
                 }
               ],
               "query": []
@@ -3987,7 +4142,8 @@
               "variable": [
                 {
                   "key": "id",
-                  "value": ""
+                  "value": "",
+                  "description": "Nenhum registro real existe ainda nesta tabela (0 linhas em 2026-08-23) — crie um via POST correspondente primeiro e cole o ID real aqui. Não preenchi com um UUID inventado."
                 }
               ],
               "query": []
@@ -4032,27 +4188,27 @@
                 {
                   "key": "page",
                   "value": "1",
-                  "disabled": true
+                  "disabled": false
                 },
                 {
                   "key": "limit",
-                  "value": "1",
-                  "disabled": true
+                  "value": "12",
+                  "disabled": false
                 },
                 {
                   "key": "role",
-                  "value": "<user_role>",
-                  "disabled": true
+                  "value": "admin",
+                  "disabled": false
                 },
                 {
                   "key": "isActive",
                   "value": "true",
-                  "disabled": true
+                  "disabled": false
                 },
                 {
                   "key": "search",
-                  "value": "string",
-                  "disabled": true
+                  "value": "jordan",
+                  "disabled": false
                 }
               ]
             }
@@ -4120,7 +4276,8 @@
               "variable": [
                 {
                   "key": "id",
-                  "value": ""
+                  "value": "",
+                  "description": "Nenhum registro real existe ainda nesta tabela (0 linhas em 2026-08-23) — crie um via POST correspondente primeiro e cole o ID real aqui. Não preenchi com um UUID inventado."
                 }
               ],
               "query": []
@@ -4151,7 +4308,8 @@
               "variable": [
                 {
                   "key": "id",
-                  "value": ""
+                  "value": "",
+                  "description": "Nenhum registro real existe ainda nesta tabela (0 linhas em 2026-08-23) — crie um via POST correspondente primeiro e cole o ID real aqui. Não preenchi com um UUID inventado."
                 }
               ],
               "query": []
@@ -4187,7 +4345,8 @@
               "variable": [
                 {
                   "key": "id",
-                  "value": ""
+                  "value": "",
+                  "description": "Nenhum registro real existe ainda nesta tabela (0 linhas em 2026-08-23) — crie um via POST correspondente primeiro e cole o ID real aqui. Não preenchi com um UUID inventado."
                 }
               ],
               "query": []
@@ -4233,7 +4392,8 @@
               "variable": [
                 {
                   "key": "id",
-                  "value": ""
+                  "value": "",
+                  "description": "Nenhum registro real existe ainda nesta tabela (0 linhas em 2026-08-23) — crie um via POST correspondente primeiro e cole o ID real aqui. Não preenchi com um UUID inventado."
                 }
               ],
               "query": []
@@ -4271,27 +4431,27 @@
                 {
                   "key": "page",
                   "value": "1",
-                  "disabled": true
+                  "disabled": false
                 },
                 {
                   "key": "limit",
-                  "value": "1",
-                  "disabled": true
+                  "value": "12",
+                  "disabled": false
                 },
                 {
                   "key": "isActive",
                   "value": "true",
-                  "disabled": true
+                  "disabled": false
                 },
                 {
                   "key": "cursor",
-                  "value": "00000000-0000-0000-0000-000000000000",
-                  "disabled": true
+                  "value": "",
+                  "disabled": false
                 },
                 {
                   "key": "locale",
                   "value": "pt",
-                  "disabled": true
+                  "disabled": false
                 }
               ]
             }
@@ -4319,32 +4479,32 @@
                 {
                   "key": "page",
                   "value": "1",
-                  "disabled": true
+                  "disabled": false
                 },
                 {
                   "key": "limit",
-                  "value": "1",
-                  "disabled": true
+                  "value": "12",
+                  "disabled": false
                 },
                 {
                   "key": "isActive",
                   "value": "true",
-                  "disabled": true
+                  "disabled": false
                 },
                 {
                   "key": "active",
                   "value": "true",
-                  "disabled": true
+                  "disabled": false
                 },
                 {
                   "key": "cursor",
-                  "value": "00000000-0000-0000-0000-000000000000",
-                  "disabled": true
+                  "value": "",
+                  "disabled": false
                 },
                 {
                   "key": "context",
-                  "value": "string",
-                  "disabled": true
+                  "value": "homepage",
+                  "disabled": false
                 }
               ]
             }
@@ -4440,7 +4600,7 @@
               "variable": [
                 {
                   "key": "variantId",
-                  "value": ""
+                  "value": "20a2318e-aab3-4f84-b88c-6966bd4cfaac"
                 }
               ],
               "query": []
@@ -4471,7 +4631,7 @@
               "variable": [
                 {
                   "key": "variantId",
-                  "value": ""
+                  "value": "20a2318e-aab3-4f84-b88c-6966bd4cfaac"
                 }
               ],
               "query": []
@@ -4510,62 +4670,62 @@
                 {
                   "key": "page",
                   "value": "1",
-                  "disabled": true
+                  "disabled": false
                 },
                 {
                   "key": "limit",
-                  "value": "1",
-                  "disabled": true
+                  "value": "12",
+                  "disabled": false
                 },
                 {
                   "key": "search",
-                  "value": "string",
-                  "disabled": true
+                  "value": "jordan",
+                  "disabled": false
                 },
                 {
                   "key": "status",
-                  "value": "<product_status>",
-                  "disabled": true
+                  "value": "draft",
+                  "disabled": false
                 },
                 {
                   "key": "featured",
                   "value": "true",
-                  "disabled": true
+                  "disabled": false
                 },
                 {
                   "key": "categoryId",
-                  "value": "00000000-0000-0000-0000-000000000000",
-                  "disabled": true
+                  "value": "8bc65a50-607c-4707-83c5-995ce8e5f289",
+                  "disabled": false
                 },
                 {
                   "key": "minPrice",
-                  "value": "99.99",
-                  "disabled": true
+                  "value": "0",
+                  "disabled": false
                 },
                 {
                   "key": "maxPrice",
-                  "value": "99.99",
-                  "disabled": true
+                  "value": "500",
+                  "disabled": false
                 },
                 {
                   "key": "sort",
                   "value": "featured",
-                  "disabled": true
+                  "disabled": false
                 },
                 {
                   "key": "inStock",
                   "value": "true",
-                  "disabled": true
+                  "disabled": false
                 },
                 {
                   "key": "belowRetail",
                   "value": "true",
-                  "disabled": true
+                  "disabled": false
                 },
                 {
                   "key": "facets",
                   "value": "color:black;gender:men",
-                  "disabled": true
+                  "disabled": false
                 }
               ]
             }
@@ -4589,61 +4749,62 @@
                 {
                   "key": "page",
                   "value": "1",
-                  "disabled": true
+                  "disabled": false
                 },
                 {
                   "key": "limit",
-                  "value": "1",
-                  "disabled": true
+                  "value": "12",
+                  "disabled": false
                 },
                 {
                   "key": "search",
-                  "value": "string",
-                  "disabled": true
+                  "value": "jordan",
+                  "disabled": false
                 },
                 {
                   "key": "status",
-                  "value": "<product_status>",
-                  "disabled": true
+                  "value": "draft",
+                  "disabled": false
                 },
                 {
                   "key": "featured",
                   "value": "true",
-                  "disabled": true
+                  "disabled": false
                 },
                 {
                   "key": "categoryId",
-                  "value": "00000000-0000-0000-0000-000000000000",
-                  "disabled": true
+                  "value": "8bc65a50-607c-4707-83c5-995ce8e5f289",
+                  "disabled": false
                 },
                 {
                   "key": "minPrice",
-                  "value": "99.99",
-                  "disabled": true
+                  "value": "0",
+                  "disabled": false
                 },
                 {
                   "key": "maxPrice",
-                  "value": "99.99",
-                  "disabled": true
+                  "value": "500",
+                  "disabled": false
                 },
                 {
                   "key": "sort",
                   "value": "featured",
-                  "disabled": true
+                  "disabled": false
                 },
                 {
                   "key": "inStock",
                   "value": "true",
-                  "disabled": true
+                  "disabled": false
                 },
                 {
                   "key": "belowRetail",
                   "value": "true",
-                  "disabled": true
+                  "disabled": false
                 },
                 {
                   "key": "facets",
-                  "value": "gender:men"
+                  "value": "gender:men",
+                  "disabled": false
                 }
               ]
             }
@@ -4667,62 +4828,62 @@
                 {
                   "key": "page",
                   "value": "1",
-                  "disabled": true
+                  "disabled": false
                 },
                 {
                   "key": "limit",
-                  "value": "1",
-                  "disabled": true
+                  "value": "12",
+                  "disabled": false
                 },
                 {
                   "key": "search",
-                  "value": "string",
-                  "disabled": true
+                  "value": "jordan",
+                  "disabled": false
                 },
                 {
                   "key": "status",
-                  "value": "<product_status>",
-                  "disabled": true
+                  "value": "draft",
+                  "disabled": false
                 },
                 {
                   "key": "featured",
                   "value": "true",
-                  "disabled": true
+                  "disabled": false
                 },
                 {
                   "key": "categoryId",
-                  "value": "00000000-0000-0000-0000-000000000000",
-                  "disabled": true
+                  "value": "8bc65a50-607c-4707-83c5-995ce8e5f289",
+                  "disabled": false
                 },
                 {
                   "key": "minPrice",
-                  "value": "99.99",
-                  "disabled": true
+                  "value": "0",
+                  "disabled": false
                 },
                 {
                   "key": "maxPrice",
-                  "value": "99.99",
-                  "disabled": true
+                  "value": "500",
+                  "disabled": false
                 },
                 {
                   "key": "sort",
                   "value": "featured",
-                  "disabled": true
+                  "disabled": false
                 },
                 {
                   "key": "inStock",
                   "value": "true",
-                  "disabled": true
+                  "disabled": false
                 },
                 {
                   "key": "belowRetail",
                   "value": "true",
-                  "disabled": true
+                  "disabled": false
                 },
                 {
                   "key": "facets",
                   "value": "color:black;gender:men",
-                  "disabled": true
+                  "disabled": false
                 }
               ]
             }
@@ -4746,62 +4907,62 @@
                 {
                   "key": "page",
                   "value": "1",
-                  "disabled": true
+                  "disabled": false
                 },
                 {
                   "key": "limit",
-                  "value": "1",
-                  "disabled": true
+                  "value": "12",
+                  "disabled": false
                 },
                 {
                   "key": "search",
-                  "value": "string",
-                  "disabled": true
+                  "value": "jordan",
+                  "disabled": false
                 },
                 {
                   "key": "status",
-                  "value": "<product_status>",
-                  "disabled": true
+                  "value": "draft",
+                  "disabled": false
                 },
                 {
                   "key": "featured",
                   "value": "true",
-                  "disabled": true
+                  "disabled": false
                 },
                 {
                   "key": "categoryId",
-                  "value": "00000000-0000-0000-0000-000000000000",
-                  "disabled": true
+                  "value": "8bc65a50-607c-4707-83c5-995ce8e5f289",
+                  "disabled": false
                 },
                 {
                   "key": "minPrice",
-                  "value": "99.99",
-                  "disabled": true
+                  "value": "0",
+                  "disabled": false
                 },
                 {
                   "key": "maxPrice",
-                  "value": "99.99",
-                  "disabled": true
+                  "value": "500",
+                  "disabled": false
                 },
                 {
                   "key": "sort",
                   "value": "featured",
-                  "disabled": true
+                  "disabled": false
                 },
                 {
                   "key": "inStock",
                   "value": "true",
-                  "disabled": true
+                  "disabled": false
                 },
                 {
                   "key": "belowRetail",
                   "value": "true",
-                  "disabled": true
+                  "disabled": false
                 },
                 {
                   "key": "facets",
                   "value": "color:black;gender:men",
-                  "disabled": true
+                  "disabled": false
                 }
               ]
             }
@@ -4825,61 +4986,62 @@
                 {
                   "key": "page",
                   "value": "1",
-                  "disabled": true
+                  "disabled": false
                 },
                 {
                   "key": "limit",
-                  "value": "1",
-                  "disabled": true
+                  "value": "12",
+                  "disabled": false
                 },
                 {
                   "key": "search",
-                  "value": "string",
-                  "disabled": true
+                  "value": "jordan",
+                  "disabled": false
                 },
                 {
                   "key": "status",
-                  "value": "<product_status>",
-                  "disabled": true
+                  "value": "draft",
+                  "disabled": false
                 },
                 {
                   "key": "featured",
                   "value": "true",
-                  "disabled": true
+                  "disabled": false
                 },
                 {
                   "key": "categoryId",
-                  "value": "00000000-0000-0000-0000-000000000000",
-                  "disabled": true
+                  "value": "8bc65a50-607c-4707-83c5-995ce8e5f289",
+                  "disabled": false
                 },
                 {
                   "key": "minPrice",
-                  "value": "99.99",
-                  "disabled": true
+                  "value": "0",
+                  "disabled": false
                 },
                 {
                   "key": "maxPrice",
-                  "value": "99.99",
-                  "disabled": true
+                  "value": "500",
+                  "disabled": false
                 },
                 {
                   "key": "sort",
                   "value": "featured",
-                  "disabled": true
+                  "disabled": false
                 },
                 {
                   "key": "inStock",
                   "value": "true",
-                  "disabled": true
+                  "disabled": false
                 },
                 {
                   "key": "belowRetail",
                   "value": "true",
-                  "disabled": true
+                  "disabled": false
                 },
                 {
                   "key": "facets",
-                  "value": "color:black"
+                  "value": "color:black",
+                  "disabled": false
                 }
               ]
             }
@@ -4903,61 +5065,62 @@
                 {
                   "key": "page",
                   "value": "1",
-                  "disabled": true
+                  "disabled": false
                 },
                 {
                   "key": "limit",
-                  "value": "1",
-                  "disabled": true
+                  "value": "12",
+                  "disabled": false
                 },
                 {
                   "key": "search",
-                  "value": "string",
-                  "disabled": true
+                  "value": "jordan",
+                  "disabled": false
                 },
                 {
                   "key": "status",
-                  "value": "<product_status>",
-                  "disabled": true
+                  "value": "draft",
+                  "disabled": false
                 },
                 {
                   "key": "featured",
                   "value": "true",
-                  "disabled": true
+                  "disabled": false
                 },
                 {
                   "key": "categoryId",
-                  "value": "00000000-0000-0000-0000-000000000000",
-                  "disabled": true
+                  "value": "8bc65a50-607c-4707-83c5-995ce8e5f289",
+                  "disabled": false
                 },
                 {
                   "key": "minPrice",
-                  "value": "99.99",
-                  "disabled": true
+                  "value": "0",
+                  "disabled": false
                 },
                 {
                   "key": "maxPrice",
-                  "value": "99.99",
-                  "disabled": true
+                  "value": "500",
+                  "disabled": false
                 },
                 {
                   "key": "sort",
                   "value": "featured",
-                  "disabled": true
+                  "disabled": false
                 },
                 {
                   "key": "inStock",
                   "value": "true",
-                  "disabled": true
+                  "disabled": false
                 },
                 {
                   "key": "belowRetail",
                   "value": "true",
-                  "disabled": true
+                  "disabled": false
                 },
                 {
                   "key": "facets",
-                  "value": "gender:men"
+                  "value": "gender:men",
+                  "disabled": false
                 }
               ]
             }
@@ -4981,61 +5144,62 @@
                 {
                   "key": "page",
                   "value": "1",
-                  "disabled": true
+                  "disabled": false
                 },
                 {
                   "key": "limit",
-                  "value": "1",
-                  "disabled": true
+                  "value": "12",
+                  "disabled": false
                 },
                 {
                   "key": "search",
-                  "value": "string",
-                  "disabled": true
+                  "value": "jordan",
+                  "disabled": false
                 },
                 {
                   "key": "status",
-                  "value": "<product_status>",
-                  "disabled": true
+                  "value": "draft",
+                  "disabled": false
                 },
                 {
                   "key": "featured",
                   "value": "true",
-                  "disabled": true
+                  "disabled": false
                 },
                 {
                   "key": "categoryId",
-                  "value": "00000000-0000-0000-0000-000000000000",
-                  "disabled": true
+                  "value": "8bc65a50-607c-4707-83c5-995ce8e5f289",
+                  "disabled": false
                 },
                 {
                   "key": "minPrice",
-                  "value": "99.99",
-                  "disabled": true
+                  "value": "0",
+                  "disabled": false
                 },
                 {
                   "key": "maxPrice",
-                  "value": "99.99",
-                  "disabled": true
+                  "value": "500",
+                  "disabled": false
                 },
                 {
                   "key": "sort",
                   "value": "featured",
-                  "disabled": true
+                  "disabled": false
                 },
                 {
                   "key": "inStock",
                   "value": "true",
-                  "disabled": true
+                  "disabled": false
                 },
                 {
                   "key": "belowRetail",
                   "value": "true",
-                  "disabled": true
+                  "disabled": false
                 },
                 {
                   "key": "facets",
-                  "value": "gender:kids"
+                  "value": "gender:kids",
+                  "disabled": false
                 }
               ]
             }
@@ -5058,18 +5222,18 @@
               "query": [
                 {
                   "key": "sessionId",
-                  "value": "string",
-                  "disabled": true
+                  "value": "sess-demo-001",
+                  "disabled": false
                 },
                 {
                   "key": "customerId",
-                  "value": "00000000-0000-0000-0000-000000000000",
-                  "disabled": true
+                  "value": "5ab66f66-539c-48d2-8856-17b7e176e715",
+                  "disabled": false
                 },
                 {
                   "key": "limit",
-                  "value": "1",
-                  "disabled": true
+                  "value": "12",
+                  "disabled": false
                 }
               ]
             }
@@ -5092,18 +5256,18 @@
               "query": [
                 {
                   "key": "sessionId",
-                  "value": "string",
-                  "disabled": true
+                  "value": "sess-demo-001",
+                  "disabled": false
                 },
                 {
                   "key": "customerId",
-                  "value": "00000000-0000-0000-0000-000000000000",
-                  "disabled": true
+                  "value": "5ab66f66-539c-48d2-8856-17b7e176e715",
+                  "disabled": false
                 },
                 {
                   "key": "limit",
-                  "value": "1",
-                  "disabled": true
+                  "value": "12",
+                  "disabled": false
                 }
               ]
             }
@@ -5126,28 +5290,28 @@
               "query": [
                 {
                   "key": "limit",
-                  "value": "1",
-                  "disabled": true
+                  "value": "12",
+                  "disabled": false
                 },
                 {
                   "key": "categoryId",
-                  "value": "00000000-0000-0000-0000-000000000000",
-                  "disabled": true
+                  "value": "8bc65a50-607c-4707-83c5-995ce8e5f289",
+                  "disabled": false
                 },
                 {
                   "key": "days",
-                  "value": "0",
-                  "disabled": true
+                  "value": "30",
+                  "disabled": false
                 },
                 {
                   "key": "window",
                   "value": "7d",
-                  "disabled": true
+                  "disabled": false
                 },
                 {
                   "key": "minDiscount",
                   "value": "0",
-                  "disabled": true
+                  "disabled": false
                 }
               ]
             }
@@ -5192,7 +5356,7 @@
               "variable": [
                 {
                   "key": "id",
-                  "value": ""
+                  "value": "8bc65a50-607c-4707-83c5-995ce8e5f289"
                 }
               ],
               "query": []
@@ -5221,8 +5385,9 @@
               "query": [
                 {
                   "key": "code",
-                  "value": "ABC",
-                  "disabled": true
+                  "value": "",
+                  "disabled": true,
+                  "description": "Nenhum registro real existe ainda neste recurso — não preenchi com um ID inventado."
                 }
               ]
             }
@@ -5319,7 +5484,8 @@
               "variable": [
                 {
                   "key": "id",
-                  "value": ""
+                  "value": "",
+                  "description": "Nenhum registro real existe ainda nesta tabela (0 linhas em 2026-08-23) — crie um via POST correspondente primeiro e cole o ID real aqui. Não preenchi com um UUID inventado."
                 }
               ],
               "query": []
@@ -5355,7 +5521,8 @@
               "variable": [
                 {
                   "key": "id",
-                  "value": ""
+                  "value": "",
+                  "description": "Nenhum registro real existe ainda nesta tabela (0 linhas em 2026-08-23) — crie um via POST correspondente primeiro e cole o ID real aqui. Não preenchi com um UUID inventado."
                 }
               ],
               "query": []
@@ -5795,6 +5962,76 @@
           }
         },
         {
+          "name": "POST /customers/offers",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{customerToken}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/customers/offers",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "customers",
+                "offers"
+              ],
+              "query": []
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"variantId\": \"00000000-0000-0000-0000-000000000000\",\n  \"offeredPrice\": 99.99,\n  \"locale\": \"pt\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "GET /customers/offers/:id",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{customerToken}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/customers/offers/{{id}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "customers",
+                "offers",
+                "{{id}}"
+              ],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "",
+                  "description": "A tabela 'offers' (feature Make Offer) ainda não existe no banco real — rode a migration antes de usar este endpoint. Não preenchi com um UUID inventado."
+                }
+              ],
+              "query": []
+            }
+          }
+        },
+        {
           "name": "GET /customers/orders",
           "request": {
             "method": "GET",
@@ -5818,27 +6055,27 @@
                 {
                   "key": "page",
                   "value": "1",
-                  "disabled": true
+                  "disabled": false
                 },
                 {
                   "key": "limit",
-                  "value": "1",
-                  "disabled": true
+                  "value": "12",
+                  "disabled": false
                 },
                 {
                   "key": "customerId",
-                  "value": "00000000-0000-0000-0000-000000000000",
-                  "disabled": true
+                  "value": "5ab66f66-539c-48d2-8856-17b7e176e715",
+                  "disabled": false
                 },
                 {
                   "key": "status",
-                  "value": "<order_status>",
-                  "disabled": true
+                  "value": "pending",
+                  "disabled": false
                 },
                 {
                   "key": "cursor",
-                  "value": "00000000-0000-0000-0000-000000000000",
-                  "disabled": true
+                  "value": "",
+                  "disabled": false
                 }
               ]
             }
@@ -5906,7 +6143,8 @@
               "variable": [
                 {
                   "key": "id",
-                  "value": ""
+                  "value": "",
+                  "description": "Nenhum registro real existe ainda nesta tabela (0 linhas em 2026-08-23) — crie um via POST correspondente primeiro e cole o ID real aqui. Não preenchi com um UUID inventado."
                 }
               ],
               "query": []
@@ -5943,7 +6181,8 @@
               "variable": [
                 {
                   "key": "id",
-                  "value": ""
+                  "value": "",
+                  "description": "Nenhum registro real existe ainda nesta tabela (0 linhas em 2026-08-23) — crie um via POST correspondente primeiro e cole o ID real aqui. Não preenchi com um UUID inventado."
                 }
               ],
               "query": []
@@ -5989,7 +6228,8 @@
               "variable": [
                 {
                   "key": "id",
-                  "value": ""
+                  "value": "",
+                  "description": "Nenhum registro real existe ainda nesta tabela (0 linhas em 2026-08-23) — crie um via POST correspondente primeiro e cole o ID real aqui. Não preenchi com um UUID inventado."
                 }
               ],
               "query": []
@@ -6036,7 +6276,8 @@
               "variable": [
                 {
                   "key": "id",
-                  "value": ""
+                  "value": "",
+                  "description": "Nenhum registro real existe ainda nesta tabela (0 linhas em 2026-08-23) — crie um via POST correspondente primeiro e cole o ID real aqui. Não preenchi com um UUID inventado."
                 }
               ],
               "query": []
@@ -6077,10 +6318,50 @@
               "variable": [
                 {
                   "key": "id",
-                  "value": ""
+                  "value": "",
+                  "description": "Nenhum registro real existe ainda nesta tabela (0 linhas em 2026-08-23) — crie um via POST correspondente primeiro e cole o ID real aqui. Não preenchi com um UUID inventado."
                 }
               ],
               "query": []
+            }
+          }
+        },
+        {
+          "name": "POST /customers/orders/from-offer",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{customerToken}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/customers/orders/from-offer",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "customers",
+                "orders",
+                "from-offer"
+              ],
+              "query": []
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"offerId\": \"00000000-0000-0000-0000-000000000000\",\n  \"addressId\": \"00000000-0000-0000-0000-000000000000\",\n  \"shippingAddress\": {},\n  \"billingAddress\": {},\n  \"paymentMethod\": \"cod\",\n  \"locale\": \"pt\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
             }
           }
         },
@@ -6524,7 +6805,7 @@
               "variable": [
                 {
                   "key": "productId",
-                  "value": ""
+                  "value": "a6f78187-8b1e-441e-8175-fd44774ad8fc"
                 }
               ],
               "query": []
@@ -6562,7 +6843,7 @@
               "variable": [
                 {
                   "key": "productId",
-                  "value": ""
+                  "value": "a6f78187-8b1e-441e-8175-fd44774ad8fc"
                 }
               ],
               "query": []
@@ -6681,8 +6962,8 @@
               "query": [
                 {
                   "key": "section",
-                  "value": "string",
-                  "disabled": true
+                  "value": "featured",
+                  "disabled": false
                 }
               ]
             }
@@ -6804,14 +7085,16 @@
               "variable": [
                 {
                   "key": "id",
-                  "value": ""
+                  "value": "",
+                  "description": "Nenhum registro real existe ainda nesta tabela (0 linhas em 2026-08-23) — crie um via POST correspondente primeiro e cole o ID real aqui. Não preenchi com um UUID inventado."
                 }
               ],
               "query": [
                 {
                   "key": "token",
-                  "value": "example-token",
-                  "disabled": true
+                  "value": "",
+                  "disabled": true,
+                  "description": "Nenhum registro real existe ainda neste recurso — não preenchi com um ID inventado."
                 }
               ]
             }
@@ -6868,16 +7151,52 @@
               "variable": [
                 {
                   "key": "id",
-                  "value": ""
+                  "value": "",
+                  "description": "Nenhum registro real existe ainda nesta tabela (0 linhas em 2026-08-23) — crie um via POST correspondente primeiro e cole o ID real aqui. Não preenchi com um UUID inventado."
                 }
               ],
               "query": [
                 {
                   "key": "token",
-                  "value": "example-token",
-                  "disabled": true
+                  "value": "",
+                  "disabled": true,
+                  "description": "Nenhum registro real existe ainda neste recurso — não preenchi com um ID inventado."
                 }
               ]
+            }
+          }
+        },
+        {
+          "name": "POST /orders/guest/from-offer",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/orders/guest/from-offer",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "orders",
+                "guest",
+                "from-offer"
+              ],
+              "query": []
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"offerId\": \"00000000-0000-0000-0000-000000000000\",\n  \"phone\": \"+351912345678\",\n  \"country\": \"PT\",\n  \"locale\": \"pt\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
             }
           }
         },
@@ -6900,7 +7219,40 @@
                 {
                   "key": "country",
                   "value": "PT",
-                  "disabled": true
+                  "disabled": false
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "GET /orders/offers/:id",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/orders/offers/{{id}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "orders",
+                "offers",
+                "{{id}}"
+              ],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "",
+                  "description": "A tabela 'offers' (feature Make Offer) ainda não existe no banco real — rode a migration antes de usar este endpoint. Não preenchi com um UUID inventado."
+                }
+              ],
+              "query": [
+                {
+                  "key": "token",
+                  "value": "",
+                  "disabled": true,
+                  "description": "Nenhum registro real existe ainda neste recurso — não preenchi com um ID inventado."
                 }
               ]
             }
@@ -6967,62 +7319,62 @@
                 {
                   "key": "page",
                   "value": "1",
-                  "disabled": true
+                  "disabled": false
                 },
                 {
                   "key": "limit",
-                  "value": "1",
-                  "disabled": true
+                  "value": "12",
+                  "disabled": false
                 },
                 {
                   "key": "search",
-                  "value": "string",
-                  "disabled": true
+                  "value": "jordan",
+                  "disabled": false
                 },
                 {
                   "key": "status",
-                  "value": "<product_status>",
-                  "disabled": true
+                  "value": "draft",
+                  "disabled": false
                 },
                 {
                   "key": "featured",
                   "value": "true",
-                  "disabled": true
+                  "disabled": false
                 },
                 {
                   "key": "categoryId",
-                  "value": "00000000-0000-0000-0000-000000000000",
-                  "disabled": true
+                  "value": "8bc65a50-607c-4707-83c5-995ce8e5f289",
+                  "disabled": false
                 },
                 {
                   "key": "minPrice",
-                  "value": "99.99",
-                  "disabled": true
+                  "value": "0",
+                  "disabled": false
                 },
                 {
                   "key": "maxPrice",
-                  "value": "99.99",
-                  "disabled": true
+                  "value": "500",
+                  "disabled": false
                 },
                 {
                   "key": "sort",
                   "value": "featured",
-                  "disabled": true
+                  "disabled": false
                 },
                 {
                   "key": "inStock",
                   "value": "true",
-                  "disabled": true
+                  "disabled": false
                 },
                 {
                   "key": "belowRetail",
                   "value": "true",
-                  "disabled": true
+                  "disabled": false
                 },
                 {
                   "key": "facets",
                   "value": "color:black;gender:men",
-                  "disabled": true
+                  "disabled": false
                 }
               ]
             }
@@ -7045,62 +7397,62 @@
                 {
                   "key": "page",
                   "value": "1",
-                  "disabled": true
+                  "disabled": false
                 },
                 {
                   "key": "limit",
-                  "value": "1",
-                  "disabled": true
+                  "value": "12",
+                  "disabled": false
                 },
                 {
                   "key": "search",
-                  "value": "string",
-                  "disabled": true
+                  "value": "jordan",
+                  "disabled": false
                 },
                 {
                   "key": "status",
-                  "value": "<product_status>",
-                  "disabled": true
+                  "value": "draft",
+                  "disabled": false
                 },
                 {
                   "key": "featured",
                   "value": "true",
-                  "disabled": true
+                  "disabled": false
                 },
                 {
                   "key": "categoryId",
-                  "value": "00000000-0000-0000-0000-000000000000",
-                  "disabled": true
+                  "value": "8bc65a50-607c-4707-83c5-995ce8e5f289",
+                  "disabled": false
                 },
                 {
                   "key": "minPrice",
-                  "value": "99.99",
-                  "disabled": true
+                  "value": "0",
+                  "disabled": false
                 },
                 {
                   "key": "maxPrice",
-                  "value": "99.99",
-                  "disabled": true
+                  "value": "500",
+                  "disabled": false
                 },
                 {
                   "key": "sort",
                   "value": "featured",
-                  "disabled": true
+                  "disabled": false
                 },
                 {
                   "key": "inStock",
                   "value": "true",
-                  "disabled": true
+                  "disabled": false
                 },
                 {
                   "key": "belowRetail",
                   "value": "true",
-                  "disabled": true
+                  "disabled": false
                 },
                 {
                   "key": "facets",
                   "value": "color:black;gender:men",
-                  "disabled": true
+                  "disabled": false
                 }
               ]
             }
@@ -7123,61 +7475,62 @@
                 {
                   "key": "page",
                   "value": "1",
-                  "disabled": true
+                  "disabled": false
                 },
                 {
                   "key": "limit",
-                  "value": "1",
-                  "disabled": true
+                  "value": "12",
+                  "disabled": false
                 },
                 {
                   "key": "search",
-                  "value": "string",
-                  "disabled": true
+                  "value": "jordan",
+                  "disabled": false
                 },
                 {
                   "key": "status",
-                  "value": "<product_status>",
-                  "disabled": true
+                  "value": "draft",
+                  "disabled": false
                 },
                 {
                   "key": "featured",
                   "value": "true",
-                  "disabled": true
+                  "disabled": false
                 },
                 {
                   "key": "categoryId",
-                  "value": "00000000-0000-0000-0000-000000000000",
-                  "disabled": true
+                  "value": "8bc65a50-607c-4707-83c5-995ce8e5f289",
+                  "disabled": false
                 },
                 {
                   "key": "minPrice",
-                  "value": "99.99",
-                  "disabled": true
+                  "value": "0",
+                  "disabled": false
                 },
                 {
                   "key": "maxPrice",
-                  "value": "99.99",
-                  "disabled": true
+                  "value": "500",
+                  "disabled": false
                 },
                 {
                   "key": "sort",
                   "value": "featured",
-                  "disabled": true
+                  "disabled": false
                 },
                 {
                   "key": "inStock",
                   "value": "true",
-                  "disabled": true
+                  "disabled": false
                 },
                 {
                   "key": "belowRetail",
                   "value": "true",
-                  "disabled": true
+                  "disabled": false
                 },
                 {
                   "key": "facets",
-                  "value": "color:black"
+                  "value": "color:black",
+                  "disabled": false
                 }
               ]
             }
@@ -7200,61 +7553,62 @@
                 {
                   "key": "page",
                   "value": "1",
-                  "disabled": true
+                  "disabled": false
                 },
                 {
                   "key": "limit",
-                  "value": "1",
-                  "disabled": true
+                  "value": "12",
+                  "disabled": false
                 },
                 {
                   "key": "search",
-                  "value": "string",
-                  "disabled": true
+                  "value": "jordan",
+                  "disabled": false
                 },
                 {
                   "key": "status",
-                  "value": "<product_status>",
-                  "disabled": true
+                  "value": "draft",
+                  "disabled": false
                 },
                 {
                   "key": "featured",
                   "value": "true",
-                  "disabled": true
+                  "disabled": false
                 },
                 {
                   "key": "categoryId",
-                  "value": "00000000-0000-0000-0000-000000000000",
-                  "disabled": true
+                  "value": "8bc65a50-607c-4707-83c5-995ce8e5f289",
+                  "disabled": false
                 },
                 {
                   "key": "minPrice",
-                  "value": "99.99",
-                  "disabled": true
+                  "value": "0",
+                  "disabled": false
                 },
                 {
                   "key": "maxPrice",
-                  "value": "99.99",
-                  "disabled": true
+                  "value": "500",
+                  "disabled": false
                 },
                 {
                   "key": "sort",
                   "value": "featured",
-                  "disabled": true
+                  "disabled": false
                 },
                 {
                   "key": "inStock",
                   "value": "true",
-                  "disabled": true
+                  "disabled": false
                 },
                 {
                   "key": "belowRetail",
                   "value": "true",
-                  "disabled": true
+                  "disabled": false
                 },
                 {
                   "key": "facets",
-                  "value": "gender:kids"
+                  "value": "gender:kids",
+                  "disabled": false
                 }
               ]
             }
@@ -7277,69 +7631,69 @@
               "variable": [
                 {
                   "key": "id",
-                  "value": ""
+                  "value": "a6f78187-8b1e-441e-8175-fd44774ad8fc"
                 }
               ],
               "query": [
                 {
                   "key": "page",
                   "value": "1",
-                  "disabled": true
+                  "disabled": false
                 },
                 {
                   "key": "limit",
-                  "value": "1",
-                  "disabled": true
+                  "value": "12",
+                  "disabled": false
                 },
                 {
                   "key": "search",
-                  "value": "string",
-                  "disabled": true
+                  "value": "jordan",
+                  "disabled": false
                 },
                 {
                   "key": "status",
-                  "value": "<product_status>",
-                  "disabled": true
+                  "value": "draft",
+                  "disabled": false
                 },
                 {
                   "key": "featured",
                   "value": "true",
-                  "disabled": true
+                  "disabled": false
                 },
                 {
                   "key": "categoryId",
-                  "value": "00000000-0000-0000-0000-000000000000",
-                  "disabled": true
+                  "value": "8bc65a50-607c-4707-83c5-995ce8e5f289",
+                  "disabled": false
                 },
                 {
                   "key": "minPrice",
-                  "value": "99.99",
-                  "disabled": true
+                  "value": "0",
+                  "disabled": false
                 },
                 {
                   "key": "maxPrice",
-                  "value": "99.99",
-                  "disabled": true
+                  "value": "500",
+                  "disabled": false
                 },
                 {
                   "key": "sort",
                   "value": "featured",
-                  "disabled": true
+                  "disabled": false
                 },
                 {
                   "key": "inStock",
                   "value": "true",
-                  "disabled": true
+                  "disabled": false
                 },
                 {
                   "key": "belowRetail",
                   "value": "true",
-                  "disabled": true
+                  "disabled": false
                 },
                 {
                   "key": "facets",
                   "value": "color:black;gender:men",
-                  "disabled": true
+                  "disabled": false
                 }
               ]
             }
@@ -7363,14 +7717,14 @@
               "variable": [
                 {
                   "key": "id",
-                  "value": ""
+                  "value": "a6f78187-8b1e-441e-8175-fd44774ad8fc"
                 }
               ],
               "query": [
                 {
                   "key": "limit",
-                  "value": "1",
-                  "disabled": true
+                  "value": "12",
+                  "disabled": false
                 }
               ]
             }
@@ -7400,7 +7754,7 @@
               "variable": [
                 {
                   "key": "id",
-                  "value": ""
+                  "value": "a6f78187-8b1e-441e-8175-fd44774ad8fc"
                 }
               ],
               "query": []
@@ -7408,6 +7762,46 @@
             "body": {
               "mode": "raw",
               "raw": "{}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "POST /products/:variantId/offers",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/products/{{variantId}}/offers",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "products",
+                "{{variantId}}",
+                "offers"
+              ],
+              "variable": [
+                {
+                  "key": "variantId",
+                  "value": "20a2318e-aab3-4f84-b88c-6966bd4cfaac"
+                }
+              ],
+              "query": []
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"offeredPrice\": 99.99,\n  \"guestEmail\": \"user@example.com\",\n  \"locale\": \"pt\"\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -7433,28 +7827,28 @@
               "query": [
                 {
                   "key": "limit",
-                  "value": "1",
-                  "disabled": true
+                  "value": "12",
+                  "disabled": false
                 },
                 {
                   "key": "categoryId",
-                  "value": "00000000-0000-0000-0000-000000000000",
-                  "disabled": true
+                  "value": "8bc65a50-607c-4707-83c5-995ce8e5f289",
+                  "disabled": false
                 },
                 {
                   "key": "days",
-                  "value": "0",
-                  "disabled": true
+                  "value": "30",
+                  "disabled": false
                 },
                 {
                   "key": "window",
                   "value": "7d",
-                  "disabled": true
+                  "disabled": false
                 },
                 {
                   "key": "minDiscount",
                   "value": "0",
-                  "disabled": true
+                  "disabled": false
                 }
               ]
             }
@@ -7477,28 +7871,28 @@
               "query": [
                 {
                   "key": "limit",
-                  "value": "1",
-                  "disabled": true
+                  "value": "12",
+                  "disabled": false
                 },
                 {
                   "key": "categoryId",
-                  "value": "00000000-0000-0000-0000-000000000000",
-                  "disabled": true
+                  "value": "8bc65a50-607c-4707-83c5-995ce8e5f289",
+                  "disabled": false
                 },
                 {
                   "key": "days",
-                  "value": "0",
-                  "disabled": true
+                  "value": "30",
+                  "disabled": false
                 },
                 {
                   "key": "window",
                   "value": "7d",
-                  "disabled": true
+                  "disabled": false
                 },
                 {
                   "key": "minDiscount",
                   "value": "0",
-                  "disabled": true
+                  "disabled": false
                 }
               ]
             }
@@ -7521,28 +7915,28 @@
               "query": [
                 {
                   "key": "limit",
-                  "value": "1",
-                  "disabled": true
+                  "value": "12",
+                  "disabled": false
                 },
                 {
                   "key": "categoryId",
-                  "value": "00000000-0000-0000-0000-000000000000",
-                  "disabled": true
+                  "value": "8bc65a50-607c-4707-83c5-995ce8e5f289",
+                  "disabled": false
                 },
                 {
                   "key": "days",
-                  "value": "0",
-                  "disabled": true
+                  "value": "30",
+                  "disabled": false
                 },
                 {
                   "key": "window",
                   "value": "7d",
-                  "disabled": true
+                  "disabled": false
                 },
                 {
                   "key": "minDiscount",
                   "value": "0",
-                  "disabled": true
+                  "disabled": false
                 }
               ]
             }
@@ -7565,28 +7959,28 @@
               "query": [
                 {
                   "key": "limit",
-                  "value": "1",
-                  "disabled": true
+                  "value": "12",
+                  "disabled": false
                 },
                 {
                   "key": "categoryId",
-                  "value": "00000000-0000-0000-0000-000000000000",
-                  "disabled": true
+                  "value": "8bc65a50-607c-4707-83c5-995ce8e5f289",
+                  "disabled": false
                 },
                 {
                   "key": "days",
-                  "value": "0",
-                  "disabled": true
+                  "value": "30",
+                  "disabled": false
                 },
                 {
                   "key": "window",
                   "value": "7d",
-                  "disabled": true
+                  "disabled": false
                 },
                 {
                   "key": "minDiscount",
                   "value": "0",
-                  "disabled": true
+                  "disabled": false
                 }
               ]
             }
@@ -7610,17 +8004,17 @@
                 {
                   "key": "type",
                   "value": "daily",
-                  "disabled": true
+                  "disabled": false
                 },
                 {
                   "key": "page",
                   "value": "1",
-                  "disabled": true
+                  "disabled": false
                 },
                 {
                   "key": "limit",
-                  "value": "1",
-                  "disabled": true
+                  "value": "12",
+                  "disabled": false
                 }
               ]
             }
@@ -7644,69 +8038,69 @@
               "variable": [
                 {
                   "key": "slug",
-                  "value": ""
+                  "value": "jordan-4-retro-vivid-sulfur"
                 }
               ],
               "query": [
                 {
                   "key": "page",
                   "value": "1",
-                  "disabled": true
+                  "disabled": false
                 },
                 {
                   "key": "limit",
-                  "value": "1",
-                  "disabled": true
+                  "value": "12",
+                  "disabled": false
                 },
                 {
                   "key": "search",
-                  "value": "string",
-                  "disabled": true
+                  "value": "jordan",
+                  "disabled": false
                 },
                 {
                   "key": "status",
-                  "value": "<product_status>",
-                  "disabled": true
+                  "value": "draft",
+                  "disabled": false
                 },
                 {
                   "key": "featured",
                   "value": "true",
-                  "disabled": true
+                  "disabled": false
                 },
                 {
                   "key": "categoryId",
-                  "value": "00000000-0000-0000-0000-000000000000",
-                  "disabled": true
+                  "value": "8bc65a50-607c-4707-83c5-995ce8e5f289",
+                  "disabled": false
                 },
                 {
                   "key": "minPrice",
-                  "value": "99.99",
-                  "disabled": true
+                  "value": "0",
+                  "disabled": false
                 },
                 {
                   "key": "maxPrice",
-                  "value": "99.99",
-                  "disabled": true
+                  "value": "500",
+                  "disabled": false
                 },
                 {
                   "key": "sort",
                   "value": "featured",
-                  "disabled": true
+                  "disabled": false
                 },
                 {
                   "key": "inStock",
                   "value": "true",
-                  "disabled": true
+                  "disabled": false
                 },
                 {
                   "key": "belowRetail",
                   "value": "true",
-                  "disabled": true
+                  "disabled": false
                 },
                 {
                   "key": "facets",
                   "value": "color:black;gender:men",
-                  "disabled": true
+                  "disabled": false
                 }
               ]
             }
@@ -7754,52 +8148,52 @@
                 {
                   "key": "q",
                   "value": "air jordan",
-                  "disabled": true
+                  "disabled": false
                 },
                 {
                   "key": "page",
                   "value": "1",
-                  "disabled": true
+                  "disabled": false
                 },
                 {
                   "key": "limit",
-                  "value": "1",
-                  "disabled": true
+                  "value": "12",
+                  "disabled": false
                 },
                 {
                   "key": "sort",
                   "value": "relevance",
-                  "disabled": true
+                  "disabled": false
                 },
                 {
                   "key": "categoryId",
-                  "value": "00000000-0000-0000-0000-000000000000",
-                  "disabled": true
+                  "value": "8bc65a50-607c-4707-83c5-995ce8e5f289",
+                  "disabled": false
                 },
                 {
                   "key": "minPrice",
-                  "value": "99.99",
-                  "disabled": true
+                  "value": "0",
+                  "disabled": false
                 },
                 {
                   "key": "maxPrice",
-                  "value": "99.99",
-                  "disabled": true
+                  "value": "500",
+                  "disabled": false
                 },
                 {
                   "key": "inStock",
                   "value": "true",
-                  "disabled": true
+                  "disabled": false
                 },
                 {
                   "key": "hasDiscount",
                   "value": "true",
-                  "disabled": true
+                  "disabled": false
                 },
                 {
                   "key": "facets",
                   "value": "color:black;gender:men",
-                  "disabled": true
+                  "disabled": false
                 }
               ]
             }
@@ -7821,52 +8215,53 @@
               "query": [
                 {
                   "key": "q",
-                  "value": "air jordan"
+                  "value": "air jordan",
+                  "disabled": false
                 },
                 {
                   "key": "page",
                   "value": "1",
-                  "disabled": true
+                  "disabled": false
                 },
                 {
                   "key": "limit",
-                  "value": "1",
-                  "disabled": true
+                  "value": "12",
+                  "disabled": false
                 },
                 {
                   "key": "sort",
                   "value": "relevance",
-                  "disabled": true
+                  "disabled": false
                 },
                 {
                   "key": "categoryId",
-                  "value": "00000000-0000-0000-0000-000000000000",
-                  "disabled": true
+                  "value": "8bc65a50-607c-4707-83c5-995ce8e5f289",
+                  "disabled": false
                 },
                 {
                   "key": "minPrice",
-                  "value": "99.99",
-                  "disabled": true
+                  "value": "0",
+                  "disabled": false
                 },
                 {
                   "key": "maxPrice",
-                  "value": "99.99",
-                  "disabled": true
+                  "value": "500",
+                  "disabled": false
                 },
                 {
                   "key": "inStock",
                   "value": "true",
-                  "disabled": true
+                  "disabled": false
                 },
                 {
                   "key": "hasDiscount",
                   "value": "true",
-                  "disabled": true
+                  "disabled": false
                 },
                 {
                   "key": "facets",
                   "value": "color:black;gender:men",
-                  "disabled": true
+                  "disabled": false
                 }
               ]
             }
@@ -7888,52 +8283,53 @@
               "query": [
                 {
                   "key": "q",
-                  "value": "sneaker"
+                  "value": "sneaker",
+                  "disabled": false
                 },
                 {
                   "key": "page",
                   "value": "1",
-                  "disabled": true
+                  "disabled": false
                 },
                 {
                   "key": "limit",
-                  "value": "1",
-                  "disabled": true
+                  "value": "12",
+                  "disabled": false
                 },
                 {
                   "key": "sort",
                   "value": "relevance",
-                  "disabled": true
+                  "disabled": false
                 },
                 {
                   "key": "categoryId",
-                  "value": "00000000-0000-0000-0000-000000000000",
-                  "disabled": true
+                  "value": "8bc65a50-607c-4707-83c5-995ce8e5f289",
+                  "disabled": false
                 },
                 {
                   "key": "minPrice",
-                  "value": "99.99",
-                  "disabled": true
+                  "value": "0",
+                  "disabled": false
                 },
                 {
                   "key": "maxPrice",
-                  "value": "99.99",
-                  "disabled": true
+                  "value": "500",
+                  "disabled": false
                 },
                 {
                   "key": "inStock",
                   "value": "true",
-                  "disabled": true
+                  "disabled": false
                 },
                 {
                   "key": "hasDiscount",
                   "value": "true",
-                  "disabled": true
+                  "disabled": false
                 },
                 {
                   "key": "facets",
                   "value": "color:black;gender:men",
-                  "disabled": true
+                  "disabled": false
                 }
               ]
             }
@@ -7957,12 +8353,12 @@
                 {
                   "key": "q",
                   "value": "air jordan",
-                  "disabled": true
+                  "disabled": false
                 },
                 {
                   "key": "limit",
-                  "value": "1",
-                  "disabled": true
+                  "value": "12",
+                  "disabled": false
                 }
               ]
             }

@@ -1,0 +1,465 @@
+{
+  "info": {
+    "name": "Stockzy API — Pronto pra Testar",
+    "description": "Collection auto-suficiente: aponta direto pra http://localhost:3000 (variável de coleção, não precisa de environment separado) e todo request já vem com dados reais de exemplo preenchidos — é importar e clicar em Send.\n\nAtualizada em 2026-08-23 depois da limpeza total do catálogo antigo e do novo import de 126 Product Items (drop de luxo/streetwear a partir de frontend/public/images/ + home-products/). Os IDs de exemplo (product_id, product_slug, variant_id) agora apontam pro produto real 'Jordan 4 Retro Vivid Sulfur' desse novo drop — os antigos foram apagados junto com o resto do catálogo.\n\nRetestei as 16 rotas de leitura contra o servidor local em 2026-08-23 com esses IDs novos:\n• 14 retornaram 200 (algumas com corpo vazio/zerado — esperado, ver nota de status abaixo).\n• 'Produto — detalhe por ID' e 'Produto — detalhe por slug' retornam 404 DE PROPÓSITO — motivo: TODOS os 126 produtos do novo drop estão em status='draft' (é assim que o import deixou, até você revisar/precificar cada um) e o endpoint público (findOne/findBySlug em products.service.ts) só retorna produto com status='active'. Não é bug — publique o produto (PATCH /admin/products/{id} status=active) pra esse request passar a responder 200.\n\nATENÇÃO — o servidor local conecta no banco de PRODUÇÃO real (mesmo .env do projeto). Isso significa:\n• Pasta '1. Leitura (100% seguro)' — só GET, pode clicar em tudo sem medo, não muda nada.\n• Pastas com POST/PATCH/DELETE — CRIAM ou ALTERAM dado de verdade (conta de cliente, item no carrinho, oferta, pedido). Use com essa consciência.\n• Preço e estoque de TODOS os 126 produtos novos são placeholder = 0 (draft, sem preço real definido ainda) — o checkout guest vai responder 400 INSUFFICIENT_STOCK de propósito até você definir preço/estoque real e publicar.\n• Login de cliente exige email verificado — uma conta recém-registrada pelo request 'Registrar cliente novo' desta collection vai dar 401 EMAIL_NOT_VERIFIED no login até você confirmar o link enviado por email (ou trocar customer_email por uma conta já verificada nas variáveis da coleção).\n• Make Offer (pasta 6) precisa da migration de offers aplicada em produção — sem isso, o create-offer responde 500.\n• Login de admin precisa da sua credencial real (não incluída aqui por segurança) — só esse campo você preenche na mão, o resto já está pronto.\n\nToken de cliente e de admin são capturados automaticamente nas variáveis de coleção assim que você roda os requests de login/registro — os requests seguintes já usam sozinhos.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "base_url", "value": "http://localhost:3000" },
+    { "key": "category_id", "value": "8bc65a50-607c-4707-83c5-995ce8e5f289" },
+    { "key": "product_id", "value": "a6f78187-8b1e-441e-8175-fd44774ad8fc" },
+    { "key": "product_slug", "value": "jordan-4-retro-vivid-sulfur" },
+    { "key": "variant_id", "value": "20a2318e-aab3-4f84-b88c-6966bd4cfaac" },
+    { "key": "brand_slug", "value": "jordan" },
+    { "key": "cart_token", "value": "" },
+    { "key": "customer_email", "value": "" },
+    { "key": "customer_access_token", "value": "" },
+    { "key": "customer_refresh_token", "value": "" },
+    { "key": "admin_email", "value": "COLOQUE_SEU_EMAIL_ADMIN_AQUI" },
+    { "key": "admin_password", "value": "COLOQUE_SUA_SENHA_ADMIN_AQUI" },
+    { "key": "admin_access_token", "value": "" },
+    { "key": "offer_id", "value": "" },
+    { "key": "offer_guest_token", "value": "" },
+    { "key": "order_id", "value": "" }
+  ],
+  "item": [
+    {
+      "name": "1. Leitura (100% seguro)",
+      "item": [
+        {
+          "name": "Categorias — árvore completa (menu)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": { "raw": "{{base_url}}/categories", "host": ["{{base_url}}"], "path": ["categories"] }
+          }
+        },
+        {
+          "name": "Categoria — detalhe (Sneakers)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": { "raw": "{{base_url}}/categories/{{category_id}}", "host": ["{{base_url}}"], "path": ["categories", "{{category_id}}"] }
+          }
+        },
+        {
+          "name": "Produtos — grid filtrado (categoria Sneakers + marca Jordan)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/products?categoryId={{category_id}}&brand={{brand_slug}}&page=1&limit=12&sort=featured",
+              "host": ["{{base_url}}"],
+              "path": ["products"],
+              "query": [
+                { "key": "categoryId", "value": "{{category_id}}" },
+                { "key": "brand", "value": "{{brand_slug}}" },
+                { "key": "page", "value": "1" },
+                { "key": "limit", "value": "12" },
+                { "key": "sort", "value": "featured" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Catálogo — filtros disponíveis (categoria Sneakers)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/catalog/filters?categoryId={{category_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["catalog", "filters"],
+              "query": [{ "key": "categoryId", "value": "{{category_id}}" }]
+            }
+          }
+        },
+        {
+          "name": "Produto — detalhe por ID",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": { "raw": "{{base_url}}/products/{{product_id}}", "host": ["{{base_url}}"], "path": ["products", "{{product_id}}"] }
+          }
+        },
+        {
+          "name": "Produto — detalhe por slug",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": { "raw": "{{base_url}}/products/slug/{{product_slug}}", "host": ["{{base_url}}"], "path": ["products", "slug", "{{product_slug}}"] }
+          }
+        },
+        {
+          "name": "Produtos — em destaque (highlights)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": { "raw": "{{base_url}}/products/highlights?limit=8", "host": ["{{base_url}}"], "path": ["products", "highlights"], "query": [{ "key": "limit", "value": "8" }] }
+          }
+        },
+        {
+          "name": "Produtos — novidades (new arrivals)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": { "raw": "{{base_url}}/products/new-arrivals?limit=8", "host": ["{{base_url}}"], "path": ["products", "new-arrivals"], "query": [{ "key": "limit", "value": "8" }] }
+          }
+        },
+        {
+          "name": "Produtos — mais vendidos",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": { "raw": "{{base_url}}/products/best-sellers?limit=8", "host": ["{{base_url}}"], "path": ["products", "best-sellers"], "query": [{ "key": "limit", "value": "8" }] }
+          }
+        },
+        {
+          "name": "Produtos — melhores preços",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": { "raw": "{{base_url}}/products/best-prices?limit=8", "host": ["{{base_url}}"], "path": ["products", "best-prices"], "query": [{ "key": "limit", "value": "8" }] }
+          }
+        },
+        {
+          "name": "Produtos — ofertas/descontos",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": { "raw": "{{base_url}}/products/offers?limit=8", "host": ["{{base_url}}"], "path": ["products", "offers"], "query": [{ "key": "limit", "value": "8" }] }
+          }
+        },
+        {
+          "name": "Também visto (also-viewed)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": { "raw": "{{base_url}}/products/{{product_id}}/also-viewed?limit=6", "host": ["{{base_url}}"], "path": ["products", "{{product_id}}", "also-viewed"], "query": [{ "key": "limit", "value": "6" }] }
+          }
+        },
+        {
+          "name": "Recomendado pra você (home)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": { "raw": "{{base_url}}/catalog/recommended?limit=8", "host": ["{{base_url}}"], "path": ["catalog", "recommended"], "query": [{ "key": "limit", "value": "8" }] }
+          }
+        },
+        {
+          "name": "Busca — texto livre",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/search?q=jordan&page=1&limit=12&sort=relevance",
+              "host": ["{{base_url}}"],
+              "path": ["search"],
+              "query": [
+                { "key": "q", "value": "jordan" },
+                { "key": "page", "value": "1" },
+                { "key": "limit", "value": "12" },
+                { "key": "sort", "value": "relevance" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Busca — sugestões (autocomplete)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": { "raw": "{{base_url}}/search/suggestions?q=jor", "host": ["{{base_url}}"], "path": ["search", "suggestions"], "query": [{ "key": "q", "value": "jor" }] }
+          }
+        },
+        {
+          "name": "Health check",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": { "raw": "{{base_url}}/health", "host": ["{{base_url}}"], "path": ["health"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "2. Carrinho (guest — grava de verdade)",
+      "item": [
+        {
+          "name": "Carrinho — ver (cria token novo se vazio)",
+          "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": ["const t = pm.response.headers.get('x-cart-token'); if (t) pm.collectionVariables.set('cart_token', t);"] } }],
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "x-cart-token", "value": "{{cart_token}}" }],
+            "url": { "raw": "{{base_url}}/cart", "host": ["{{base_url}}"], "path": ["cart"] }
+          }
+        },
+        {
+          "name": "Carrinho — adicionar item",
+          "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": ["const j = pm.response.json(); if (j.token) pm.collectionVariables.set('cart_token', j.token);"] } }],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }, { "key": "x-cart-token", "value": "{{cart_token}}" }],
+            "url": { "raw": "{{base_url}}/cart/items", "host": ["{{base_url}}"], "path": ["cart", "items"] },
+            "body": { "mode": "raw", "raw": "{\n  \"variantId\": \"{{variant_id}}\",\n  \"quantity\": 1\n}" }
+          }
+        },
+        {
+          "name": "Carrinho — atualizar quantidade",
+          "request": {
+            "method": "PATCH",
+            "header": [{ "key": "Content-Type", "value": "application/json" }, { "key": "x-cart-token", "value": "{{cart_token}}" }],
+            "url": { "raw": "{{base_url}}/cart/items/{{variant_id}}", "host": ["{{base_url}}"], "path": ["cart", "items", "{{variant_id}}"] },
+            "body": { "mode": "raw", "raw": "{\n  \"quantity\": 2\n}" }
+          }
+        },
+        {
+          "name": "Carrinho — remover item",
+          "request": {
+            "method": "DELETE",
+            "header": [{ "key": "x-cart-token", "value": "{{cart_token}}" }],
+            "url": { "raw": "{{base_url}}/cart/items/{{variant_id}}", "host": ["{{base_url}}"], "path": ["cart", "items", "{{variant_id}}"] }
+          }
+        },
+        {
+          "name": "Carrinho — esvaziar",
+          "request": {
+            "method": "DELETE",
+            "header": [{ "key": "x-cart-token", "value": "{{cart_token}}" }],
+            "url": { "raw": "{{base_url}}/cart", "host": ["{{base_url}}"], "path": ["cart"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "3. Checkout Guest (grava de verdade — hoje responde 400, estoque real é 0)",
+      "item": [
+        {
+          "name": "Checkout guest — cotação (frete/total)",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "x-cart-token", "value": "{{cart_token}}" }],
+            "url": {
+              "raw": "{{base_url}}/orders/guest/quote?country=PT",
+              "host": ["{{base_url}}"],
+              "path": ["orders", "guest", "quote"],
+              "query": [{ "key": "country", "value": "PT" }]
+            }
+          }
+        },
+        {
+          "name": "Checkout guest — criar pedido",
+          "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": ["try { const j = pm.response.json(); if (j.orderId) pm.collectionVariables.set('order_id', j.orderId); } catch (e) {}"] } }],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }, { "key": "x-cart-token", "value": "{{cart_token}}" }],
+            "url": { "raw": "{{base_url}}/orders/guest", "host": ["{{base_url}}"], "path": ["orders", "guest"] },
+            "body": { "mode": "raw", "raw": "{\n  \"phone\": \"+351911222333\",\n  \"country\": \"PT\",\n  \"locale\": \"pt\"\n}" }
+          }
+        },
+        {
+          "name": "Checkout guest — consultar pedido",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/orders/guest/{{order_id}}?token={{cart_token}}",
+              "host": ["{{base_url}}"],
+              "path": ["orders", "guest", "{{order_id}}"],
+              "query": [{ "key": "token", "value": "{{cart_token}}" }]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "4. Cliente — Auth (cria conta de verdade)",
+      "item": [
+        {
+          "name": "Registrar cliente novo (email gerado automaticamente)",
+          "event": [{ "listen": "prerequest", "script": { "type": "text/javascript", "exec": ["pm.collectionVariables.set('customer_email', `teste.${Date.now()}@stockzy-test.com`);"] } }],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{base_url}}/customers/register", "host": ["{{base_url}}"], "path": ["customers", "register"] },
+            "body": { "mode": "raw", "raw": "{\n  \"email\": \"{{customer_email}}\",\n  \"password\": \"SenhaForte123\",\n  \"phoneNumber\": \"+351911222333\"\n}" }
+          }
+        },
+        {
+          "name": "Login cliente (⚠ só funciona depois de verificar o email — rode Registrar antes e confirme o link enviado, ou troque customer_email/senha por uma conta já verificada)",
+          "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": ["try { const j = pm.response.json(); if (j.accessToken) pm.collectionVariables.set('customer_access_token', j.accessToken); if (j.refreshToken) pm.collectionVariables.set('customer_refresh_token', j.refreshToken); } catch (e) {}"] } }],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{base_url}}/customers/login", "host": ["{{base_url}}"], "path": ["customers", "login"] },
+            "body": { "mode": "raw", "raw": "{\n  \"email\": \"{{customer_email}}\",\n  \"password\": \"SenhaForte123\"\n}" }
+          }
+        },
+        {
+          "name": "Perfil do cliente logado",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{customer_access_token}}" }],
+            "url": { "raw": "{{base_url}}/customers/me", "host": ["{{base_url}}"], "path": ["customers", "me"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "5. Cliente — Conta (precisa login antes)",
+      "item": [
+        {
+          "name": "Meus pedidos",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{customer_access_token}}" }],
+            "url": { "raw": "{{base_url}}/customers/orders?page=1&limit=10", "host": ["{{base_url}}"], "path": ["customers", "orders"], "query": [{ "key": "page", "value": "1" }, { "key": "limit", "value": "10" }] }
+          }
+        },
+        {
+          "name": "Meus endereços",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{customer_access_token}}" }],
+            "url": { "raw": "{{base_url}}/customers/addresses", "host": ["{{base_url}}"], "path": ["customers", "addresses"] }
+          }
+        },
+        {
+          "name": "Adicionar endereço",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }, { "key": "Authorization", "value": "Bearer {{customer_access_token}}" }],
+            "url": { "raw": "{{base_url}}/customers/addresses", "host": ["{{base_url}}"], "path": ["customers", "addresses"] },
+            "body": { "mode": "raw", "raw": "{\n  \"type\": \"shipping\",\n  \"street\": \"Rua das Flores, 123\",\n  \"city\": \"Lisboa\",\n  \"state\": \"Lisboa\",\n  \"zipcode\": \"1000-001\",\n  \"country\": \"PT\"\n}" }
+          }
+        },
+        {
+          "name": "Lista de desejos — ver",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{customer_access_token}}" }],
+            "url": { "raw": "{{base_url}}/customers/wishlist", "host": ["{{base_url}}"], "path": ["customers", "wishlist"] }
+          }
+        },
+        {
+          "name": "Lista de desejos — adicionar produto",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }, { "key": "Authorization", "value": "Bearer {{customer_access_token}}" }],
+            "url": { "raw": "{{base_url}}/customers/wishlist/items", "host": ["{{base_url}}"], "path": ["customers", "wishlist", "items"] },
+            "body": { "mode": "raw", "raw": "{\n  \"productId\": \"{{product_id}}\"\n}" }
+          }
+        }
+      ]
+    },
+    {
+      "name": "6. Make Offer",
+      "item": [
+        {
+          "name": "Guest — criar oferta",
+          "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": ["try { const j = pm.response.json(); if (j.offerId) pm.collectionVariables.set('offer_id', j.offerId); if (j.guestToken) pm.collectionVariables.set('offer_guest_token', j.guestToken); } catch (e) {}"] } }],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{base_url}}/products/{{variant_id}}/offers", "host": ["{{base_url}}"], "path": ["products", "{{variant_id}}", "offers"] },
+            "body": { "mode": "raw", "raw": "{\n  \"offeredPrice\": 80,\n  \"guestEmail\": \"buyer.teste@stockzy-test.com\",\n  \"locale\": \"pt\"\n}" }
+          }
+        },
+        {
+          "name": "Guest — status da oferta",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/orders/offers/{{offer_id}}?token={{offer_guest_token}}",
+              "host": ["{{base_url}}"],
+              "path": ["orders", "offers", "{{offer_id}}"],
+              "query": [{ "key": "token", "value": "{{offer_guest_token}}" }]
+            }
+          }
+        },
+        {
+          "name": "Cliente — criar oferta (precisa login antes)",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }, { "key": "Authorization", "value": "Bearer {{customer_access_token}}" }],
+            "url": { "raw": "{{base_url}}/customers/offers", "host": ["{{base_url}}"], "path": ["customers", "offers"] },
+            "body": { "mode": "raw", "raw": "{\n  \"variantId\": \"{{variant_id}}\",\n  \"offeredPrice\": 80\n}" }
+          }
+        },
+        {
+          "name": "Admin — fila de ofertas pendentes",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{admin_access_token}}" }],
+            "url": { "raw": "{{base_url}}/admin/offers?status=pending", "host": ["{{base_url}}"], "path": ["admin", "offers"], "query": [{ "key": "status", "value": "pending" }] }
+          }
+        },
+        {
+          "name": "Admin — aceitar oferta",
+          "request": {
+            "method": "PATCH",
+            "header": [{ "key": "Authorization", "value": "Bearer {{admin_access_token}}" }],
+            "url": { "raw": "{{base_url}}/admin/offers/{{offer_id}}/accept", "host": ["{{base_url}}"], "path": ["admin", "offers", "{{offer_id}}", "accept"] }
+          }
+        },
+        {
+          "name": "Admin — rejeitar oferta",
+          "request": {
+            "method": "PATCH",
+            "header": [{ "key": "Content-Type", "value": "application/json" }, { "key": "Authorization", "value": "Bearer {{admin_access_token}}" }],
+            "url": { "raw": "{{base_url}}/admin/offers/{{offer_id}}/reject", "host": ["{{base_url}}"], "path": ["admin", "offers", "{{offer_id}}", "reject"] },
+            "body": { "mode": "raw", "raw": "{\n  \"reason\": \"below_minimum\"\n}" }
+          }
+        }
+      ]
+    },
+    {
+      "name": "7. Admin — Auth e Leitura",
+      "item": [
+        {
+          "name": "Admin — login (⚠ preencha admin_email/admin_password nas variáveis da coleção)",
+          "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": ["try { const j = pm.response.json(); if (j.accessToken) pm.collectionVariables.set('admin_access_token', j.accessToken); } catch (e) {}"] } }],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{base_url}}/admin/auth/login", "host": ["{{base_url}}"], "path": ["admin", "auth", "login"] },
+            "body": { "mode": "raw", "raw": "{\n  \"email\": \"{{admin_email}}\",\n  \"password\": \"{{admin_password}}\"\n}" }
+          }
+        },
+        {
+          "name": "Admin — listar produtos (grid completo, com inativos)",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{admin_access_token}}" }],
+            "url": { "raw": "{{base_url}}/admin/products?page=1&limit=20", "host": ["{{base_url}}"], "path": ["admin", "products"], "query": [{ "key": "page", "value": "1" }, { "key": "limit", "value": "20" }] }
+          }
+        },
+        {
+          "name": "Admin — listar pedidos",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{admin_access_token}}" }],
+            "url": { "raw": "{{base_url}}/admin/orders?page=1&limit=20", "host": ["{{base_url}}"], "path": ["admin", "orders"], "query": [{ "key": "page", "value": "1" }, { "key": "limit", "value": "20" }] }
+          }
+        },
+        {
+          "name": "Admin — listar facetas",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{admin_access_token}}" }],
+            "url": { "raw": "{{base_url}}/admin/facets", "host": ["{{base_url}}"], "path": ["admin", "facets"] }
+          }
+        },
+        {
+          "name": "Admin — listar marcas",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{admin_access_token}}" }],
+            "url": { "raw": "{{base_url}}/admin/brands?page=1&limit=20", "host": ["{{base_url}}"], "path": ["admin", "brands"], "query": [{ "key": "page", "value": "1" }, { "key": "limit", "value": "20" }] }
+          }
+        }
+      ]
+    }
+  ]
+}

@@ -12,11 +12,20 @@ export class PrismaService extends PrismaClient implements OnModuleInit, OnModul
       throw new Error('DATABASE_URL is not set');
     }
 
-    const isProduction = (process.env.NODE_ENV ?? 'development') === 'production';
+    // Supabase's Supavisor connection pooler presents a cert chain that fails strict
+    // Node TLS validation (self-signed intermediate) — this is a property of that
+    // specific DATABASE_URL, not of the environment. Previously this was tied to
+    // NODE_ENV==='production', which meant the app could only ever connect with
+    // NODE_ENV=development — including in a real production deploy (Railway) using
+    // this same DATABASE_URL, which would have failed with the exact TLS error this
+    // fixes. Default is false (matches what the current Supabase pooler needs);
+    // set DATABASE_SSL_REJECT_UNAUTHORIZED=true if the DB host ever has a fully
+    // trusted cert chain and strict validation should be re-enabled.
+    const rejectUnauthorized = process.env.DATABASE_SSL_REJECT_UNAUTHORIZED === 'true';
 
     const pool = new Pool({
       connectionString,
-      ssl: { rejectUnauthorized: isProduction },
+      ssl: { rejectUnauthorized },
     });
 
     const adapter = new PrismaPg(pool);
