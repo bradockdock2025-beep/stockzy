@@ -293,6 +293,9 @@ export class SearchService {
       variants: { where: { isActive: true }, orderBy: { price: 'asc' as const } },
       images:   { orderBy: { position: 'asc' as const } },
       category: true,
+      // Mesmo shape de GET /products (name + logoUrl) — antes só vinha `brandId`
+      // cru, obrigando o frontend a resolver o nome da marca por fora.
+      brand: { select: { name: true, logoUrl: true } },
     };
 
     if (query.sort === 'discount') {

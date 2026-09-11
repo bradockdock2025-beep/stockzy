@@ -2,6 +2,7 @@ import { BadRequestException, Injectable, NotFoundException } from '@nestjs/comm
 import { ConfigService } from '@nestjs/config';
 import { Prisma } from '@prisma/client';
 import { PrismaService } from '../../database/prisma.service';
+import { RedisService } from '../../common/redis/redis.service';
 import { AuditLogService } from '../audit/audit-log.service';
 import { CreateCategoryDto } from './dto/create-category.dto';
 import { UpdateCategoryDto } from './dto/update-category.dto';
@@ -13,14 +14,42 @@ import { AuditContext } from '../../common/audit/audit-context';
 export class CategoriesService {
   private readonly productIdSampleLimit: number;
 
+  private static readonly PUBLIC_TREE_CACHE_KEY = 'cache:categories:public-tree';
+
   constructor(
     private readonly prisma: PrismaService,
     private readonly auditLog: AuditLogService,
     private readonly configService: ConfigService,
+    private readonly redisService: RedisService,
   ) {
     this.productIdSampleLimit = this.parseSampleLimit(
       this.configService.get<string>('AUDIT_MOVE_PRODUCTS_SAMPLE_LIMIT'),
     );
+  }
+
+  // Árvore de categorias muda só por CRUD de admin (raríssimo perto do volume
+  // de leitura do storefront) — TTL bem mais longo que o cache de produtos
+  // (60s) é seguro aqui, e invalidamos explicitamente em create/update/
+  // remove/mergeInto de qualquer forma, então nem precisa esperar o TTL vencer
+  // pra refletir uma mudança de admin.
+  private getPublicTreeCacheTtlSeconds(): number {
+    const raw = this.configService.get<string>('CATEGORIES_CACHE_TTL_SECONDS');
+    const parsed = raw ? Number(raw) : NaN;
+    if (Number.isFinite(parsed) && parsed > 0) {
+      return parsed;
+    }
+    return 600;
+  }
+
+  private async invalidatePublicTreeCache() {
+    if (!this.redisService.isReady()) {
+      return;
+    }
+    try {
+      await this.redisService.getClient()?.del(CategoriesService.PUBLIC_TREE_CACHE_KEY);
+    } catch {
+      // cache é best-effort — uma falha aqui não deve derrubar a mutação
+    }
   }
 
   private parseSampleLimit(raw: string | number | undefined): number {
@@ -32,7 +61,7 @@ export class CategoriesService {
   }
 
   async create(dto: CreateCategoryDto, context?: AuditContext) {
-    return this.prisma.$transaction(async (tx) => {
+    const created = await this.prisma.$transaction(async (tx) => {
       await applyAuditContext(tx, context);
       return tx.category.create({
         data: {
@@ -46,6 +75,8 @@ export class CategoriesService {
         },
       });
     });
+    await this.invalidatePublicTreeCache();
+    return created;
   }
 
   async findAll(query: QueryCategoryDto) {
@@ -101,6 +132,33 @@ export class CategoriesService {
    * públicos, sem paginação (o mega menu precisa da árvore inteira de uma vez).
    */
   async findPublicTree() {
+    if (this.redisService.isReady()) {
+      try {
+        const cached = await this.redisService.getJson<unknown>(CategoriesService.PUBLIC_TREE_CACHE_KEY);
+        if (cached) return cached;
+      } catch {
+        // cache é best-effort — segue pro banco se der erro de leitura
+      }
+    }
+
+    const tree = await this.buildPublicTree();
+
+    if (this.redisService.isReady()) {
+      try {
+        await this.redisService.setJson(
+          CategoriesService.PUBLIC_TREE_CACHE_KEY,
+          tree,
+          this.getPublicTreeCacheTtlSeconds(),
+        );
+      } catch {
+        // idem — não falha a resposta por causa do cache
+      }
+    }
+
+    return tree;
+  }
+
+  private async buildPublicTree() {
     const categories = await this.prisma.category.findMany({
       where: { isActive: true },
       select: {
@@ -171,7 +229,7 @@ export class CategoriesService {
   }
 
   async update(id: string, dto: UpdateCategoryDto, context?: AuditContext) {
-    return this.prisma.$transaction(async (tx) => {
+    const updated = await this.prisma.$transaction(async (tx) => {
       await applyAuditContext(tx, context);
       const existing = await tx.category.findUnique({ where: { id } });
       if (!existing) {
@@ -192,10 +250,12 @@ export class CategoriesService {
         },
       });
     });
+    await this.invalidatePublicTreeCache();
+    return updated;
   }
 
   async remove(id: string, context?: AuditContext) {
-    return this.prisma.$transaction(async (tx) => {
+    const removed = await this.prisma.$transaction(async (tx) => {
       await applyAuditContext(tx, context);
       const existing = await tx.category.findUnique({ where: { id } });
       if (!existing) {
@@ -210,6 +270,8 @@ export class CategoriesService {
         data: { isActive: false },
       });
     });
+    await this.invalidatePublicTreeCache();
+    return removed;
   }
 
   async mergeInto(
@@ -285,6 +347,8 @@ export class CategoriesService {
     });
 
     const { productIdSample, ...response } = result;
+
+    await this.invalidatePublicTreeCache();
 
     await this.auditLog.log({
       action: 'merge',

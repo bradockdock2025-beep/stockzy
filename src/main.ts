@@ -60,6 +60,12 @@ async function bootstrap() {
       'x-payment-method',
       'stripe-signature',
     ],
+    // GET /cart e POST /cart/items devolvem o token do carrinho no header de
+    // resposta x-cart-token (além do body) — sem expor esse header aqui, JS no
+    // browser não consegue ler `response.headers.get('x-cart-token')` em
+    // requisição cross-origin (allowedHeaders acima só libera o header na ida,
+    // não na volta).
+    exposedHeaders: ['x-cart-token'],
     credentials: true,
   });
 

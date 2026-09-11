@@ -22,11 +22,14 @@ export class SearchQueryDto {
   @Min(1)
   page?: number;
 
+  // Antes travado em 48 — forçava o frontend a paginar 4-5x só pra montar um
+  // índice id→slug de uma categoria inteira (uso SSR/servidor→servidor). Subi
+  // pra 200, mesmo teto informal já usado em GET /products?limit=200.
   @IsOptional()
   @Type(() => Number)
   @IsInt()
   @Min(1)
-  @Max(48)
+  @Max(200)
   limit?: number;
 
   @IsOptional()

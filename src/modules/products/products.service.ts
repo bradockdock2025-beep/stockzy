@@ -179,6 +179,7 @@ export class ProductsService {
   toListItem(product: any): {
     id: string;
     name: string;
+    slug: string;
     image: string | null;
     brand: { name: string; logoUrl: string | null } | null;
     priceFrom: number | null;
@@ -202,6 +203,7 @@ export class ProductsService {
     return {
       id: product.id,
       name: product.name,
+      slug: product.slug,
       image,
       brand,
       priceFrom,
@@ -725,112 +727,169 @@ export class ProductsService {
     const activeFacetFilters = this.parseFacetFilters(query.facets);
 
     // ---- Brand (sempre visível, mesmo mecanismo de auto-exclusão) ----
+    // Antes: 1 query `count()` por marca ativa (N round-trips). Agora: 1 groupBy
+    // só, já que a condição (base + outros filtros) é a mesma pra toda marca —
+    // só muda o `brandId` sendo agrupado, que o groupBy já faz de graça.
     const brandOtherConditions = allFacets
       .filter((facet) => facet.key !== 'brand')
       .map((facet) => facet.condition);
 
-    const brands = await this.prisma.brand.findMany({
-      where: { isActive: true },
-      select: { id: true, slug: true, name: true },
-      orderBy: { name: 'asc' },
-    });
-
-    const brandCounts = await Promise.all(
-      brands.map(async (brand) => {
-        const count = await this.prisma.product.count({
-          where: {
-            status: product_status.active,
-            ...categoryScope,
-            variants: {
-              some: {
-                ...base,
-                AND: [...brandOtherConditions, { product: { brandId: brand.id } } ],
-              },
-            },
-          },
-        });
-        return { value: brand.slug, label: brand.name, count };
+    const [brands, brandGroups] = await Promise.all([
+      this.prisma.brand.findMany({
+        where: { isActive: true },
+        select: { id: true, slug: true, name: true },
       }),
-    );
-    const brandBlock = brandCounts.filter((b) => b.count > 0);
+      this.prisma.product.groupBy({
+        by: ['brandId'],
+        where: {
+          status: product_status.active,
+          brandId: { not: null },
+          ...categoryScope,
+          variants: { some: { ...base, ...(brandOtherConditions.length ? { AND: brandOtherConditions } : {}) } },
+        },
+        _count: { _all: true },
+      }),
+    ]);
+
+    const brandById = new Map(brands.map((b) => [b.id, b]));
+    const brandBlock = brandGroups
+      .map((g) => {
+        const brand = g.brandId ? brandById.get(g.brandId) : undefined;
+        if (!brand) return null;
+        return { value: brand.slug, label: brand.name, count: g._count._all };
+      })
+      .filter((b): b is { value: string; label: string; count: number } => !!b && b.count > 0)
+      .sort((a, b) => a.label.localeCompare(b.label));
 
     // ---- Facetas genéricas (Facet + FacetValue) ----
+    // Antes: 1 query `count()` por VALOR de cada faceta (dezenas de round-trips
+    // por chamada — o gargalo dos 10-18s medidos). Agora: 1 query por FACETA
+    // ATIVA (busca todos os pares variante/produto × facet_value de uma vez via
+    // a tabela de junção, e agrupa/conta no processo Node) — mesmo filtro
+    // (base + outras facetas), mesmo resultado, ~N/valores vezes menos viagens
+    // de rede até o Postgres.
+    // facetValue de TODAS as facetas ativas numa query só (antes: 1 query por
+    // faceta só pra saber os valores dela).
     const facetDefs = await this.prisma.facet.findMany({
       where: { isActive: true },
       orderBy: [{ sortOrder: 'asc' }, { name: 'asc' }],
     });
-
-    const facetsWithValues: Array<{
-      key: string;
-      name: string;
-      inputType: string;
-      values: Array<{ value: string; label: string; count: number }>;
-    }> = [];
-
-    for (const facet of facetDefs) {
-      const isVisible = this.isFacetVisible(facet, {
+    const visibleFacets = facetDefs.filter((facet) =>
+      this.isFacetVisible(facet, {
         activeCategoryFamilyTag: activeCategory?.familyTag ?? null,
         activeFacetFilters,
-      });
-      if (!isVisible) {
-        continue;
-      }
-
-      const values = await this.prisma.facetValue.findMany({
-        where: { facetId: facet.id, isActive: true },
-        select: { id: true, value: true, label: true, sortOrder: true },
-      });
-      if (!values.length) {
-        continue;
-      }
-
-      const otherConditions = allFacets
-        .filter((f) => f.key !== facet.key)
-        .map((f) => f.condition);
-
-      const counts = await Promise.all(
-        values.map(async (value) => {
-          const condition: Prisma.ProductVariantWhereInput =
-            facet.scope === 'variant'
-              ? { facetValues: { some: { facetValueId: value.id } } }
-              : { product: { facetValues: { some: { facetValueId: value.id } } } };
-
-          const count = await this.prisma.product.count({
-            where: {
-              status: product_status.active,
-              ...categoryScope,
-              variants: { some: { ...base, AND: [...otherConditions, condition] } },
-            },
-          });
-          return { value: value.value, label: value.label, count, sortOrder: value.sortOrder };
-        }),
-      );
-
-      if (!counts.some((c) => c.count > 0)) {
-        continue;
-      }
-
-      facetsWithValues.push({
-        key: facet.key,
-        name: facet.name,
-        inputType: facet.inputType,
-        values: this.sortFacetValues(counts),
-      });
+      }),
+    );
+    const allValues = visibleFacets.length
+      ? await this.prisma.facetValue.findMany({
+          where: { facetId: { in: visibleFacets.map((f) => f.id) }, isActive: true },
+          select: { id: true, value: true, label: true, sortOrder: true, facetId: true },
+        })
+      : [];
+    const valuesByFacetId = new Map<string, typeof allValues>();
+    for (const v of allValues) {
+      const arr = valuesByFacetId.get(v.facetId) ?? [];
+      arr.push(v);
+      valuesByFacetId.set(v.facetId, arr);
     }
+
+    // Mapa variantId -> productId de TODA variante ativa nesta categoria,
+    // buscado 1 vez só e reaproveitado por toda faceta scope=variant abaixo —
+    // "de qual produto essa variante é" não muda por faceta, então não precisa
+    // rebuscar isso a cada uma.
+    const hasVariantScopeFacet = visibleFacets.some((f) => f.scope === 'variant');
+    const variantProductMap = hasVariantScopeFacet
+      ? new Map(
+          (
+            await this.prisma.productVariant.findMany({
+              where: { isActive: true, product: { status: product_status.active, ...categoryScope } },
+              select: { id: true, productId: true },
+            })
+          ).map((v) => [v.id, v.productId]),
+        )
+      : new Map<string, string>();
+
+    // Cada faceta ativa é independente das outras (só depende de `allFacets`,
+    // já calculado antes do loop) — antes rodava em série (`for...await`), uma
+    // atrás da outra, empilhando o custo de round-trip de cada uma. Agora roda
+    // tudo em paralelo (`Promise.all`), então o tempo total fica perto do
+    // custo da faceta mais lenta, não da soma de todas.
+    const facetResults = await Promise.all(
+      visibleFacets.map(async (facet) => {
+        const values = valuesByFacetId.get(facet.id) ?? [];
+        if (!values.length) return null;
+
+        const otherConditions = allFacets
+          .filter((f) => f.key !== facet.key)
+          .map((f) => f.condition);
+        const valueIds = values.map((v) => v.id);
+
+        // select achatado (sem relação aninhada) de propósito — nesta base de
+        // código, um `select` que atravessa relação (ex.: `variant: { select: {
+        // productId } }`) faz o Prisma disparar uma SEGUNDA query pra resolver
+        // a relação em vez de um JOIN só, dobrando o round-trip por faceta.
+        const productsByValueId = new Map<string, Set<string>>();
+        if (facet.scope === 'variant') {
+          const rows = await this.prisma.variantFacetValue.findMany({
+            where: {
+              facetValueId: { in: valueIds },
+              variant: {
+                ...base,
+                ...(otherConditions.length ? { AND: otherConditions } : {}),
+                product: { status: product_status.active, ...categoryScope },
+              },
+            },
+            select: { facetValueId: true, variantId: true },
+          });
+          for (const row of rows) {
+            const productId = variantProductMap.get(row.variantId);
+            if (!productId) continue;
+            const set = productsByValueId.get(row.facetValueId) ?? new Set<string>();
+            set.add(productId);
+            productsByValueId.set(row.facetValueId, set);
+          }
+        } else {
+          const rows = await this.prisma.productFacetValue.findMany({
+            where: {
+              facetValueId: { in: valueIds },
+              product: {
+                status: product_status.active,
+                ...categoryScope,
+                variants: { some: { ...base, ...(otherConditions.length ? { AND: otherConditions } : {}) } },
+              },
+            },
+            select: { facetValueId: true, productId: true },
+          });
+          for (const row of rows) {
+            const set = productsByValueId.get(row.facetValueId) ?? new Set<string>();
+            set.add(row.productId);
+            productsByValueId.set(row.facetValueId, set);
+          }
+        }
+
+        const counts = values.map((value) => ({
+          value: value.value,
+          label: value.label,
+          count: productsByValueId.get(value.id)?.size ?? 0,
+          sortOrder: value.sortOrder,
+        }));
+        if (!counts.some((c) => c.count > 0)) return null;
+
+        return {
+          key: facet.key,
+          name: facet.name,
+          inputType: facet.inputType,
+          values: this.sortFacetValues(counts),
+        };
+      }),
+    );
+
+    const facetsWithValues = facetResults.filter((f): f is NonNullable<(typeof facetResults)[number]> => !!f);
 
     const fullVariantFilters: Prisma.ProductVariantWhereInput = {
       ...base,
       ...(allFacets.length ? { AND: allFacets.map((facet) => facet.condition) } : {}),
     };
-
-    const priceStats = await this.prisma.productVariant.aggregate({
-      where: {
-        ...fullVariantFilters,
-        product: { status: product_status.active, ...categoryScope },
-      },
-      _min: { price: true },
-      _max: { price: true },
-    });
 
     const childCategories = await this.prisma.category.findMany({
       where: { parentId: query.categoryId ?? null, isActive: true },
@@ -838,21 +897,44 @@ export class ProductsService {
       orderBy: { name: 'asc' },
     });
 
-    const categories = await Promise.all(
-      childCategories.map(async (child) => {
-        const childIds = await this.getCategoryAndDescendantIds(child.id);
-        const count = await this.prisma.product.count({
-          where: {
-            status: product_status.active,
-            categoryId: { in: childIds },
-            variants: {
-              some: { ...base, ...(allFacets.length ? { AND: allFacets.map((f) => f.condition) } : {}) },
-            },
-          },
-        });
-        return { ...child, count };
+    // ---- Preço + subcategorias: antes 1 query de preço + 1 recursiva +
+    // 1 count() POR subcategoria filha; agora 3 queries no total, não importa
+    // quantas subcategorias existam.
+    const [priceStats, descendantsByRoot, categoryCountGroups] = await Promise.all([
+      this.prisma.productVariant.aggregate({
+        where: { ...fullVariantFilters, product: { status: product_status.active, ...categoryScope } },
+        _min: { price: true },
+        _max: { price: true },
       }),
-    );
+      this.prisma.$queryRaw<Array<{ id: string; root: string }>>`
+        WITH RECURSIVE category_tree AS (
+          SELECT id, id AS root FROM categories WHERE id = ANY(${childCategories.map((c) => c.id)}::uuid[])
+          UNION ALL
+          SELECT c.id, ct.root FROM categories c INNER JOIN category_tree ct ON c.parent_id = ct.id
+        )
+        SELECT id, root FROM category_tree
+      `,
+      this.prisma.product.groupBy({
+        by: ['categoryId'],
+        where: {
+          status: product_status.active,
+          variants: { some: { ...base, ...(allFacets.length ? { AND: allFacets.map((f) => f.condition) } : {}) } },
+        },
+        _count: { _all: true },
+      }),
+    ]);
+
+    const rootByDescendantId = new Map(descendantsByRoot.map((r) => [r.id, r.root]));
+    const countByCategoryId = new Map(categoryCountGroups.map((g) => [g.categoryId, g._count._all]));
+    const categories = childCategories.map((child) => {
+      let count = 0;
+      for (const [descendantId, root] of rootByDescendantId) {
+        if (root === child.id) {
+          count += countByCategoryId.get(descendantId) ?? 0;
+        }
+      }
+      return { ...child, count };
+    });
 
     const response = {
       category: activeCategory
