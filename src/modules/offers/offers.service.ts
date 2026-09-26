@@ -3,6 +3,8 @@ import { ConfigService } from '@nestjs/config';
 import { randomUUID } from 'crypto';
 import { offer_status, product_status } from '@prisma/client';
 import { PrismaService } from '../../database/prisma.service';
+import { AuditLogService } from '../audit/audit-log.service';
+import { AuditContext } from '../../common/audit/audit-context';
 import { OffersQueueService } from './offers.queue.service';
 import { CreateGuestOfferDto } from './dto/create-guest-offer.dto';
 import { CreateCustomerOfferDto } from './dto/create-customer-offer.dto';
@@ -23,6 +25,7 @@ export class OffersService {
     private readonly configService: ConfigService,
     private readonly offersQueue: OffersQueueService,
     private readonly notificationsService: NotificationsService,
+    private readonly auditLog: AuditLogService,
   ) {}
 
   private badRequest(code: string, message: string, details?: Record<string, unknown>): never {
@@ -170,7 +173,7 @@ export class OffersService {
     });
   }
 
-  async accept(offerId: string, adminUserId: string | null) {
+  async accept(offerId: string, adminUserId: string | null, context?: AuditContext) {
     const result = await this.prisma.$transaction(async (tx) => {
       const [offer] = await tx.$queryRaw<
         Array<{ id: string; variant_id: string; status: offer_status; expires_at: Date }>
@@ -240,10 +243,19 @@ export class OffersService {
     );
     void this.notificationsService.dispatchOfferDecision('offer.accepted', offerId);
 
+    await this.auditLog.log({
+      action: 'accept',
+      entity: 'offer',
+      entityId: offerId,
+      before: { status: 'pending' },
+      after: result.updated,
+      context,
+    });
+
     return result.updated;
   }
 
-  async reject(offerId: string, adminUserId: string | null, dto: RejectOfferDto) {
+  async reject(offerId: string, adminUserId: string | null, dto: RejectOfferDto, context?: AuditContext) {
     const offer = await this.prisma.offer.findUnique({ where: { id: offerId } });
     if (!offer) {
       throw new NotFoundException('Offer not found');
@@ -263,6 +275,15 @@ export class OffersService {
     });
 
     void this.notificationsService.dispatchOfferDecision('offer.rejected', offerId);
+
+    await this.auditLog.log({
+      action: 'reject',
+      entity: 'offer',
+      entityId: offerId,
+      before: offer,
+      after: updated,
+      context,
+    });
 
     return updated;
   }

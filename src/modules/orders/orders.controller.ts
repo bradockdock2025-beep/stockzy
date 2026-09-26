@@ -23,11 +23,13 @@ export class OrdersController {
   }
 
   @Get()
+  @Roles(user_role.admin, user_role.manager, user_role.support)
   findAll(@Query() query: QueryOrderDto) {
     return this.ordersService.findAll(query);
   }
 
   @Get(':id')
+  @Roles(user_role.admin, user_role.manager, user_role.support)
   findOne(@Param('id', new ParseUUIDPipe()) id: string) {
     return this.ordersService.findOne(id);
   }

@@ -63,6 +63,15 @@ report.[0-9]*.[0-9]*.[0-9]*.[0-9]*.json
 /STORAGES
 /storage-session
 
+# Imagens de produto/homepage de dev — já sobem pro Supabase Storage via SQL_*.sql,
+# não fazem parte do código do app (só os SVGs padrão do Next em /public ficam versionados)
+/public/images
+/public/home-products
+/public/hero
+/public/home
+/public/brand
+/public/brand-logos
+
 # Claude Code — config/memória local, não é parte do app
 /.claude
 

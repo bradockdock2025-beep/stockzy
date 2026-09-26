@@ -3,6 +3,7 @@ import { DatabaseModule } from '../../database/database.module';
 import { CustomersModule } from '../customers/customers.module';
 import { RedisModule } from '../../common/redis/redis.module';
 import { NotificationsModule } from '../notifications/notifications.module';
+import { AuditModule } from '../audit/audit.module';
 import { OffersController, OffersGuestStatusController } from './offers.controller';
 import { OffersCustomerController } from './offers.customer.controller';
 import { OffersAdminController } from './offers.admin.controller';
@@ -11,7 +12,7 @@ import { OffersQueueService } from './offers.queue.service';
 import { OffersQueueWorker } from './offers.queue.worker';
 
 @Module({
-  imports: [DatabaseModule, CustomersModule, RedisModule, NotificationsModule],
+  imports: [DatabaseModule, CustomersModule, RedisModule, NotificationsModule, AuditModule],
   controllers: [OffersController, OffersGuestStatusController, OffersCustomerController, OffersAdminController],
   providers: [OffersService, OffersQueueService, OffersQueueWorker],
   exports: [OffersQueueService],

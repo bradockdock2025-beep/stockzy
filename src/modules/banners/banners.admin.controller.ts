@@ -8,6 +8,7 @@ import {
   Patch,
   Post,
   Query,
+  Req,
   UploadedFile,
   UseInterceptors,
 } from '@nestjs/common';
@@ -15,10 +16,13 @@ import { FileInterceptor } from '@nestjs/platform-express';
 import { memoryStorage } from 'multer';
 import { user_role } from '@prisma/client';
 import { Roles } from '../../common/decorators/roles.decorator';
+import { buildAuditContext } from '../../common/audit/audit-context';
 import { BannersService } from './banners.service';
 import { CreateBannerDto } from './dto/create-banner.dto';
 import { UpdateBannerDto } from './dto/update-banner.dto';
 import { QueryBannerDto } from './dto/query-banner.dto';
+
+type ReqWithAuth = { user?: unknown; headers?: Record<string, unknown>; ip?: string };
 
 @Controller('admin/banners')
 @Roles(user_role.admin, user_role.manager)
@@ -26,8 +30,8 @@ export class BannersAdminController {
   constructor(private readonly bannersService: BannersService) {}
 
   @Post()
-  create(@Body() dto: CreateBannerDto) {
-    return this.bannersService.create(dto);
+  create(@Body() dto: CreateBannerDto, @Req() req: ReqWithAuth) {
+    return this.bannersService.create(dto, buildAuditContext(req));
   }
 
   @Post(':id/image')
@@ -46,8 +50,9 @@ export class BannersAdminController {
   uploadImage(
     @Param('id', new ParseUUIDPipe()) id: string,
     @UploadedFile() file: Express.Multer.File,
+    @Req() req: ReqWithAuth,
   ) {
-    return this.bannersService.uploadImage(id, file);
+    return this.bannersService.uploadImage(id, file, buildAuditContext(req));
   }
 
   @Get()
@@ -64,17 +69,18 @@ export class BannersAdminController {
   update(
     @Param('id', new ParseUUIDPipe()) id: string,
     @Body() dto: UpdateBannerDto,
+    @Req() req: ReqWithAuth,
   ) {
-    return this.bannersService.update(id, dto);
+    return this.bannersService.update(id, dto, buildAuditContext(req));
   }
 
   @Patch(':id/deactivate')
-  deactivate(@Param('id', new ParseUUIDPipe()) id: string) {
-    return this.bannersService.deactivate(id);
+  deactivate(@Param('id', new ParseUUIDPipe()) id: string, @Req() req: ReqWithAuth) {
+    return this.bannersService.deactivate(id, buildAuditContext(req));
   }
 
   @Delete(':id')
-  remove(@Param('id', new ParseUUIDPipe()) id: string) {
-    return this.bannersService.remove(id);
+  remove(@Param('id', new ParseUUIDPipe()) id: string, @Req() req: ReqWithAuth) {
+    return this.bannersService.remove(id, buildAuditContext(req));
   }
 }

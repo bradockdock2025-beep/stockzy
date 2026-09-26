@@ -61,6 +61,7 @@ export class LoginRateLimitAuditService {
     return {
       data,
       meta: {
+        mode: 'cursor' as const,
         limit,
         nextCursor,
       },

@@ -9,6 +9,7 @@ import {
   Post,
   Put,
   Query,
+  Req,
   UploadedFiles,
   UseInterceptors,
 } from '@nestjs/common';
@@ -16,6 +17,7 @@ import { FileFieldsInterceptor } from '@nestjs/platform-express';
 import { memoryStorage } from 'multer';
 import { user_role } from '@prisma/client';
 import { Roles } from '../../common/decorators/roles.decorator';
+import { buildAuditContext } from '../../common/audit/audit-context';
 import { HomepageService } from './homepage.service';
 import { UpdateHeroDto } from './dto/update-hero.dto';
 import { CreateTileDto } from './dto/create-tile.dto';
@@ -23,6 +25,8 @@ import { UpdateTileDto } from './dto/update-tile.dto';
 import { UpdateSocialConfigDto } from './dto/update-social-config.dto';
 import { CreateSocialImageDto } from './dto/create-social-image.dto';
 import { UpdateSocialImageDto } from './dto/update-social-image.dto';
+
+type ReqWithAuth = { user?: unknown; headers?: Record<string, unknown>; ip?: string };
 
 @Controller('admin/homepage')
 @Roles(user_role.admin, user_role.manager)
@@ -32,8 +36,8 @@ export class HomepageAdminController {
   // ── Hero ──────────────────────────────────────────────────────────────────
 
   @Put('hero')
-  upsertHero(@Body() dto: UpdateHeroDto) {
-    return this.homepageService.upsertHero(dto);
+  upsertHero(@Body() dto: UpdateHeroDto, @Req() req: ReqWithAuth) {
+    return this.homepageService.upsertHero(dto, buildAuditContext(req));
   }
 
   @Post('hero/upload')
@@ -57,9 +61,10 @@ export class HomepageAdminController {
   )
   uploadHeroImages(
     @UploadedFiles()
-    files?: { desktopImage?: Express.Multer.File[]; mobileImage?: Express.Multer.File[] },
+    files: { desktopImage?: Express.Multer.File[]; mobileImage?: Express.Multer.File[] } | undefined,
+    @Req() req: ReqWithAuth,
   ) {
-    return this.homepageService.uploadHeroImages(files ?? {});
+    return this.homepageService.uploadHeroImages(files ?? {}, buildAuditContext(req));
   }
 
   // ── Tiles ─────────────────────────────────────────────────────────────────
@@ -70,45 +75,47 @@ export class HomepageAdminController {
   }
 
   @Post('tiles')
-  createTile(@Body() dto: CreateTileDto) {
-    return this.homepageService.createTile(dto);
+  createTile(@Body() dto: CreateTileDto, @Req() req: ReqWithAuth) {
+    return this.homepageService.createTile(dto, buildAuditContext(req));
   }
 
   @Patch('tiles/:id')
   updateTile(
     @Param('id', new ParseUUIDPipe()) id: string,
     @Body() dto: UpdateTileDto,
+    @Req() req: ReqWithAuth,
   ) {
-    return this.homepageService.updateTile(id, dto);
+    return this.homepageService.updateTile(id, dto, buildAuditContext(req));
   }
 
   @Delete('tiles/:id')
-  removeTile(@Param('id', new ParseUUIDPipe()) id: string) {
-    return this.homepageService.removeTile(id);
+  removeTile(@Param('id', new ParseUUIDPipe()) id: string, @Req() req: ReqWithAuth) {
+    return this.homepageService.removeTile(id, buildAuditContext(req));
   }
 
   // ── Social ────────────────────────────────────────────────────────────────
 
   @Patch('social/config')
-  upsertSocialConfig(@Body() dto: UpdateSocialConfigDto) {
-    return this.homepageService.upsertSocialConfig(dto);
+  upsertSocialConfig(@Body() dto: UpdateSocialConfigDto, @Req() req: ReqWithAuth) {
+    return this.homepageService.upsertSocialConfig(dto, buildAuditContext(req));
   }
 
   @Post('social/images')
-  createSocialImage(@Body() dto: CreateSocialImageDto) {
-    return this.homepageService.createSocialImage(dto);
+  createSocialImage(@Body() dto: CreateSocialImageDto, @Req() req: ReqWithAuth) {
+    return this.homepageService.createSocialImage(dto, buildAuditContext(req));
   }
 
   @Patch('social/images/:id')
   updateSocialImage(
     @Param('id', new ParseUUIDPipe()) id: string,
     @Body() dto: UpdateSocialImageDto,
+    @Req() req: ReqWithAuth,
   ) {
-    return this.homepageService.updateSocialImage(id, dto);
+    return this.homepageService.updateSocialImage(id, dto, buildAuditContext(req));
   }
 
   @Delete('social/images/:id')
-  removeSocialImage(@Param('id', new ParseUUIDPipe()) id: string) {
-    return this.homepageService.removeSocialImage(id);
+  removeSocialImage(@Param('id', new ParseUUIDPipe()) id: string, @Req() req: ReqWithAuth) {
+    return this.homepageService.removeSocialImage(id, buildAuditContext(req));
   }
 }

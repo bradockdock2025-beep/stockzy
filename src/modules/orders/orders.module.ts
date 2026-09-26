@@ -20,6 +20,6 @@ import { ReceiptController } from './receipt.controller';
   imports: [DatabaseModule, CustomersModule, CartModule, RedisModule, PaymentsModule, NotificationsModule],
   controllers: [OrdersController, OrdersCustomerController, OrdersGuestController, ReceiptController, OrdersReportsController],
   providers: [OrdersService, OrdersQueueService, OrdersQueueWorker, ShippingService, ReceiptService],
-  exports: [OrdersQueueService],
+  exports: [OrdersQueueService, OrdersService],
 })
 export class OrdersModule {}

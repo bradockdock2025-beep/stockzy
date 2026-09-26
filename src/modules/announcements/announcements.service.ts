@@ -1,16 +1,21 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
 import { PrismaService } from '../../database/prisma.service';
+import { AuditLogService } from '../audit/audit-log.service';
+import { AuditContext } from '../../common/audit/audit-context';
 import { CreateAnnouncementDto } from './dto/create-announcement.dto';
 import { UpdateAnnouncementDto } from './dto/update-announcement.dto';
 import { QueryAnnouncementDto } from './dto/query-announcement.dto';
 
 @Injectable()
 export class AnnouncementsService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly auditLog: AuditLogService,
+  ) {}
 
-  async create(dto: CreateAnnouncementDto) {
-    return this.prisma.announcement.create({
+  async create(dto: CreateAnnouncementDto, context?: AuditContext) {
+    const created = await this.prisma.announcement.create({
       data: {
         textPt: dto.textPt,
         textFr: dto.textFr ?? null,
@@ -27,6 +32,16 @@ export class AnnouncementsService {
         position: dto.position ?? 0,
       },
     });
+
+    await this.auditLog.log({
+      action: 'create',
+      entity: 'announcement',
+      entityId: created.id,
+      after: created,
+      context,
+    });
+
+    return created;
   }
 
   async findAll(query: QueryAnnouncementDto) {
@@ -47,7 +62,7 @@ export class AnnouncementsService {
       });
       return {
         data,
-        meta: { limit, nextCursor: data.length === limit ? data[data.length - 1]?.id : null },
+        meta: { mode: 'cursor' as const, limit, nextCursor: data.length === limit ? data[data.length - 1]?.id : null },
       };
     }
 
@@ -65,7 +80,7 @@ export class AnnouncementsService {
       this.prisma.announcement.count({ where }),
     ]);
 
-    return { data, meta: { total, page, limit, totalPages: Math.ceil(total / limit) } };
+    return { data, meta: { mode: 'offset' as const, total, page, limit, totalPages: Math.ceil(total / limit) } };
   }
 
   async findActive(locale?: string) {
@@ -100,8 +115,8 @@ export class AnnouncementsService {
     return announcement;
   }
 
-  async update(id: string, dto: UpdateAnnouncementDto) {
-    await this.findOne(id);
+  async update(id: string, dto: UpdateAnnouncementDto, context?: AuditContext) {
+    const before = await this.findOne(id);
 
     const data: Prisma.AnnouncementUpdateInput = {};
     if (dto.textPt !== undefined) data.textPt = dto.textPt;
@@ -118,17 +133,50 @@ export class AnnouncementsService {
     if (dto.endsAt !== undefined) data.endsAt = dto.endsAt ? new Date(dto.endsAt) : null;
     if (dto.position !== undefined) data.position = dto.position;
 
-    return this.prisma.announcement.update({ where: { id }, data });
+    const updated = await this.prisma.announcement.update({ where: { id }, data });
+
+    await this.auditLog.log({
+      action: 'update',
+      entity: 'announcement',
+      entityId: id,
+      before,
+      after: updated,
+      context,
+    });
+
+    return updated;
   }
 
-  async deactivate(id: string) {
-    await this.findOne(id);
-    return this.prisma.announcement.update({ where: { id }, data: { isActive: false } });
+  async deactivate(id: string, context?: AuditContext) {
+    const before = await this.findOne(id);
+    const updated = await this.prisma.announcement.update({ where: { id }, data: { isActive: false } });
+
+    await this.auditLog.log({
+      action: 'deactivate',
+      entity: 'announcement',
+      entityId: id,
+      before,
+      after: updated,
+      context,
+    });
+
+    return updated;
   }
 
-  async remove(id: string) {
-    await this.findOne(id);
-    return this.prisma.announcement.delete({ where: { id } });
+  async remove(id: string, context?: AuditContext) {
+    const before = await this.findOne(id);
+    const removed = await this.prisma.announcement.delete({ where: { id } });
+
+    await this.auditLog.log({
+      action: 'delete',
+      entity: 'announcement',
+      entityId: id,
+      before,
+      after: null,
+      context,
+    });
+
+    return removed;
   }
 
   private resolveText(

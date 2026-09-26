@@ -1,11 +1,16 @@
 import { ConflictException, Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../../database/prisma.service';
+import { AuditLogService } from '../audit/audit-log.service';
+import { AuditContext } from '../../common/audit/audit-context';
 import { SubscribeDto } from './dto/subscribe.dto';
 import { UnsubscribeDto } from './dto/unsubscribe.dto';
 
 @Injectable()
 export class NewsletterService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly auditLog: AuditLogService,
+  ) {}
 
   async subscribe(dto: SubscribeDto) {
     const existing = await this.prisma.newsletterSubscription.findUnique({
@@ -59,13 +64,23 @@ export class NewsletterService {
       this.prisma.newsletterSubscription.count({ where }),
     ]);
 
-    return { data, total, page, limit, totalPages: Math.ceil(total / limit) };
+    return { data, mode: 'offset' as const, total, page, limit, totalPages: Math.ceil(total / limit) };
   }
 
-  async remove(id: string) {
+  async remove(id: string, context?: AuditContext) {
     const existing = await this.prisma.newsletterSubscription.findUnique({ where: { id } });
     if (!existing) throw new NotFoundException('Subscription not found');
     await this.prisma.newsletterSubscription.delete({ where: { id } });
+
+    await this.auditLog.log({
+      action: 'delete',
+      entity: 'newsletter_subscription',
+      entityId: id,
+      before: existing,
+      after: null,
+      context,
+    });
+
     return { message: 'Subscription removed' };
   }
 

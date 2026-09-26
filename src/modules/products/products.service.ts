@@ -1097,7 +1097,7 @@ export class ProductsService {
     if (cached) {
       return cached as {
         data: unknown[];
-        meta: { total: number; page: number; limit: number; totalPages: number };
+        meta: { mode: 'offset'; total: number; page: number; limit: number; totalPages: number };
       };
     }
 
@@ -1115,6 +1115,7 @@ export class ProductsService {
         const response = {
           data: [],
           meta: {
+            mode: 'offset' as const,
             total: 0,
             page,
             limit,
@@ -1158,6 +1159,7 @@ export class ProductsService {
         const response = {
           data: [],
           meta: {
+            mode: 'offset' as const,
             total: 0,
             page,
             limit,
@@ -1182,6 +1184,7 @@ export class ProductsService {
       const response = {
         data: [],
         meta: {
+          mode: 'offset' as const,
           total: 0,
           page,
           limit,
@@ -1229,6 +1232,7 @@ export class ProductsService {
         const response = {
           data: [],
           meta: {
+            mode: 'offset' as const,
             total,
             page,
             limit,
@@ -1259,6 +1263,7 @@ export class ProductsService {
       const response = {
         data: ordered,
         meta: {
+          mode: 'offset' as const,
           total,
           page,
           limit,
@@ -1314,6 +1319,7 @@ export class ProductsService {
     const response = {
       data: ordered,
       meta: {
+        mode: 'offset' as const,
         total,
         page,
         limit,

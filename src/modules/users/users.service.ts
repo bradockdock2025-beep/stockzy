@@ -88,6 +88,7 @@ export class UsersService {
     return {
       data,
       meta: {
+        mode: 'offset' as const,
         total,
         page,
         limit,

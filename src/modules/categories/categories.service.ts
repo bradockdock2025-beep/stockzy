@@ -119,6 +119,7 @@ export class CategoriesService {
     return {
       data,
       meta: {
+        mode: 'offset' as const,
         total,
         page,
         limit,

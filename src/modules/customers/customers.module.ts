@@ -3,6 +3,7 @@ import { DatabaseModule } from '../../database/database.module';
 import { AuthModule } from '../auth/auth.module';
 import { RedisModule } from '../../common/redis/redis.module';
 import { NotificationsModule } from '../notifications/notifications.module';
+import { AuditModule } from '../audit/audit.module';
 import { CustomersController } from './customers.controller';
 import { CustomersAdminController } from './customers.admin.controller';
 import { CustomersWebhookController } from './customers.webhook.controller';
@@ -12,7 +13,7 @@ import { CustomerAuthGuard } from './customer-auth.guard';
 import { CustomerRateLimitGuard } from './customer-rate-limit.guard';
 
 @Module({
-  imports: [DatabaseModule, AuthModule, RedisModule, NotificationsModule],
+  imports: [DatabaseModule, AuthModule, RedisModule, NotificationsModule, AuditModule],
   controllers: [CustomersController, CustomersAdminController, CustomersWebhookController],
   providers: [CustomersService, SupabaseAuthService, CustomerAuthGuard, CustomerRateLimitGuard],
   exports: [CustomerAuthGuard, SupabaseAuthService, RedisModule],

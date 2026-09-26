@@ -676,6 +676,7 @@ export class PaymentsService {
       return {
         data,
         meta: {
+          mode: 'cursor' as const,
           limit,
           nextCursor: data.length === limit ? data[data.length - 1]?.id : null,
         },
@@ -700,6 +701,7 @@ export class PaymentsService {
     return {
       data,
       meta: {
+        mode: 'offset' as const,
         total,
         page,
         limit,

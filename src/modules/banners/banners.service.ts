@@ -10,6 +10,8 @@ import { createClient, SupabaseClient } from '@supabase/supabase-js';
 import { randomUUID } from 'crypto';
 import { extname } from 'path';
 import { PrismaService } from '../../database/prisma.service';
+import { AuditLogService } from '../audit/audit-log.service';
+import { AuditContext } from '../../common/audit/audit-context';
 import { CreateBannerDto } from './dto/create-banner.dto';
 import { UpdateBannerDto } from './dto/update-banner.dto';
 import { QueryBannerDto } from './dto/query-banner.dto';
@@ -21,6 +23,7 @@ export class BannersService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly configService: ConfigService,
+    private readonly auditLog: AuditLogService,
   ) {}
 
   private getSupabaseClient(): SupabaseClient {
@@ -47,8 +50,8 @@ export class BannersService {
     return { bucket, isPublic, signedTtl: Number.isFinite(ttl) && ttl > 0 ? ttl : 86400 };
   }
 
-  async create(dto: CreateBannerDto) {
-    return this.prisma.banner.create({
+  async create(dto: CreateBannerDto, context?: AuditContext) {
+    const created = await this.prisma.banner.create({
       data: {
         title: dto.title,
         subtitle: dto.subtitle ?? null,
@@ -69,9 +72,19 @@ export class BannersService {
         endsAt: dto.endsAt ? new Date(dto.endsAt) : null,
       },
     });
+
+    await this.auditLog.log({
+      action: 'create',
+      entity: 'banner',
+      entityId: created.id,
+      after: created,
+      context,
+    });
+
+    return created;
   }
 
-  async uploadImage(id: string, file: Express.Multer.File) {
+  async uploadImage(id: string, file: Express.Multer.File, context?: AuditContext) {
     const banner = await this.prisma.banner.findUnique({ where: { id } });
     if (!banner) throw new NotFoundException('Banner not found');
 
@@ -104,7 +117,18 @@ export class BannersService {
       imageUrl = signed.signedUrl;
     }
 
-    return this.prisma.banner.update({ where: { id }, data: { imageUrl } });
+    const updated = await this.prisma.banner.update({ where: { id }, data: { imageUrl } });
+
+    await this.auditLog.log({
+      action: 'upload-image',
+      entity: 'banner',
+      entityId: id,
+      before: banner,
+      after: updated,
+      context,
+    });
+
+    return updated;
   }
 
   async findAll(query: QueryBannerDto) {
@@ -135,7 +159,7 @@ export class BannersService {
 
       return {
         data,
-        meta: { limit, nextCursor: data.length === limit ? data[data.length - 1]?.id : null },
+        meta: { mode: 'cursor' as const, limit, nextCursor: data.length === limit ? data[data.length - 1]?.id : null },
       };
     }
 
@@ -153,7 +177,7 @@ export class BannersService {
       this.prisma.banner.count({ where }),
     ]);
 
-    return { data, meta: { total, page, limit, totalPages: Math.ceil(total / limit) } };
+    return { data, meta: { mode: 'offset' as const, total, page, limit, totalPages: Math.ceil(total / limit) } };
   }
 
   async findActive(context?: string) {
@@ -181,8 +205,8 @@ export class BannersService {
     return banner;
   }
 
-  async update(id: string, dto: UpdateBannerDto) {
-    await this.findOne(id);
+  async update(id: string, dto: UpdateBannerDto, context?: AuditContext) {
+    const before = await this.findOne(id);
 
     const data: Prisma.BannerUpdateInput = {};
     if (dto.title !== undefined) data.title = dto.title;
@@ -203,16 +227,49 @@ export class BannersService {
     if (dto.startsAt !== undefined) data.startsAt = dto.startsAt ? new Date(dto.startsAt) : null;
     if (dto.endsAt !== undefined) data.endsAt = dto.endsAt ? new Date(dto.endsAt) : null;
 
-    return this.prisma.banner.update({ where: { id }, data });
+    const updated = await this.prisma.banner.update({ where: { id }, data });
+
+    await this.auditLog.log({
+      action: 'update',
+      entity: 'banner',
+      entityId: id,
+      before,
+      after: updated,
+      context,
+    });
+
+    return updated;
   }
 
-  async deactivate(id: string) {
-    await this.findOne(id);
-    return this.prisma.banner.update({ where: { id }, data: { isActive: false } });
+  async deactivate(id: string, context?: AuditContext) {
+    const before = await this.findOne(id);
+    const updated = await this.prisma.banner.update({ where: { id }, data: { isActive: false } });
+
+    await this.auditLog.log({
+      action: 'deactivate',
+      entity: 'banner',
+      entityId: id,
+      before,
+      after: updated,
+      context,
+    });
+
+    return updated;
   }
 
-  async remove(id: string) {
-    await this.findOne(id);
-    return this.prisma.banner.delete({ where: { id } });
+  async remove(id: string, context?: AuditContext) {
+    const before = await this.findOne(id);
+    const removed = await this.prisma.banner.delete({ where: { id } });
+
+    await this.auditLog.log({
+      action: 'delete',
+      entity: 'banner',
+      entityId: id,
+      before,
+      after: null,
+      context,
+    });
+
+    return removed;
   }
 }

@@ -80,7 +80,7 @@ export class BrandsService {
       this.prisma.brand.count({ where }),
     ]);
 
-    return { data, meta: { total, page, limit, totalPages: Math.ceil(total / limit) } };
+    return { data, meta: { mode: 'offset' as const, total, page, limit, totalPages: Math.ceil(total / limit) } };
   }
 
   async findOne(id: string) {

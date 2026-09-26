@@ -1,6 +1,7 @@
-import { Controller, Delete, Get, Param, ParseUUIDPipe, Query } from '@nestjs/common';
+import { Controller, Delete, Get, Param, ParseUUIDPipe, Query, Req } from '@nestjs/common';
 import { user_role } from '@prisma/client';
 import { Roles } from '../../common/decorators/roles.decorator';
+import { buildAuditContext } from '../../common/audit/audit-context';
 import { NewsletterService } from './newsletter.service';
 
 @Roles(user_role.admin, user_role.manager)
@@ -27,7 +28,10 @@ export class NewsletterAdminController {
   }
 
   @Delete('subscriptions/:id')
-  remove(@Param('id', new ParseUUIDPipe()) id: string) {
-    return this.newsletterService.remove(id);
+  remove(
+    @Param('id', new ParseUUIDPipe()) id: string,
+    @Req() req: { user?: unknown; headers?: Record<string, unknown>; ip?: string },
+  ) {
+    return this.newsletterService.remove(id, buildAuditContext(req));
   }
 }

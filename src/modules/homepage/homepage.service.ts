@@ -9,6 +9,8 @@ import { createClient, SupabaseClient } from '@supabase/supabase-js';
 import { randomUUID } from 'crypto';
 import { extname } from 'path';
 import { PrismaService } from '../../database/prisma.service';
+import { AuditLogService } from '../audit/audit-log.service';
+import { AuditContext } from '../../common/audit/audit-context';
 import { UpdateHeroDto } from './dto/update-hero.dto';
 import { CreateTileDto } from './dto/create-tile.dto';
 import { UpdateTileDto } from './dto/update-tile.dto';
@@ -23,6 +25,7 @@ export class HomepageService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly configService: ConfigService,
+    private readonly auditLog: AuditLogService,
   ) {}
 
   private getSupabaseClient(): SupabaseClient {
@@ -59,9 +62,10 @@ export class HomepageService {
     return this.prisma.heroBanner.findFirst({ where: { isActive: true } });
   }
 
-  async upsertHero(dto: UpdateHeroDto) {
+  async upsertHero(dto: UpdateHeroDto, context?: AuditContext) {
     const existing = await this.prisma.heroBanner.findFirst();
 
+    let result;
     if (existing) {
       const data: Record<string, unknown> = {};
       if (dto.desktopImage !== undefined) data.desktopImage = dto.desktopImage;
@@ -71,26 +75,40 @@ export class HomepageService {
       if (dto.ctaLabel !== undefined) data.ctaLabel = dto.ctaLabel;
       if (dto.ctaHref !== undefined) data.ctaHref = dto.ctaHref;
       if (dto.isActive !== undefined) data.isActive = dto.isActive;
-      return this.prisma.heroBanner.update({ where: { id: existing.id }, data });
+      result = await this.prisma.heroBanner.update({ where: { id: existing.id }, data });
+    } else {
+      result = await this.prisma.heroBanner.create({
+        data: {
+          desktopImage: dto.desktopImage ?? '',
+          mobileImage: dto.mobileImage ?? null,
+          eyebrow: dto.eyebrow ?? null,
+          title: dto.title ?? '',
+          ctaLabel: dto.ctaLabel ?? '',
+          ctaHref: dto.ctaHref ?? '',
+          isActive: dto.isActive ?? true,
+        },
+      });
     }
 
-    return this.prisma.heroBanner.create({
-      data: {
-        desktopImage: dto.desktopImage ?? '',
-        mobileImage: dto.mobileImage ?? null,
-        eyebrow: dto.eyebrow ?? null,
-        title: dto.title ?? '',
-        ctaLabel: dto.ctaLabel ?? '',
-        ctaHref: dto.ctaHref ?? '',
-        isActive: dto.isActive ?? true,
-      },
+    await this.auditLog.log({
+      action: existing ? 'update' : 'create',
+      entity: 'hero_banner',
+      entityId: result.id,
+      before: existing ?? null,
+      after: result,
+      context,
     });
+
+    return result;
   }
 
-  async uploadHeroImages(files?: {
-    desktopImage?: Express.Multer.File[];
-    mobileImage?: Express.Multer.File[];
-  }) {
+  async uploadHeroImages(
+    files?: {
+      desktopImage?: Express.Multer.File[];
+      mobileImage?: Express.Multer.File[];
+    },
+    context?: AuditContext,
+  ) {
     const desktopFile = files?.desktopImage?.[0];
     const mobileFile = files?.mobileImage?.[0];
 
@@ -109,19 +127,31 @@ export class HomepageService {
 
     const existing = await this.prisma.heroBanner.findFirst();
 
+    let result;
     if (existing) {
-      return this.prisma.heroBanner.update({ where: { id: existing.id }, data });
+      result = await this.prisma.heroBanner.update({ where: { id: existing.id }, data });
+    } else {
+      result = await this.prisma.heroBanner.create({
+        data: {
+          desktopImage: data.desktopImage ?? '',
+          mobileImage: data.mobileImage ?? null,
+          title: '',
+          ctaLabel: '',
+          ctaHref: '',
+        },
+      });
     }
 
-    return this.prisma.heroBanner.create({
-      data: {
-        desktopImage: data.desktopImage ?? '',
-        mobileImage: data.mobileImage ?? null,
-        title: '',
-        ctaLabel: '',
-        ctaHref: '',
-      },
+    await this.auditLog.log({
+      action: 'upload-hero-images',
+      entity: 'hero_banner',
+      entityId: result.id,
+      before: existing ?? null,
+      after: result,
+      context,
     });
+
+    return result;
   }
 
   // ── Tiles ─────────────────────────────────────────────────────────────────
@@ -141,8 +171,8 @@ export class HomepageService {
     });
   }
 
-  async createTile(dto: CreateTileDto) {
-    return this.prisma.homepageTile.create({
+  async createTile(dto: CreateTileDto, context?: AuditContext) {
+    const created = await this.prisma.homepageTile.create({
       data: {
         section: dto.section ?? null,
         title: dto.title,
@@ -153,10 +183,20 @@ export class HomepageService {
         isActive: dto.isActive ?? true,
       },
     });
+
+    await this.auditLog.log({
+      action: 'create',
+      entity: 'homepage_tile',
+      entityId: created.id,
+      after: created,
+      context,
+    });
+
+    return created;
   }
 
-  async updateTile(id: string, dto: UpdateTileDto) {
-    await this.findTileOrFail(id);
+  async updateTile(id: string, dto: UpdateTileDto, context?: AuditContext) {
+    const before = await this.findTileOrFail(id);
 
     const data: Record<string, unknown> = {};
     if (dto.section !== undefined) data.section = dto.section ?? null;
@@ -167,12 +207,34 @@ export class HomepageService {
     if (dto.position !== undefined) data.position = dto.position;
     if (dto.isActive !== undefined) data.isActive = dto.isActive;
 
-    return this.prisma.homepageTile.update({ where: { id }, data });
+    const updated = await this.prisma.homepageTile.update({ where: { id }, data });
+
+    await this.auditLog.log({
+      action: 'update',
+      entity: 'homepage_tile',
+      entityId: id,
+      before,
+      after: updated,
+      context,
+    });
+
+    return updated;
   }
 
-  async removeTile(id: string) {
-    await this.findTileOrFail(id);
-    return this.prisma.homepageTile.delete({ where: { id } });
+  async removeTile(id: string, context?: AuditContext) {
+    const before = await this.findTileOrFail(id);
+    const removed = await this.prisma.homepageTile.delete({ where: { id } });
+
+    await this.auditLog.log({
+      action: 'delete',
+      entity: 'homepage_tile',
+      entityId: id,
+      before,
+      after: null,
+      context,
+    });
+
+    return removed;
   }
 
   private async findTileOrFail(id: string) {
@@ -194,26 +256,38 @@ export class HomepageService {
     return { config, images };
   }
 
-  async upsertSocialConfig(dto: UpdateSocialConfigDto) {
+  async upsertSocialConfig(dto: UpdateSocialConfigDto, context?: AuditContext) {
     const existing = await this.prisma.socialFeedConfig.findFirst();
 
+    let result;
     if (existing) {
       const data: Record<string, unknown> = {};
       if (dto.handle !== undefined) data.handle = dto.handle;
       if (dto.followHref !== undefined) data.followHref = dto.followHref;
-      return this.prisma.socialFeedConfig.update({ where: { id: existing.id }, data });
+      result = await this.prisma.socialFeedConfig.update({ where: { id: existing.id }, data });
+    } else {
+      result = await this.prisma.socialFeedConfig.create({
+        data: {
+          handle: dto.handle ?? '',
+          followHref: dto.followHref ?? '',
+        },
+      });
     }
 
-    return this.prisma.socialFeedConfig.create({
-      data: {
-        handle: dto.handle ?? '',
-        followHref: dto.followHref ?? '',
-      },
+    await this.auditLog.log({
+      action: existing ? 'update' : 'create',
+      entity: 'social_feed_config',
+      entityId: result.id,
+      before: existing ?? null,
+      after: result,
+      context,
     });
+
+    return result;
   }
 
-  async createSocialImage(dto: CreateSocialImageDto) {
-    return this.prisma.socialFeedImage.create({
+  async createSocialImage(dto: CreateSocialImageDto, context?: AuditContext) {
+    const created = await this.prisma.socialFeedImage.create({
       data: {
         src: dto.imageSrc,
         alt: dto.alt,
@@ -222,10 +296,20 @@ export class HomepageService {
         isActive: dto.isActive ?? true,
       },
     });
+
+    await this.auditLog.log({
+      action: 'create',
+      entity: 'social_feed_image',
+      entityId: created.id,
+      after: created,
+      context,
+    });
+
+    return created;
   }
 
-  async updateSocialImage(id: string, dto: UpdateSocialImageDto) {
-    await this.findSocialImageOrFail(id);
+  async updateSocialImage(id: string, dto: UpdateSocialImageDto, context?: AuditContext) {
+    const before = await this.findSocialImageOrFail(id);
 
     const data: Record<string, unknown> = {};
     if (dto.imageSrc !== undefined) data.src = dto.imageSrc;
@@ -234,12 +318,34 @@ export class HomepageService {
     if (dto.position !== undefined) data.position = dto.position;
     if (dto.isActive !== undefined) data.isActive = dto.isActive;
 
-    return this.prisma.socialFeedImage.update({ where: { id }, data });
+    const updated = await this.prisma.socialFeedImage.update({ where: { id }, data });
+
+    await this.auditLog.log({
+      action: 'update',
+      entity: 'social_feed_image',
+      entityId: id,
+      before,
+      after: updated,
+      context,
+    });
+
+    return updated;
   }
 
-  async removeSocialImage(id: string) {
-    await this.findSocialImageOrFail(id);
-    return this.prisma.socialFeedImage.delete({ where: { id } });
+  async removeSocialImage(id: string, context?: AuditContext) {
+    const before = await this.findSocialImageOrFail(id);
+    const removed = await this.prisma.socialFeedImage.delete({ where: { id } });
+
+    await this.auditLog.log({
+      action: 'delete',
+      entity: 'social_feed_image',
+      entityId: id,
+      before,
+      after: null,
+      context,
+    });
+
+    return removed;
   }
 
   private async findSocialImageOrFail(id: string) {

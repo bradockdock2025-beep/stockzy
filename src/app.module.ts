@@ -26,6 +26,7 @@ import { AnnouncementsModule } from './modules/announcements/announcements.modul
 import { BrandsModule } from './modules/brands/brands.module';
 import { FacetsModule } from './modules/facets/facets.module';
 import { OffersModule } from './modules/offers/offers.module';
+import { DashboardModule } from './modules/dashboard/dashboard.module';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { APP_GUARD } from '@nestjs/core';
@@ -67,6 +68,7 @@ import { AuditContextMiddleware } from './common/audit/audit-context.middleware'
     BrandsModule,
     FacetsModule,
     OffersModule,
+    DashboardModule,
   ],
   controllers: [AppController],
   providers: [

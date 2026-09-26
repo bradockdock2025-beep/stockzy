@@ -1,6 +1,9 @@
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
 import { PrismaService } from '../../database/prisma.service';
+import { AuditLogService } from '../audit/audit-log.service';
+import { AuditContext } from '../../common/audit/audit-context';
+import { applyAuditContext } from '../../common/audit/audit-context.db';
 import { CreatePromotionDto } from './dto/create-promotion.dto';
 import { UpdatePromotionDto } from './dto/update-promotion.dto';
 import { QueryPromotionDto } from './dto/query-promotion.dto';
@@ -8,13 +11,17 @@ import { PromotionTargetDto } from './dto/promotion-target.dto';
 
 @Injectable()
 export class PromotionsService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly auditLog: AuditLogService,
+  ) {}
 
-  async create(dto: CreatePromotionDto) {
+  async create(dto: CreatePromotionDto, context?: AuditContext) {
     const targets = this.normalizeTargets(dto.targets);
     const code = this.normalizeCode(dto.code);
 
     const promotion = await this.prisma.$transaction(async (tx) => {
+      await applyAuditContext(tx, context);
       const created = await tx.promotion.create({
         data: {
           name: dto.name,
@@ -46,14 +53,21 @@ export class PromotionsService {
       return created;
     });
 
-    return this.findOne(promotion.id);
+    const result = await this.findOne(promotion.id);
+
+    await this.auditLog.log({
+      action: 'create',
+      entity: 'promotion',
+      entityId: promotion.id,
+      after: result,
+      context,
+    });
+
+    return result;
   }
 
-  async update(id: string, dto: UpdatePromotionDto) {
-    const existing = await this.prisma.promotion.findUnique({ where: { id } });
-    if (!existing) {
-      throw new NotFoundException('Promotion not found');
-    }
+  async update(id: string, dto: UpdatePromotionDto, context?: AuditContext) {
+    const existing = await this.findOne(id);
 
     const data: Prisma.PromotionUpdateInput = {};
 
@@ -75,6 +89,7 @@ export class PromotionsService {
     const targets = dto.targets ? this.normalizeTargets(dto.targets) : null;
 
     await this.prisma.$transaction(async (tx) => {
+      await applyAuditContext(tx, context);
       await tx.promotion.update({
         where: { id },
         data,
@@ -95,7 +110,18 @@ export class PromotionsService {
       }
     });
 
-    return this.findOne(id);
+    const updated = await this.findOne(id);
+
+    await this.auditLog.log({
+      action: 'update',
+      entity: 'promotion',
+      entityId: id,
+      before: existing,
+      after: updated,
+      context,
+    });
+
+    return updated;
   }
 
   async findOne(id: string) {
@@ -157,6 +183,7 @@ export class PromotionsService {
       return {
         data,
         meta: {
+          mode: 'cursor' as const,
           limit,
           nextCursor: data.length === limit ? data[data.length - 1]?.id : null,
         },
@@ -181,6 +208,7 @@ export class PromotionsService {
     return {
       data,
       meta: {
+        mode: 'offset' as const,
         total,
         page,
         limit,
@@ -231,16 +259,27 @@ export class PromotionsService {
     };
   }
 
-  async deactivate(id: string) {
+  async deactivate(id: string, context?: AuditContext) {
     const existing = await this.prisma.promotion.findUnique({ where: { id } });
     if (!existing) {
       throw new NotFoundException('Promotion not found');
     }
 
-    return this.prisma.promotion.update({
+    const updated = await this.prisma.promotion.update({
       where: { id },
       data: { isActive: false },
     });
+
+    await this.auditLog.log({
+      action: 'deactivate',
+      entity: 'promotion',
+      entityId: id,
+      before: existing,
+      after: updated,
+      context,
+    });
+
+    return updated;
   }
 
   private normalizeTargets(targets: PromotionTargetDto[] | undefined) {

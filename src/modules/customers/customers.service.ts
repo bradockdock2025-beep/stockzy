@@ -2,6 +2,8 @@ import { BadRequestException, HttpException, HttpStatus, Injectable, NotFoundExc
 import { createHash, randomBytes } from 'crypto';
 import { Prisma } from '@prisma/client';
 import { AuditContextStore } from '../../common/audit/audit-context.store';
+import { AuditContext } from '../../common/audit/audit-context';
+import { AuditLogService } from '../audit/audit-log.service';
 import { PrismaService } from '../../database/prisma.service';
 import { RedisService } from '../../common/redis/redis.service';
 import { NotificationsService } from '../notifications/notifications.service';
@@ -47,6 +49,7 @@ export class CustomersService {
     private readonly supabaseAuth: SupabaseAuthService,
     private readonly redis: RedisService,
     private readonly notificationsService: NotificationsService,
+    private readonly auditLog: AuditLogService,
   ) {}
 
   async register(dto: RegisterCustomerDto) {
@@ -924,6 +927,7 @@ export class CustomersService {
         exportedAt: new Date().toISOString(),
         data,
         meta: {
+          mode: 'cursor' as const,
           limit,
           nextCursor: data.length === limit ? data[data.length - 1]?.id : null,
         },
@@ -948,6 +952,7 @@ export class CustomersService {
       exportedAt: new Date().toISOString(),
       data,
       meta: {
+        mode: 'offset' as const,
         total,
         page,
         limit,
@@ -994,6 +999,7 @@ export class CustomersService {
       return {
         data,
         meta: {
+          mode: 'cursor' as const,
           limit,
           nextCursor: data.length === limit ? data[data.length - 1]?.id : null,
         },
@@ -1025,6 +1031,7 @@ export class CustomersService {
     return {
       data,
       meta: {
+        mode: 'offset' as const,
         total,
         page,
         limit,
@@ -1071,6 +1078,7 @@ export class CustomersService {
       return {
         data,
         meta: {
+          mode: 'cursor' as const,
           limit,
           nextCursor: data.length === limit ? data[data.length - 1]?.id : null,
         },
@@ -1103,6 +1111,7 @@ export class CustomersService {
     return {
       data,
       meta: {
+        mode: 'offset' as const,
         total,
         page,
         limit,
@@ -1134,13 +1143,19 @@ export class CustomersService {
     return customer;
   }
 
-  async updateAdmin(id: string, dto: UpdateCustomerAdminDto) {
+  /** Nunca logar passwordHash no audit trail — só um retrato seguro do registro. */
+  private toAuditSnapshot(customer: { passwordHash?: string | null } & Record<string, unknown>) {
+    const { passwordHash: _passwordHash, ...safe } = customer;
+    return safe;
+  }
+
+  async updateAdmin(id: string, dto: UpdateCustomerAdminDto, context?: AuditContext) {
     const existing = await this.prisma.customer.findUnique({ where: { id } });
     if (!existing) {
       throw new NotFoundException('Customer not found');
     }
 
-    return this.prisma.customer.update({
+    const updated = await this.prisma.customer.update({
       where: { id },
       data: {
         firstName: dto.firstName ?? undefined,
@@ -1149,18 +1164,40 @@ export class CustomersService {
         isActive: dto.isActive ?? undefined,
       },
     });
+
+    await this.auditLog.log({
+      action: 'update',
+      entity: 'customer',
+      entityId: id,
+      before: this.toAuditSnapshot(existing),
+      after: this.toAuditSnapshot(updated),
+      context,
+    });
+
+    return updated;
   }
 
-  async deactivate(id: string) {
+  async deactivate(id: string, context?: AuditContext) {
     const existing = await this.prisma.customer.findUnique({ where: { id } });
     if (!existing) {
       throw new NotFoundException('Customer not found');
     }
 
-    return this.prisma.customer.update({
+    const updated = await this.prisma.customer.update({
       where: { id },
       data: { isActive: false },
     });
+
+    await this.auditLog.log({
+      action: 'deactivate',
+      entity: 'customer',
+      entityId: id,
+      before: this.toAuditSnapshot(existing),
+      after: this.toAuditSnapshot(updated),
+      context,
+    });
+
+    return updated;
   }
 
   async deleteAccount(authUserId: string) {
