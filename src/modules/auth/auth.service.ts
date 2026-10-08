@@ -1,20 +1,180 @@
-import { BadRequestException, Injectable, UnauthorizedException } from '@nestjs/common';
+import { BadRequestException, Injectable, InternalServerErrorException, UnauthorizedException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { PrismaService } from '../../database/prisma.service';
 import * as bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
-import { createHash, randomBytes } from 'crypto';
+import { createHash, randomBytes, randomUUID } from 'crypto';
+import { extname } from 'path';
+import { createClient, SupabaseClient } from '@supabase/supabase-js';
+import { fileTypeFromBuffer } from 'file-type';
 import { AuditLogService } from '../audit/audit-log.service';
 import { AuditContext } from '../../common/audit/audit-context';
 import { applyAuditContext } from '../../common/audit/audit-context.db';
 
 @Injectable()
 export class AuthService {
+  private supabaseClient: SupabaseClient | null = null;
+
   constructor(
     private readonly prisma: PrismaService,
     private readonly configService: ConfigService,
     private readonly auditLog: AuditLogService,
   ) {}
+
+  private getSupabaseClient(): SupabaseClient {
+    if (this.supabaseClient) {
+      return this.supabaseClient;
+    }
+
+    const supabaseUrl = this.configService.get<string>('SUPABASE_URL');
+    const supabaseKey = this.configService.get<string>('SUPABASE_SERVICE_ROLE_KEY');
+
+    if (!supabaseUrl || !supabaseKey) {
+      throw new InternalServerErrorException(
+        'Supabase is not configured. Set SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY.',
+      );
+    }
+
+    this.supabaseClient = createClient(supabaseUrl, supabaseKey, {
+      auth: { persistSession: false },
+    });
+
+    return this.supabaseClient;
+  }
+
+  private getStorageSettings() {
+    const bucket = this.configService.get<string>('SUPABASE_BUCKET') ?? 'product-images';
+    const publicSetting = this.configService.get<string>('SUPABASE_STORAGE_PUBLIC');
+    const isPublic = publicSetting ? publicSetting.toLowerCase() === 'true' : true;
+    const ttlSetting = this.configService.get<string>('SUPABASE_SIGNED_URL_TTL');
+    const parsedTtl = ttlSetting ? Number(ttlSetting) : 60 * 60 * 24 * 7;
+    const signedTtl = Number.isFinite(parsedTtl) && parsedTtl > 0 ? parsedTtl : 60 * 60 * 24;
+
+    return { bucket, isPublic, signedTtl };
+  }
+
+  /** Extrai o `path` dentro do bucket a partir de uma URL pública já gerada, pra poder apagar o ficheiro antigo. */
+  private extractStoragePath(url: string, bucket: string): string | null {
+    const marker = `/object/public/${bucket}/`;
+    const index = url.indexOf(marker);
+    if (index === -1) {
+      return null;
+    }
+    return url.slice(index + marker.length);
+  }
+
+  async uploadAvatar(userId: string, file: Express.Multer.File | undefined, context?: AuditContext) {
+    if (!userId) {
+      throw new UnauthorizedException('Invalid credentials');
+    }
+    if (!file) {
+      throw new BadRequestException('No file uploaded');
+    }
+
+    const ALLOWED_MIME_TYPES = ['image/jpeg', 'image/png', 'image/webp'];
+    const detected = await fileTypeFromBuffer(file.buffer);
+    if (!detected || !ALLOWED_MIME_TYPES.includes(detected.mime)) {
+      throw new BadRequestException(
+        `Invalid file: ${file.originalname}. Only JPEG, PNG and WebP are allowed.`,
+      );
+    }
+
+    const before = await this.prisma.user.findUnique({
+      where: { id: userId },
+      select: { id: true, avatarUrl: true },
+    });
+    if (!before) {
+      throw new UnauthorizedException('Invalid credentials');
+    }
+
+    const supabase = this.getSupabaseClient();
+    const { bucket, isPublic, signedTtl } = this.getStorageSettings();
+
+    const ext = extname(file.originalname).toLowerCase() || '.jpg';
+    const path = `users/${userId}/${randomUUID()}${ext}`;
+
+    const { error: uploadError } = await supabase.storage
+      .from(bucket)
+      .upload(path, file.buffer, { contentType: file.mimetype, upsert: false });
+
+    if (uploadError) {
+      throw new BadRequestException(`Upload failed: ${uploadError.message}`);
+    }
+
+    let avatarUrl: string;
+    if (isPublic) {
+      avatarUrl = supabase.storage.from(bucket).getPublicUrl(path).data.publicUrl;
+    } else {
+      const { data: signed, error: signedError } = await supabase.storage
+        .from(bucket)
+        .createSignedUrl(path, signedTtl);
+      if (signedError || !signed?.signedUrl) {
+        throw new BadRequestException(
+          `Failed to generate signed URL: ${signedError?.message ?? 'unknown error'}`,
+        );
+      }
+      avatarUrl = signed.signedUrl;
+    }
+
+    const updated = await this.prisma.user.update({
+      where: { id: userId },
+      data: { avatarUrl },
+      select: { id: true, avatarUrl: true },
+    });
+
+    if (before.avatarUrl) {
+      const oldPath = this.extractStoragePath(before.avatarUrl, bucket);
+      if (oldPath) {
+        await supabase.storage.from(bucket).remove([oldPath]).catch(() => undefined);
+      }
+    }
+
+    await this.auditLog.log({
+      action: 'upload-image',
+      entity: 'user',
+      entityId: userId,
+      before: { avatarUrl: before.avatarUrl },
+      after: { avatarUrl: updated.avatarUrl },
+      context,
+    });
+
+    return { avatarUrl: updated.avatarUrl };
+  }
+
+  async removeAvatar(userId: string, context?: AuditContext) {
+    if (!userId) {
+      throw new UnauthorizedException('Invalid credentials');
+    }
+
+    const before = await this.prisma.user.findUnique({
+      where: { id: userId },
+      select: { id: true, avatarUrl: true },
+    });
+    if (!before) {
+      throw new UnauthorizedException('Invalid credentials');
+    }
+
+    await this.prisma.user.update({ where: { id: userId }, data: { avatarUrl: null } });
+
+    if (before.avatarUrl) {
+      const { bucket } = this.getStorageSettings();
+      const oldPath = this.extractStoragePath(before.avatarUrl, bucket);
+      if (oldPath) {
+        await this.getSupabaseClient().storage.from(bucket).remove([oldPath]).catch(() => undefined);
+      }
+    }
+
+    await this.auditLog.log({
+      action: 'update',
+      entity: 'user',
+      entityId: userId,
+      before: { avatarUrl: before.avatarUrl },
+      after: { avatarUrl: null },
+      context,
+    });
+
+    return { avatarUrl: null };
+  }
 
   async login(email: string, password: string, context?: AuditContext) {
     const normalizedEmail = email.trim().toLowerCase();
@@ -27,6 +187,7 @@ export class AuthService {
         passwordHash: true,
         role: true,
         isActive: true,
+        avatarUrl: true,
       },
     });
 
@@ -75,6 +236,7 @@ export class AuthService {
         name: user.name,
         email: user.email,
         role: user.role,
+        avatarUrl: user.avatarUrl,
       },
     };
   }
@@ -100,7 +262,7 @@ export class AuthService {
 
     const user = await this.prisma.user.findUnique({
       where: { id: existing.userId },
-      select: { id: true, role: true, email: true, isActive: true, name: true },
+      select: { id: true, role: true, email: true, isActive: true, name: true, avatarUrl: true },
     });
 
     if (!user || !user.isActive) {
@@ -135,6 +297,7 @@ export class AuthService {
         name: user.name,
         email: user.email,
         role: user.role,
+        avatarUrl: user.avatarUrl,
       },
     };
   }

@@ -1,8 +1,10 @@
 import { Type } from 'class-transformer';
-import { IsBoolean, IsDateString, IsInt, IsOptional, IsString, IsUrl, Min } from 'class-validator';
+import { IsBoolean, IsDateString, IsInt, IsNotEmpty, IsOptional, IsString, Min } from 'class-validator';
+import { IsUrlOrInternalPath } from '../../../common/validators/is-url-or-internal-path.validator';
 
 export class CreateAnnouncementDto {
   @IsString()
+  @IsNotEmpty()
   textPt: string;
 
   @IsOptional()
@@ -18,7 +20,7 @@ export class CreateAnnouncementDto {
   textEs?: string;
 
   @IsOptional()
-  @IsUrl()
+  @IsUrlOrInternalPath()
   link?: string;
 
   @IsOptional()

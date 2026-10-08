@@ -49,10 +49,13 @@ export class OffersService {
   private async loadActiveVariant(variantId: string) {
     const variant = await this.prisma.productVariant.findFirst({
       where: { id: variantId, isActive: true, product: { status: product_status.active } },
-      select: { id: true, price: true },
+      select: { id: true, price: true, offerEnabled: true },
     });
     if (!variant) {
       throw new NotFoundException('Variant not found or unavailable');
+    }
+    if (!variant.offerEnabled) {
+      this.badRequest('OFFER_NOT_ALLOWED', 'This product is not available for offers');
     }
     return variant;
   }

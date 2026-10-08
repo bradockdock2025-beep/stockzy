@@ -9,7 +9,11 @@ import {
   Post,
   Query,
   Req,
+  UploadedFile,
+  UseInterceptors,
 } from '@nestjs/common';
+import { FileInterceptor } from '@nestjs/platform-express';
+import { memoryStorage } from 'multer';
 import { user_role } from '@prisma/client';
 import { Roles } from '../../common/decorators/roles.decorator';
 import { buildAuditContext } from '../../common/audit/audit-context';
@@ -48,6 +52,27 @@ export class BrandsAdminController {
     @Req() req: { user?: unknown; headers?: Record<string, unknown>; ip?: string },
   ) {
     return this.brandsService.update(id, dto, buildAuditContext(req));
+  }
+
+  @Post(':id/logo')
+  @UseInterceptors(
+    FileInterceptor('file', {
+      storage: memoryStorage(),
+      fileFilter: (_req, file, cb) => {
+        if (!file.mimetype.startsWith('image/')) {
+          return cb(new Error('Only image files are allowed'), false);
+        }
+        cb(null, true);
+      },
+      limits: { fileSize: 5 * 1024 * 1024 },
+    }),
+  )
+  uploadLogo(
+    @Param('id', new ParseUUIDPipe()) id: string,
+    @UploadedFile() file: Express.Multer.File,
+    @Req() req: { user?: unknown; headers?: Record<string, unknown>; ip?: string },
+  ) {
+    return this.brandsService.uploadLogo(id, file, buildAuditContext(req));
   }
 
   @Patch(':id/deactivate')

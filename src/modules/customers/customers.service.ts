@@ -410,6 +410,7 @@ export class CustomersService {
   async getProfile(authUserId: string) {
     const customer = await this.prisma.customer.findUnique({
       where: { authUserId },
+      omit: { passwordHash: true },
       include: { addresses: true },
     });
 
@@ -450,6 +451,7 @@ export class CustomersService {
         phoneNumber: dto.phoneNumber ?? undefined,
         phoneVerifiedAt: phoneChanged ? null : undefined,
       },
+      omit: { passwordHash: true },
     });
   }
 
@@ -1053,6 +1055,7 @@ export class CustomersService {
           orderBy: [{ createdAt: 'desc' }, { id: 'desc' }],
           cursor: { id: query.cursor },
           skip: 1,
+          omit: { passwordHash: true },
           include: {
             addresses: true,
             orders: {
@@ -1093,6 +1096,7 @@ export class CustomersService {
         skip,
         take: limit,
         orderBy: [{ createdAt: 'desc' }, { id: 'desc' }],
+        omit: { passwordHash: true },
         include: {
           addresses: true,
           orders: {
@@ -1123,6 +1127,7 @@ export class CustomersService {
   async findOneWithDetails(id: string) {
     const customer = await this.prisma.customer.findUnique({
       where: { id },
+      omit: { passwordHash: true },
       include: {
         addresses: true,
         orders: {
@@ -1163,6 +1168,7 @@ export class CustomersService {
         phoneNumber: dto.phoneNumber ?? undefined,
         isActive: dto.isActive ?? undefined,
       },
+      omit: { passwordHash: true },
     });
 
     await this.auditLog.log({
@@ -1186,6 +1192,7 @@ export class CustomersService {
     const updated = await this.prisma.customer.update({
       where: { id },
       data: { isActive: false },
+      omit: { passwordHash: true },
     });
 
     await this.auditLog.log({
@@ -1309,6 +1316,7 @@ export class CustomersService {
             phoneVerifiedAt: phoneVerifiedAt ?? null,
             isActive: true,
           },
+          omit: { passwordHash: true },
         });
       }
 
@@ -1329,6 +1337,7 @@ export class CustomersService {
             phoneVerifiedAt: phoneVerifiedAt ?? null,
             isActive: true,
           },
+          omit: { passwordHash: true },
         });
       }
 
@@ -1343,6 +1352,7 @@ export class CustomersService {
           phoneVerifiedAt: phoneVerifiedAt ?? null,
           isActive: true,
         },
+        omit: { passwordHash: true },
       });
     });
   }

@@ -2,9 +2,10 @@ import { Type } from 'class-transformer';
 import { IsBoolean, IsInt, IsNotEmpty, IsOptional, IsString, Min } from 'class-validator';
 
 export class CreateSocialImageDto {
+  @IsOptional()
   @IsString()
   @IsNotEmpty()
-  imageSrc: string;
+  imageSrc?: string;
 
   @IsString()
   @IsNotEmpty()

@@ -13,6 +13,7 @@ model User {
   passwordHash String    @map("password_hash")
   role         user_role @default(admin)
   isActive     Boolean   @default(true) @map("is_active")
+  avatarUrl    String?   @map("avatar_url")
   createdAt    DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
   updatedAt    DateTime  @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
   refreshTokens RefreshToken[]
@@ -165,6 +166,7 @@ model ProductVariant {
   presalePrice        Decimal?                @map("presale_price") @db.Decimal(12, 2)
   presaleLimit        Int?                    @map("presale_limit")
   expectedAvailableAt DateTime?               @map("expected_available_at") @db.Timestamptz(6)
+  offerEnabled        Boolean                 @default(false) @map("offer_enabled")
   createdAt           DateTime                @default(now()) @map("created_at") @db.Timestamptz(6)
   updatedAt           DateTime                @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
   cartItems      CartItem[]

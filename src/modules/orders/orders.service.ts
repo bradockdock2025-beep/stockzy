@@ -7,13 +7,14 @@ import {
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { randomUUID } from 'crypto';
-import { Prisma, order_status, offer_status, payment_method, payment_status, product_status } from '@prisma/client';
+import { Prisma, order_status, offer_status, payment_method, payment_status, product_status, shipment_status } from '@prisma/client';
 import { PrismaService } from '../../database/prisma.service';
 import { CreateOrderDto } from './dto/create-order.dto';
 import { UpdateOrderDto } from './dto/update-order.dto';
 import { QueryOrderDto } from './dto/query-order.dto';
 import { AuditContext } from '../../common/audit/audit-context';
 import { applyAuditContext } from '../../common/audit/audit-context.db';
+import { VALID_ORDER_STATUSES } from '../../common/orders/valid-order-statuses';
 import { OrdersQueueService } from './orders.queue.service';
 import { CreateCustomerOrderDto } from './dto/create-customer-order.dto';
 import { CreateGuestOrderFromOfferDto } from './dto/create-guest-order-from-offer.dto';
@@ -128,7 +129,7 @@ export class OrdersService {
 
       const fullOrder = await tx.order.findUnique({
         where: { id: order.id },
-        include: { items: true, customer: true },
+        include: { items: true, customer: { select: { id: true, firstName: true, lastName: true, email: true, phoneNumber: true, authUserId: true } } },
       });
 
       return { order: fullOrder, payment: paymentResult.payment, confirmationCode: paymentResult.confirmationCode };
@@ -140,6 +141,7 @@ export class OrdersService {
       await this.enqueueReservationTimeoutIfNeeded(result.order.id, result.order.status, {
         overrideDelayMs: delayMs,
       });
+      this.dispatchCodConfirmationIfNeeded(result.order, result.confirmationCode, result.payment?.confirmationCodeExpiresAt);
     }
 
     return this.attachPaymentInfo(result);
@@ -324,7 +326,7 @@ export class OrdersService {
 
         const fullOrder = await tx.order.findUnique({
           where: { id: created.id },
-          include: { items: true, customer: true },
+          include: { items: true, customer: { select: { id: true, firstName: true, lastName: true, email: true, phoneNumber: true, authUserId: true } } },
         });
         return { order: fullOrder, payment: paymentResult?.payment ?? null, confirmationCode: paymentResult?.confirmationCode };
       });
@@ -338,6 +340,7 @@ export class OrdersService {
           await this.enqueueReservationTimeoutIfNeeded(result.order.id, result.order.status, {
             overrideDelayMs: delayMs,
           });
+          this.dispatchCodConfirmationIfNeeded(result.order, result.confirmationCode, result.payment?.confirmationCodeExpiresAt);
         }
       }
 
@@ -392,7 +395,7 @@ export class OrdersService {
 
     if (query.cursor) {
       const limit = Number(query.limit) || 20;
-      let data: Prisma.OrderGetPayload<{ include: { items: true; customer: true } }>[];
+      let data: Prisma.OrderGetPayload<{ include: { items: true; customer: { select: { id: true, firstName: true, lastName: true, email: true, phoneNumber: true, authUserId: true } } } }>[];
       try {
         data = await this.prisma.order.findMany({
           where,
@@ -400,7 +403,7 @@ export class OrdersService {
           orderBy: [{ createdAt: 'desc' }, { id: 'desc' }],
           cursor: { id: query.cursor },
           skip: 1,
-          include: { items: true, customer: true },
+          include: { items: true, customer: { select: { id: true, firstName: true, lastName: true, email: true, phoneNumber: true, authUserId: true } } },
         });
       } catch (error) {
         if (
@@ -432,7 +435,7 @@ export class OrdersService {
         skip,
         take: limit,
         orderBy: [{ createdAt: 'desc' }, { id: 'desc' }],
-        include: { items: true, customer: true },
+        include: { items: true, customer: { select: { id: true, firstName: true, lastName: true, email: true, phoneNumber: true, authUserId: true } } },
       }),
       this.prisma.order.count({ where }),
     ]);
@@ -463,7 +466,7 @@ export class OrdersService {
 
     if (query.cursor) {
       const limit = Number(query.limit) || 20;
-      type OrderRow = Prisma.OrderGetPayload<{ include: { items: true; customer: true } }>;
+      type OrderRow = Prisma.OrderGetPayload<{ include: { items: true; customer: { select: { id: true, firstName: true, lastName: true, email: true, phoneNumber: true, authUserId: true } } } }>;
       let rows: OrderRow[] = [];
       try {
         rows = await this.prisma.order.findMany({
@@ -472,7 +475,7 @@ export class OrdersService {
           orderBy: [{ createdAt: 'desc' }, { id: 'desc' }],
           cursor: { id: query.cursor },
           skip: 1,
-          include: { items: true, customer: true },
+          include: { items: true, customer: { select: { id: true, firstName: true, lastName: true, email: true, phoneNumber: true, authUserId: true } } },
         });
       } catch (error) {
         if (
@@ -503,7 +506,7 @@ export class OrdersService {
         skip,
         take: limit,
         orderBy: [{ createdAt: 'desc' }, { id: 'desc' }],
-        include: { items: true, customer: true },
+        include: { items: true, customer: { select: { id: true, firstName: true, lastName: true, email: true, phoneNumber: true, authUserId: true } } },
       }),
       this.prisma.order.count({ where }),
     ]);
@@ -526,7 +529,21 @@ export class OrdersService {
 
     const order = await this.prisma.order.findFirst({
       where: { id, customer: { authUserId } },
-      include: { items: true, customer: true },
+      include: {
+        items: true,
+        customer: { select: { id: true, firstName: true, lastName: true, email: true, phoneNumber: true, authUserId: true } },
+        payment: {
+          select: {
+            id: true,
+            method: true,
+            status: true,
+            amount: true,
+            currency: true,
+            confirmationCodeExpiresAt: true,
+            confirmedAt: true,
+          },
+        },
+      },
     });
 
     if (!order) {
@@ -594,11 +611,12 @@ export class OrdersService {
 
     try {
       let wasPresale = false;
+      let wasAlreadyCancelled = false;
       const result = await this.prisma.$transaction(async (tx) => {
         await applyAuditContext(tx, context);
         const order = await tx.order.findFirst({
           where: { id, customer: { authUserId } },
-          include: { items: true, customer: true },
+          include: { items: true, customer: { select: { id: true, firstName: true, lastName: true, email: true, phoneNumber: true, authUserId: true } } },
         });
 
         if (!order) {
@@ -606,14 +624,16 @@ export class OrdersService {
         }
 
         wasPresale = order.status === order_status.presale;
-        return this.cancelOrder(tx, order);
+        const { order: cancelled, wasAlreadyCancelled: already } = await this.cancelOrder(tx, order);
+        wasAlreadyCancelled = already;
+        return cancelled;
       });
 
       if (idempotencyCacheKey && redis) {
         await redis.set(idempotencyCacheKey, id, { EX: 86_400 });
       }
 
-      if (result?.id) {
+      if (result?.id && !wasAlreadyCancelled) {
         if (wasPresale) {
           void this.notificationsService.dispatch('presale.cancelled', result.id);
         } else {
@@ -646,14 +666,17 @@ export class OrdersService {
     ] = await Promise.all([
       this.prisma.order.count(),
       this.prisma.order.groupBy({ by: ['status'], _count: { id: true } }),
-      this.prisma.order.aggregate({ _sum: { totalAmount: true } }),
       this.prisma.order.aggregate({
-        where: { createdAt: { gte: startOfToday } },
+        where: { status: { in: VALID_ORDER_STATUSES } },
+        _sum: { totalAmount: true },
+      }),
+      this.prisma.order.aggregate({
+        where: { createdAt: { gte: startOfToday }, status: { in: VALID_ORDER_STATUSES } },
         _sum: { totalAmount: true },
         _count: { id: true },
       }),
       this.prisma.order.aggregate({
-        where: { createdAt: { gte: startOfMonth } },
+        where: { createdAt: { gte: startOfMonth }, status: { in: VALID_ORDER_STATUSES } },
         _sum: { totalAmount: true },
         _count: { id: true },
       }),
@@ -686,7 +709,7 @@ export class OrdersService {
   async findOne(id: string) {
     const order = await this.prisma.order.findUnique({
       where: { id },
-      include: { items: true, customer: true },
+      include: { items: true, customer: { select: { id: true, firstName: true, lastName: true, email: true, phoneNumber: true, authUserId: true } } },
     });
 
     if (!order) {
@@ -739,7 +762,7 @@ export class OrdersService {
 
       return tx.order.findUnique({
         where: { id: order.id },
-        include: { items: true, customer: true },
+        include: { items: true, customer: { select: { id: true, firstName: true, lastName: true, email: true, phoneNumber: true, authUserId: true } } },
       });
     });
   }
@@ -775,24 +798,27 @@ export class OrdersService {
     }
 
     try {
+      let wasAlreadyCancelled = false;
       const result = await this.prisma.$transaction(async (tx) => {
         await applyAuditContext(tx, context);
         const existing = await tx.order.findUnique({
           where: { id },
-          include: { items: true, customer: true },
+          include: { items: true, customer: { select: { id: true, firstName: true, lastName: true, email: true, phoneNumber: true, authUserId: true } } },
         });
         if (!existing) {
           throw new NotFoundException('Order not found');
         }
 
-        return this.cancelOrder(tx, existing);
+        const { order, wasAlreadyCancelled: already } = await this.cancelOrder(tx, existing);
+        wasAlreadyCancelled = already;
+        return order;
       });
 
       if (idempotencyCacheKey && redis) {
         await redis.set(idempotencyCacheKey, id, { EX: 86_400 });
       }
 
-      if (result?.id) {
+      if (result?.id && !wasAlreadyCancelled) {
         void this.notificationsService.dispatch('order.cancelled', result.id);
         void this.notificationsService.dispatchInternalCancelled(result.id);
       }
@@ -816,10 +842,14 @@ export class OrdersService {
       [order_status.delivered]:  [order_status.refunded],
     };
 
+    let wasAlreadyCancelled = false;
     const order = await this.prisma.$transaction(async (tx) => {
       await applyAuditContext(tx, context);
 
-      const existing = await tx.order.findUnique({ where: { id } });
+      const existing = await tx.order.findUnique({
+        where: { id },
+        include: { items: true },
+      });
       if (!existing) throw new NotFoundException('Order not found');
 
       const allowed = VALID_TRANSITIONS[existing.status] ?? [];
@@ -830,23 +860,80 @@ export class OrdersService {
         );
       }
 
-      return tx.order.update({
+      // Cancelar por aqui precisa do mesmo efeito colateral de /cancel — liberar o
+      // estoque reservado e marcar o pagamento — não só trocar o campo status. Ver
+      // ANALISE_PROBLEMAS_REPORTADOS_MODULO_PEDIDOS_FRONTEND.md #3.
+      if (status === order_status.cancelled) {
+        const { order: cancelled, wasAlreadyCancelled: already } = await this.cancelOrder(tx, existing);
+        wasAlreadyCancelled = already;
+        return cancelled;
+      }
+
+      const updated = await tx.order.update({
         where: { id },
         data: { status },
-        include: { items: true, customer: true },
+        include: { items: true, customer: { select: { id: true, firstName: true, lastName: true, email: true, phoneNumber: true, authUserId: true } } },
       });
+
+      if (status === order_status.shipped || status === order_status.delivered) {
+        await this.syncShipmentForOrder(tx, id, status);
+      }
+
+      return updated;
     });
 
     if (status === order_status.shipped) {
       void this.notificationsService.dispatch('order.shipped', id);
     } else if (status === order_status.delivered) {
       void this.notificationsService.dispatch('order.delivered', id);
-    } else if (status === order_status.cancelled) {
+    } else if (status === order_status.cancelled && !wasAlreadyCancelled) {
       void this.notificationsService.dispatch('order.cancelled', id);
       void this.notificationsService.dispatchInternalCancelled(id);
     }
 
     return order;
+  }
+
+  /**
+   * Mantém o registro de envio (módulo Envios) alinhado quando o pedido vai pra shipped/
+   * delivered pelo endpoint de status. Sem isso, o pedido aparecia como enviado mas não
+   * existia na lista de Envios. Cria o envio se não existir; se existir, só avança o estado.
+   */
+  private async syncShipmentForOrder(
+    tx: Prisma.TransactionClient,
+    orderId: string,
+    orderStatus: order_status,
+  ) {
+    const target = orderStatus === order_status.delivered ? shipment_status.delivered : shipment_status.shipped;
+    const now = new Date();
+
+    const existing = await tx.shipment.findFirst({
+      where: { orderId },
+      orderBy: { createdAt: 'desc' },
+    });
+
+    if (!existing) {
+      await tx.shipment.create({
+        data: {
+          orderId,
+          status: target,
+          shippedAt: now,
+          deliveredAt: target === shipment_status.delivered ? now : null,
+        },
+      });
+      return;
+    }
+
+    if (existing.status !== target) {
+      await tx.shipment.update({
+        where: { id: existing.id },
+        data: {
+          status: target,
+          shippedAt: existing.shippedAt ?? now,
+          deliveredAt: target === shipment_status.delivered ? (existing.deliveredAt ?? now) : existing.deliveredAt,
+        },
+      });
+    }
   }
 
   async findTrackingForCustomer(id: string, authUserId: string) {
@@ -910,6 +997,38 @@ export class OrdersService {
       SELECT nextval('orders_display_seq')
     `;
     return `STKZ-${String(rows[0].nextval).padStart(8, '0')}`;
+  }
+
+  /** Dispara o código de confirmação do COD por email — sem isso, o código só existe na resposta síncrona (ver ANALISE_PAGAMENTO_NA_ENTREGA_COD.md). */
+  private dispatchCodConfirmationIfNeeded(
+    order:
+      | {
+          orderNumber: string;
+          locale?: string | null;
+          customer?: { email: string; firstName: string | null; phoneNumber?: string | null } | null;
+        }
+      | null
+      | undefined,
+    confirmationCode: string | undefined,
+    confirmationCodeExpiresAt: Date | null | undefined,
+  ) {
+    if (!confirmationCode || !confirmationCodeExpiresAt || !order?.customer?.email) {
+      return;
+    }
+    const locale = (['pt', 'fr', 'en', 'es'].includes(order.locale ?? '') ? order.locale : 'pt') as
+      | 'pt'
+      | 'fr'
+      | 'en'
+      | 'es';
+    void this.notificationsService.dispatchCodConfirmationCode({
+      to: order.customer.email,
+      firstName: order.customer.firstName ?? 'Cliente',
+      phoneNumber: order.customer.phoneNumber,
+      locale,
+      orderNumber: order.orderNumber,
+      confirmationCode,
+      expiresAt: confirmationCodeExpiresAt,
+    });
   }
 
   private resolvePaymentDelayMs(expiresAt?: Date | null) {
@@ -1742,7 +1861,7 @@ export class OrdersService {
 
       const fullOrder = await tx.order.findUnique({
         where: { id: created.id },
-        include: { items: true, customer: true },
+        include: { items: true, customer: { select: { id: true, firstName: true, lastName: true, email: true, phoneNumber: true, authUserId: true } } },
       });
       return { order: fullOrder, payment: paymentResult?.payment ?? null, confirmationCode: paymentResult?.confirmationCode };
     });
@@ -1753,6 +1872,7 @@ export class OrdersService {
       await this.enqueueReservationTimeoutIfNeeded(result.order.id, result.order.status, {
         overrideDelayMs: delayMs,
       });
+      this.dispatchCodConfirmationIfNeeded(result.order, result.confirmationCode, result.payment?.confirmationCodeExpiresAt);
     }
 
     return this.attachPaymentInfo(result);
@@ -1766,7 +1886,7 @@ export class OrdersService {
       });
       const order = await tx.order.findUnique({
         where: { id: orderId },
-        include: { items: true, customer: true },
+        include: { items: true, customer: { select: { id: true, firstName: true, lastName: true, email: true, phoneNumber: true, authUserId: true } } },
       });
 
       if (!order) {
@@ -1777,10 +1897,17 @@ export class OrdersService {
         return order;
       }
 
-      return this.cancelOrder(tx, order, payment_status.expired);
+      const { order: cancelled } = await this.cancelOrder(tx, order, payment_status.expired);
+      return cancelled;
     });
   }
 
+  /**
+   * `wasAlreadyCancelled: true` quando o pedido já estava cancelado e nada foi refeito
+   * (estoque/pagamento intocados) — os chamadores usam essa flag pra não disparar email
+   * de novo num cancelamento repetido. Ver
+   * ANALISE_PROBLEMAS_REPORTADOS_MODULO_PEDIDOS_FRONTEND.md #4.
+   */
   private async cancelOrder(
     tx: Prisma.TransactionClient,
     order: {
@@ -1791,7 +1918,7 @@ export class OrdersService {
     paymentStatus: payment_status = payment_status.cancelled,
   ) {
     if (order.status === order_status.cancelled) {
-      return order;
+      return { order, wasAlreadyCancelled: true };
     }
 
     if (!this.isCancellable(order.status)) {
@@ -1823,10 +1950,12 @@ export class OrdersService {
       },
     });
 
-    return tx.order.findUnique({
+    const updated = await tx.order.findUnique({
       where: { id: order.id },
-      include: { items: true, customer: true },
+      include: { items: true, customer: { select: { id: true, firstName: true, lastName: true, email: true, phoneNumber: true, authUserId: true } } },
     });
+
+    return { order: updated, wasAlreadyCancelled: false };
   }
 
   private getReservationTimeoutMs() {

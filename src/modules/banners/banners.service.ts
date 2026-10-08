@@ -9,6 +9,7 @@ import { Prisma } from '@prisma/client';
 import { createClient, SupabaseClient } from '@supabase/supabase-js';
 import { randomUUID } from 'crypto';
 import { extname } from 'path';
+import { fileTypeFromBuffer } from 'file-type';
 import { PrismaService } from '../../database/prisma.service';
 import { AuditLogService } from '../audit/audit-log.service';
 import { AuditContext } from '../../common/audit/audit-context';
@@ -51,11 +52,17 @@ export class BannersService {
   }
 
   async create(dto: CreateBannerDto, context?: AuditContext) {
+    if (!dto.imageUrl && (dto.isActive ?? true)) {
+      throw new BadRequestException(
+        'Cannot create an active banner without an image. Create it inactive, upload the image, then activate it.',
+      );
+    }
+
     const created = await this.prisma.banner.create({
       data: {
         title: dto.title,
         subtitle: dto.subtitle ?? null,
-        imageUrl: dto.imageUrl,
+        imageUrl: dto.imageUrl ?? '',
         imageWidth: dto.imageWidth ?? null,
         imageHeight: dto.imageHeight ?? null,
         mobileImageUrl: dto.mobileImageUrl ?? null,
@@ -85,6 +92,14 @@ export class BannersService {
   }
 
   async uploadImage(id: string, file: Express.Multer.File, context?: AuditContext) {
+    const ALLOWED_MIME_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'];
+    const detected = await fileTypeFromBuffer(file.buffer);
+    if (!detected || !ALLOWED_MIME_TYPES.includes(detected.mime)) {
+      throw new BadRequestException(
+        `Invalid file: ${file.originalname}. Only JPEG, PNG, WebP and GIF are allowed.`,
+      );
+    }
+
     const banner = await this.prisma.banner.findUnique({ where: { id } });
     if (!banner) throw new NotFoundException('Banner not found');
 
@@ -207,6 +222,14 @@ export class BannersService {
 
   async update(id: string, dto: UpdateBannerDto, context?: AuditContext) {
     const before = await this.findOne(id);
+
+    const effectiveImageUrl = dto.imageUrl ?? before.imageUrl;
+    const effectiveIsActive = dto.isActive ?? before.isActive;
+    if (!effectiveImageUrl && effectiveIsActive) {
+      throw new BadRequestException(
+        'Cannot activate a banner without an image. Upload the image first.',
+      );
+    }
 
     const data: Prisma.BannerUpdateInput = {};
     if (dto.title !== undefined) data.title = dto.title;

@@ -10,10 +10,11 @@ import {
   Put,
   Query,
   Req,
+  UploadedFile,
   UploadedFiles,
   UseInterceptors,
 } from '@nestjs/common';
-import { FileFieldsInterceptor } from '@nestjs/platform-express';
+import { FileFieldsInterceptor, FileInterceptor } from '@nestjs/platform-express';
 import { memoryStorage } from 'multer';
 import { user_role } from '@prisma/client';
 import { Roles } from '../../common/decorators/roles.decorator';
@@ -34,6 +35,11 @@ export class HomepageAdminController {
   constructor(private readonly homepageService: HomepageService) {}
 
   // ── Hero ──────────────────────────────────────────────────────────────────
+
+  @Get('hero')
+  getHero() {
+    return this.homepageService.getHeroForAdmin();
+  }
 
   @Put('hero')
   upsertHero(@Body() dto: UpdateHeroDto, @Req() req: ReqWithAuth) {
@@ -93,7 +99,40 @@ export class HomepageAdminController {
     return this.homepageService.removeTile(id, buildAuditContext(req));
   }
 
+  @Post('tiles/:id/image')
+  @UseInterceptors(
+    FileFieldsInterceptor(
+      [
+        { name: 'image', maxCount: 1 },
+        { name: 'mobileImage', maxCount: 1 },
+      ],
+      {
+        storage: memoryStorage(),
+        fileFilter: (_req, file, cb) => {
+          if (!file.mimetype.startsWith('image/')) {
+            return cb(new Error('Only image files are allowed'), false);
+          }
+          cb(null, true);
+        },
+        limits: { fileSize: 5 * 1024 * 1024 },
+      },
+    ),
+  )
+  uploadTileImages(
+    @Param('id', new ParseUUIDPipe()) id: string,
+    @UploadedFiles()
+    files: { image?: Express.Multer.File[]; mobileImage?: Express.Multer.File[] } | undefined,
+    @Req() req: ReqWithAuth,
+  ) {
+    return this.homepageService.uploadTileImages(id, files, buildAuditContext(req));
+  }
+
   // ── Social ────────────────────────────────────────────────────────────────
+
+  @Get('social')
+  getSocial() {
+    return this.homepageService.getSocialForAdmin();
+  }
 
   @Patch('social/config')
   upsertSocialConfig(@Body() dto: UpdateSocialConfigDto, @Req() req: ReqWithAuth) {
@@ -117,5 +156,26 @@ export class HomepageAdminController {
   @Delete('social/images/:id')
   removeSocialImage(@Param('id', new ParseUUIDPipe()) id: string, @Req() req: ReqWithAuth) {
     return this.homepageService.removeSocialImage(id, buildAuditContext(req));
+  }
+
+  @Post('social/images/:id/image')
+  @UseInterceptors(
+    FileInterceptor('file', {
+      storage: memoryStorage(),
+      fileFilter: (_req, file, cb) => {
+        if (!file.mimetype.startsWith('image/')) {
+          return cb(new Error('Only image files are allowed'), false);
+        }
+        cb(null, true);
+      },
+      limits: { fileSize: 5 * 1024 * 1024 },
+    }),
+  )
+  uploadSocialImage(
+    @Param('id', new ParseUUIDPipe()) id: string,
+    @UploadedFile() file: Express.Multer.File,
+    @Req() req: ReqWithAuth,
+  ) {
+    return this.homepageService.uploadSocialImage(id, file, buildAuditContext(req));
   }
 }

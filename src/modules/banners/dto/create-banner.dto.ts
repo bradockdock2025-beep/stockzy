@@ -17,8 +17,9 @@ export class CreateBannerDto {
   @IsString()
   subtitle?: string;
 
+  @IsOptional()
   @IsUrl()
-  imageUrl: string;
+  imageUrl?: string;
 
   @IsOptional()
   @Type(() => Number)

@@ -14,9 +14,10 @@ export class CreateTileDto {
   @IsNotEmpty()
   href: string;
 
+  @IsOptional()
   @IsString()
   @IsNotEmpty()
-  imageSrc: string;
+  imageSrc?: string;
 
   @IsOptional()
   @IsString()

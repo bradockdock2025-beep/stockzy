@@ -11,6 +11,24 @@ export interface EmailJobPayload {
   context: Record<string, unknown>;
 }
 
+/** `to` em E.164 (ex.: +244923000000). `body` é texto livre — SMS não exige template aprovado, ao contrário do WhatsApp. */
+export interface SmsJobPayload {
+  to: string;
+  body: string;
+}
+
+/**
+ * `to` em E.164 (ex.: +244923000000). `contentSid` é o template aprovado pela Meta
+ * (categoria "Authentication", Content SID do Twilio — HXxxxxxxxx...), não texto livre:
+ * WhatsApp não aceita mensagem iniciada pela empresa fora de um template aprovado. Ver
+ * PLANO_INTEGRACAO_WHATSAPP_CODIGO.md.
+ */
+export interface WhatsAppJobPayload {
+  to: string;
+  contentSid: string;
+  contentVariables: Record<string, string>;
+}
+
 @Injectable()
 export class NotificationsQueueService implements OnModuleInit, OnModuleDestroy {
   private queue?: Queue;
@@ -54,6 +72,36 @@ export class NotificationsQueueService implements OnModuleInit, OnModuleDestroy 
     } catch (error) {
       this.logger.error(
         `Failed to enqueue email to ${payload.to}: ${error instanceof Error ? error.message : String(error)}`,
+      );
+    }
+  }
+
+  async enqueueSms(payload: SmsJobPayload, jobId?: string): Promise<void> {
+    if (!this.queue) {
+      this.logger.warn('Notifications queue not available. Skipping SMS enqueue.');
+      return;
+    }
+
+    try {
+      await this.queue.add('send.sms', payload, jobId ? { jobId } : undefined);
+    } catch (error) {
+      this.logger.error(
+        `Failed to enqueue SMS to ${payload.to}: ${error instanceof Error ? error.message : String(error)}`,
+      );
+    }
+  }
+
+  async enqueueWhatsApp(payload: WhatsAppJobPayload, jobId?: string): Promise<void> {
+    if (!this.queue) {
+      this.logger.warn('Notifications queue not available. Skipping WhatsApp enqueue.');
+      return;
+    }
+
+    try {
+      await this.queue.add('send.whatsapp', payload, jobId ? { jobId } : undefined);
+    } catch (error) {
+      this.logger.error(
+        `Failed to enqueue WhatsApp message to ${payload.to}: ${error instanceof Error ? error.message : String(error)}`,
       );
     }
   }

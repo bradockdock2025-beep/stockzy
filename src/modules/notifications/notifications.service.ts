@@ -371,6 +371,121 @@ export class NotificationsService {
     }
   }
 
+  /**
+   * Código de confirmação do pagamento na entrega (COD) — sem isso enviado por um canal
+   * durável, o código só existia na resposta síncrona de criar o pedido (e só em dev,
+   * `PAYMENT_CONFIRMATION_RETURN_CODE`). Fechar a aba = perder o código pra sempre, pedido
+   * preso em "awaiting_confirmation" sem recurso. Ver ANALISE_PAGAMENTO_NA_ENTREGA_COD.md.
+   */
+  async dispatchCodConfirmationCode(input: {
+    to: string;
+    firstName: string;
+    phoneNumber?: string | null;
+    locale: SupportedLocale;
+    orderNumber: string;
+    confirmationCode: string;
+    expiresAt: Date;
+  }): Promise<void> {
+    const subjects: Record<SupportedLocale, string> = {
+      pt: `Confirme o seu pedido ${input.orderNumber} — código de entrega`,
+      fr: `Confirmez votre commande ${input.orderNumber} — code de livraison`,
+      en: `Confirm your order ${input.orderNumber} — delivery code`,
+      es: `Confirma tu pedido ${input.orderNumber} — código de entrega`,
+    };
+    try {
+      await this.notificationsQueue.enqueueEmail({
+        to: input.to,
+        subject: subjects[input.locale],
+        template: `cod-confirmation.${input.locale}.hbs`,
+        context: {
+          firstName: input.firstName,
+          orderNumber: input.orderNumber,
+          confirmationCode: input.confirmationCode,
+          expiresAt: this.formatDateTime(input.expiresAt),
+          supportEmail: this.supportEmail,
+          year: new Date().getFullYear(),
+        },
+      });
+      this.logger.log(`COD confirmation code enqueued to ${input.to} for order ${input.orderNumber}`);
+    } catch (error) {
+      this.logger.error(
+        `Failed to enqueue COD confirmation code to ${input.to} for order ${input.orderNumber}: ${error instanceof Error ? error.message : String(error)}`,
+      );
+    }
+
+    await this.dispatchCodConfirmationSms(input);
+    await this.dispatchCodConfirmationWhatsApp(input);
+  }
+
+  /**
+   * Canal adicional (não substitui o email) — ver PLANO_INTEGRACAO_SMS_CODIGO.md. Sem
+   * `TWILIO_SMS_FROM` configurado, não tenta enfileirar; sem as credenciais da Twilio, o
+   * worker recebe o job mas ignora (ver `setupTwilio` em notifications.worker.ts).
+   */
+  private async dispatchCodConfirmationSms(input: {
+    phoneNumber?: string | null;
+    locale: SupportedLocale;
+    orderNumber: string;
+    confirmationCode: string;
+  }): Promise<void> {
+    const smsFrom = this.configService.get<string>('TWILIO_SMS_FROM', '');
+    if (!smsFrom || !input.phoneNumber) {
+      return;
+    }
+
+    const bodies: Record<SupportedLocale, string> = {
+      pt: `Stockzy: o seu código de confirmação do pedido ${input.orderNumber} é ${input.confirmationCode}. Não partilhe este código.`,
+      fr: `Stockzy : votre code de confirmation pour la commande ${input.orderNumber} est ${input.confirmationCode}. Ne partagez ce code avec personne.`,
+      en: `Stockzy: your confirmation code for order ${input.orderNumber} is ${input.confirmationCode}. Do not share this code.`,
+      es: `Stockzy: tu código de confirmación del pedido ${input.orderNumber} es ${input.confirmationCode}. No compartas este código.`,
+    };
+
+    try {
+      await this.notificationsQueue.enqueueSms({
+        to: input.phoneNumber,
+        body: bodies[input.locale],
+      });
+      this.logger.log(`COD confirmation SMS enqueued to ${input.phoneNumber} for order ${input.orderNumber}`);
+    } catch (error) {
+      this.logger.error(
+        `Failed to enqueue COD confirmation SMS to ${input.phoneNumber} for order ${input.orderNumber}: ${error instanceof Error ? error.message : String(error)}`,
+      );
+    }
+  }
+
+  /**
+   * Canal adicional (não substitui o email) — ver PLANO_INTEGRACAO_WHATSAPP_CODIGO.md.
+   * Sem `TWILIO_WHATSAPP_COD_TEMPLATE_SID` configurado, não tenta enfileirar (o job nem
+   * chega a existir); sem as credenciais da Twilio, o worker recebe o job mas ignora
+   * (ver `setupWhatsApp` em notifications.worker.ts) — dois níveis de no-op seguro.
+   */
+  private async dispatchCodConfirmationWhatsApp(input: {
+    phoneNumber?: string | null;
+    orderNumber: string;
+    confirmationCode: string;
+    expiresAt: Date;
+  }): Promise<void> {
+    const contentSid = this.configService.get<string>('TWILIO_WHATSAPP_COD_TEMPLATE_SID', '');
+    if (!contentSid || !input.phoneNumber) {
+      return;
+    }
+
+    try {
+      await this.notificationsQueue.enqueueWhatsApp({
+        to: input.phoneNumber,
+        contentSid,
+        contentVariables: {
+          '1': input.confirmationCode,
+        },
+      });
+      this.logger.log(`COD confirmation WhatsApp enqueued to ${input.phoneNumber} for order ${input.orderNumber}`);
+    } catch (error) {
+      this.logger.error(
+        `Failed to enqueue COD confirmation WhatsApp to ${input.phoneNumber} for order ${input.orderNumber}: ${error instanceof Error ? error.message : String(error)}`,
+      );
+    }
+  }
+
   async dispatchWelcome(input: {
     to: string;
     locale: SupportedLocale;

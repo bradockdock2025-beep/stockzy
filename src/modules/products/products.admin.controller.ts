@@ -18,6 +18,7 @@ import { ProductsService } from './products.service';
 import { CreateProductDto } from './dto/create-product.dto';
 import { UpdateProductDto } from './dto/update-product.dto';
 import { UpdatePresaleSettingsDto } from './dto/update-presale-settings.dto';
+import { UpdateOfferSettingsDto } from './dto/update-offer-settings.dto';
 import { QueryProductDto } from './dto/query-product.dto';
 import { ReorderProductsDto } from './dto/reorder-products.dto';
 import { Roles } from '../../common/decorators/roles.decorator';
@@ -31,7 +32,7 @@ export class ProductsAdminController {
 
   @Get()
   findAll(@Query() query: QueryProductDto) {
-    return this.productsService.findAll(query);
+    return this.productsService.findAll(query, { allowAllStatuses: true });
   }
 
   @Get(':id')
@@ -39,7 +40,7 @@ export class ProductsAdminController {
     @Param('id', new ParseUUIDPipe()) id: string,
     @Query() query: QueryProductDto,
   ) {
-    return this.productsService.findOne(id, query);
+    return this.productsService.findOne(id, query, { allowAllStatuses: true });
   }
 
   @Post()
@@ -101,6 +102,15 @@ export class ProductsAdminController {
     @Req() req: { user?: unknown; headers?: Record<string, unknown>; ip?: string },
   ) {
     return this.productsService.updatePresaleSettings(id, dto, buildAuditContext(req));
+  }
+
+  @Patch('variants/:id/offer')
+  updateOfferSettings(
+    @Param('id', new ParseUUIDPipe()) id: string,
+    @Body() dto: UpdateOfferSettingsDto,
+    @Req() req: { user?: unknown; headers?: Record<string, unknown>; ip?: string },
+  ) {
+    return this.productsService.updateOfferSettings(id, dto, buildAuditContext(req));
   }
 
   @Get(':id/price-history')

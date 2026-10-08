@@ -1,6 +1,8 @@
 import {
   BadRequestException,
   ConflictException,
+  HttpException,
+  HttpStatus,
   Injectable,
   InternalServerErrorException,
   Logger,
@@ -35,6 +37,28 @@ type StripeShipping = {
 @Injectable()
 export class PaymentsService {
   private readonly logger = new Logger(PaymentsService.name);
+
+  /**
+   * Shape seguro pra admin/payments — nunca devolve `confirmationCodeHash` (hash do
+   * código de confirmação de COD) nem `metadata` (guarda o clientSecret do Stripe, um
+   * segredo real de PaymentIntent, não um dado de exibição). Ver
+   * ANALISE_PROBLEMAS_REPORTADOS_MODULO_PEDIDOS_FRONTEND.md #2 e #5.
+   */
+  private readonly adminPaymentSelect = {
+    id: true,
+    orderId: true,
+    method: true,
+    status: true,
+    amount: true,
+    currency: true,
+    confirmationCodeExpiresAt: true,
+    confirmationAttempts: true,
+    confirmedAt: true,
+    confirmedBy: true,
+    createdAt: true,
+    updatedAt: true,
+    order: true,
+  } satisfies Prisma.PaymentSelect;
 
   constructor(
     private readonly prisma: PrismaService,
@@ -636,6 +660,116 @@ export class PaymentsService {
     }
   }
 
+  /**
+   * Gera um código novo e reenvia por email — a única forma de "recuperar" um código
+   * perdido/expirado, já que só o hash é guardado (nunca o código em texto puro, de
+   * propósito). Ver ANALISE_PAGAMENTO_NA_ENTREGA_COD.md — lacuna que faltava fechar.
+   */
+  async resendConfirmationCode(input: { orderId: string; authUserId: string; context?: AuditContext }) {
+    const customer = await this.prisma.customer.findUnique({
+      where: { authUserId: input.authUserId },
+      select: { id: true },
+    });
+    if (!customer) {
+      throw new UnauthorizedException('Invalid customer');
+    }
+
+    const payment = await this.prisma.payment.findUnique({
+      where: { orderId: input.orderId },
+      include: {
+        order: {
+          select: {
+            id: true,
+            status: true,
+            orderNumber: true,
+            locale: true,
+            customerId: true,
+            customer: { select: { email: true, firstName: true, phoneNumber: true } },
+          },
+        },
+      },
+    });
+
+    if (!payment || payment.order.customerId !== customer.id) {
+      throw new NotFoundException('Payment not found');
+    }
+
+    if (payment.method !== payment_method.cod) {
+      this.badRequest(
+        'PAYMENT_METHOD_NOT_COD',
+        'Confirmation code resend is only available for cash-on-delivery payments',
+      );
+    }
+
+    if (payment.status === payment_status.paid) {
+      this.badRequest('PAYMENT_ALREADY_CONFIRMED', 'Payment is already confirmed');
+    }
+
+    if (payment.order.status === order_status.cancelled || payment.order.status === order_status.refunded) {
+      this.badRequest('ORDER_NOT_CONFIRMABLE', 'Order cannot be paid');
+    }
+
+    const redis = this.redisService.getClient();
+    const cooldownKey = `cod-resend:cooldown:${payment.id}`;
+    if (redis) {
+      const existing = await redis.get(cooldownKey);
+      if (existing) {
+        const ttl = await redis.ttl(cooldownKey);
+        throw new HttpException(
+          { code: 'RESEND_COOLDOWN', message: `Please wait ${Math.max(ttl, 1)}s before requesting a new code.` },
+          HttpStatus.TOO_MANY_REQUESTS,
+        );
+      }
+      await redis.set(cooldownKey, '1', { EX: this.getResendCooldownSeconds() });
+    }
+
+    const confirmationCode = this.generateConfirmationCode();
+    const confirmationCodeHash = this.hashConfirmationCode(confirmationCode);
+    const confirmationCodeExpiresAt = new Date(Date.now() + this.getConfirmationTtlMs());
+
+    const updated = await this.prisma.payment.update({
+      where: { id: payment.id },
+      data: {
+        confirmationCodeHash,
+        confirmationCodeExpiresAt,
+        confirmationAttempts: 0,
+        status: payment_status.awaiting_confirmation,
+      },
+    });
+
+    await this.auditLog.log({
+      action: 'payment.code_resent',
+      entity: 'payment',
+      entityId: payment.id,
+      after: { status: updated.status, orderId: payment.order.id },
+      context: input.context,
+      actor: { id: customer.id },
+    });
+
+    if (payment.order.customer?.email) {
+      const locale = (
+        ['pt', 'fr', 'en', 'es'].includes(payment.order.locale ?? '') ? payment.order.locale : 'pt'
+      ) as 'pt' | 'fr' | 'en' | 'es';
+      void this.notificationsService.dispatchCodConfirmationCode({
+        to: payment.order.customer.email,
+        firstName: payment.order.customer.firstName ?? 'Cliente',
+        phoneNumber: payment.order.customer.phoneNumber,
+        locale,
+        orderNumber: payment.order.orderNumber,
+        confirmationCode,
+        expiresAt: confirmationCodeExpiresAt,
+      });
+    }
+
+    return { success: true, expiresAt: confirmationCodeExpiresAt };
+  }
+
+  private getResendCooldownSeconds() {
+    const raw = this.configService.get<string>('PAYMENT_CONFIRMATION_RESEND_COOLDOWN_SECONDS');
+    const parsed = raw ? Number(raw) : NaN;
+    return Number.isFinite(parsed) && parsed > 0 ? Math.floor(parsed) : 60;
+  }
+
   async findAll(query: QueryPaymentDto) {
     const where: Prisma.PaymentWhereInput = {};
 
@@ -661,7 +795,7 @@ export class PaymentsService {
           orderBy: [{ createdAt: 'desc' }, { id: 'desc' }],
           cursor: { id: query.cursor },
           skip: 1,
-          include: { order: true },
+          select: this.adminPaymentSelect,
         });
       } catch (error) {
         if (
@@ -693,7 +827,7 @@ export class PaymentsService {
         skip,
         take: limit,
         orderBy: [{ createdAt: 'desc' }, { id: 'desc' }],
-        include: { order: true },
+        select: this.adminPaymentSelect,
       }),
       this.prisma.payment.count({ where }),
     ]);
@@ -713,7 +847,7 @@ export class PaymentsService {
   async findOne(id: string) {
     const payment = await this.prisma.payment.findUnique({
       where: { id },
-      include: { order: true },
+      select: this.adminPaymentSelect,
     });
 
     if (!payment) {

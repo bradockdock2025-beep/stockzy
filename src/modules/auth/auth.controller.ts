@@ -1,4 +1,17 @@
-import { Body, Controller, Get, Post, Req, Res, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Post,
+  Req,
+  Res,
+  UploadedFile,
+  UseGuards,
+  UseInterceptors,
+} from '@nestjs/common';
+import { FileInterceptor } from '@nestjs/platform-express';
+import { memoryStorage } from 'multer';
 import type { Response, Request } from 'express';
 import { AuthService } from './auth.service';
 import { LoginDto } from './dto/login.dto';
@@ -76,6 +89,33 @@ export class AuthController {
   @Get('me')
   me(@Req() req: { user?: unknown }) {
     return req.user ?? null;
+  }
+
+  @Post('me/avatar')
+  @UseInterceptors(
+    FileInterceptor('file', {
+      storage: memoryStorage(),
+      fileFilter: (_req, file, cb) => {
+        if (!file.mimetype.startsWith('image/')) {
+          return cb(new Error('Only image files are allowed'), false);
+        }
+        cb(null, true);
+      },
+      limits: { fileSize: 2 * 1024 * 1024 },
+    }),
+  )
+  uploadAvatar(
+    @Req() req: { user?: { sub?: string }; headers?: Record<string, unknown>; ip?: string },
+    @UploadedFile() file: Express.Multer.File,
+  ) {
+    return this.authService.uploadAvatar(req.user?.sub ?? '', file, buildAuditContext(req));
+  }
+
+  @Delete('me/avatar')
+  removeAvatar(
+    @Req() req: { user?: { sub?: string }; headers?: Record<string, unknown>; ip?: string },
+  ) {
+    return this.authService.removeAvatar(req.user?.sub ?? '', buildAuditContext(req));
   }
 
   @Post('change-password')

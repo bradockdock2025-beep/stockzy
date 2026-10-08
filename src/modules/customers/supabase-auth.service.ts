@@ -73,7 +73,7 @@ export class SupabaseAuthService {
       body: JSON.stringify(attributes),
     });
 
-    const data = await res.json().catch(() => ({}));
+    const data = (await res.json().catch(() => ({}))) as Record<string, string | undefined>;
     if (!res.ok) {
       const message =
         (data && (data.error_description || data.message || data.msg || data.error)) ||

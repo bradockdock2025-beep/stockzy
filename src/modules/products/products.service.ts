@@ -306,6 +306,31 @@ export class ProductsService {
     return rows[0].last_number;
   }
 
+  /**
+   * Traduz o P2002 (slug/SKU duplicado) do Prisma numa mensagem clara em vez do 500 cru.
+   * Mesmo formato usado em CategoriesService/BrandsService — com o driver adapter
+   * (@prisma/adapter-pg) os campos do índice único vêm em
+   * `meta.driverAdapterError.cause.constraint.fields`, não em `meta.target` (formato
+   * "clássico") — checa os dois pra não depender de uma versão do Prisma.
+   */
+  private throwIfDuplicateUnique(error: unknown, hints: { slug?: string }): never {
+    if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2002') {
+      const meta = error.meta as
+        | { target?: string[]; driverAdapterError?: { cause?: { constraint?: { fields?: string[] } } } }
+        | undefined;
+      const fields = meta?.target ?? meta?.driverAdapterError?.cause?.constraint?.fields ?? [];
+      if (fields.includes('slug')) {
+        throw new BadRequestException(`Product slug "${hints.slug}" is already in use.`);
+      }
+      if (fields.includes('sku')) {
+        throw new BadRequestException(
+          'One of the variant SKUs is already in use. Check the SKU fields (auto-generated ones may collide if two variants share color and size) and try again.',
+        );
+      }
+    }
+    throw error;
+  }
+
   private async generateSkuBase(
     context: { departmentCode: string; categoryCode: string; year: number; scope: string },
     tx: Prisma.TransactionClient,
@@ -324,8 +349,15 @@ export class ProductsService {
     sizeFacetIds: string[];
     valueById: Map<string, { value: string; facetId: string }>;
   }> {
+    // `key: { startsWith: 'size_' }` em vez de listar cada facet de tamanho —
+    // hardcoded ['size_men','size_women','size_kids'] ficou desatualizado quando
+    // `size_apparel` (tamanho genérico de vestuário) foi criado, e o SKU automático
+    // passou a ignorar tamanho pra qualquer produto que usasse essa faceta: duas
+    // variantes da mesma cor com tamanhos diferentes geravam o mesmo SKU (500 por
+    // violação de unicidade). Com startsWith, uma faceta de tamanho nova no futuro
+    // não exige mexer aqui de novo.
     const facets = await tx.facet.findMany({
-      where: { key: { in: ['color', 'size_men', 'size_women', 'size_kids'] } },
+      where: { OR: [{ key: 'color' }, { key: { startsWith: 'size_' } }] },
       select: { id: true, key: true },
     });
     const colorFacetId = facets.find((f) => f.key === 'color')?.id ?? null;
@@ -953,7 +985,9 @@ export class ProductsService {
   }
 
   async create(dto: CreateProductDto, context?: AuditContext) {
-    const result = await this.prisma.$transaction(async (tx) => {
+    let result;
+    try {
+      result = await this.prisma.$transaction(async (tx) => {
       await applyAuditContext(tx, context);
       const skuFacetInfo = await this.getSkuFacetInfo(tx, dto.variants);
       const hasColorSource = !!skuFacetInfo.colorFacetId;
@@ -1058,7 +1092,10 @@ export class ProductsService {
 
       const snapshot = await this.getProductAuditSnapshot(product.id, tx);
       return { product, snapshot };
-    }, { timeout: 60000 });
+      }, { timeout: 60000 });
+    } catch (error) {
+      this.throwIfDuplicateUnique(error, { slug: dto.slug });
+    }
 
     await this.invalidateProductCache();
 
@@ -1087,10 +1124,16 @@ export class ProductsService {
     return { updated: products.length };
   }
 
-  async findAll(query: QueryProductDto) {
-    const sanitizedQuery = { ...query, status: undefined } as QueryProductDto;
+  async findAll(query: QueryProductDto, options?: { allowAllStatuses?: boolean }) {
+    const allowAllStatuses = options?.allowAllStatuses ?? false;
+    const sanitizedQuery = allowAllStatuses
+      ? { ...query }
+      : ({ ...query, status: undefined } as QueryProductDto);
+    // Prefixo separado no modo admin — nunca pode compartilhar bucket de cache com a
+    // loja pública (sanitizedQuery sem status é igual nos dois casos; colidir aqui
+    // vazaria produto draft/archived pro cache público, ou o inverso).
     const cacheKey = this.buildCacheKey(
-      'cache:products:list',
+      allowAllStatuses ? 'cache:products:admin-list' : 'cache:products:list',
       sanitizedQuery as Record<string, unknown>,
     );
     const cached = await this.getCache<unknown>(cacheKey);
@@ -1129,7 +1172,14 @@ export class ProductsService {
       productWhere.categoryId = { in: categoryIds };
     }
 
-    productWhere.status = product_status.active;
+    if (allowAllStatuses) {
+      if (sanitizedQuery.status) {
+        productWhere.status = sanitizedQuery.status;
+      }
+      // sem status: admin vê produto de qualquer status (draft/active/archived) por padrão
+    } else {
+      productWhere.status = product_status.active;
+    }
 
     if (sanitizedQuery.featured !== undefined) {
       productWhere.featured = sanitizedQuery.featured === 'true';
@@ -1330,14 +1380,17 @@ export class ProductsService {
     return response;
   }
 
-  async findOne(id: string, query?: QueryProductDto) {
+  async findOne(id: string, query?: QueryProductDto, options?: { allowAllStatuses?: boolean }) {
+    const allowAllStatuses = options?.allowAllStatuses ?? false;
     const cacheKey = this.buildCacheKey(
       `cache:products:detail:${id}`,
       (query ?? {}) as Record<string, unknown>,
     );
-    const cached = await this.getCache<unknown>(cacheKey);
-    if (cached) {
-      return cached as Record<string, unknown>;
+    if (!allowAllStatuses) {
+      const cached = await this.getCache<unknown>(cacheKey);
+      if (cached) {
+        return cached as Record<string, unknown>;
+      }
     }
 
     const base = await this.prisma.product.findUnique({
@@ -1345,14 +1398,14 @@ export class ProductsService {
       select: { id: true, categoryId: true, status: true },
     });
 
-    if (!base || base.status !== product_status.active) {
+    if (!base || (!allowAllStatuses && base.status !== product_status.active)) {
       throw new NotFoundException('Product not found');
     }
 
     const { variantFilters } = await this.buildVariantFilters(query ?? ({} as QueryProductDto));
 
     const product = await this.prisma.product.findFirst({
-      where: { id, status: product_status.active },
+      where: allowAllStatuses ? { id } : { id, status: product_status.active },
       include: {
         variants: {
           where: variantFilters,
@@ -1377,7 +1430,9 @@ export class ProductsService {
     }
 
     const result = this.addAvailability(await this.enrichWithPresaleRemaining(product));
-    await this.setCache(cacheKey, result);
+    if (!allowAllStatuses) {
+      await this.setCache(cacheKey, result);
+    }
     return result;
   }
 
@@ -1468,7 +1523,9 @@ export class ProductsService {
   async update(id: string, dto: UpdateProductDto, context?: AuditContext) {
     const { categoryId, variants, brandId, facetValueIds, ...rest } = dto;
 
-    const result = await this.prisma.$transaction(async (tx) => {
+    let result;
+    try {
+      result = await this.prisma.$transaction(async (tx) => {
       await applyAuditContext(tx, context);
       const before = await this.getProductAuditSnapshot(id, tx);
 
@@ -1659,7 +1716,10 @@ export class ProductsService {
       const after = await this.getProductAuditSnapshot(id, tx);
 
       return { product, before, after };
-    });
+      });
+    } catch (error) {
+      this.throwIfDuplicateUnique(error, { slug: dto.slug });
+    }
 
     await this.invalidateProductCache();
 
@@ -2652,6 +2712,28 @@ export class ProductsService {
             ? new Date(dto.expectedAvailableAt)
             : dto.presaleEnabled ? undefined : null,
         },
+      });
+    });
+
+    await this.invalidateProductCache();
+    return updated;
+  }
+
+  async updateOfferSettings(
+    variantId: string,
+    dto: import('./dto/update-offer-settings.dto').UpdateOfferSettingsDto,
+    context?: AuditContext,
+  ) {
+    const variant = await this.prisma.productVariant.findUnique({ where: { id: variantId } });
+    if (!variant) {
+      throw new NotFoundException('Variant not found');
+    }
+
+    const updated = await this.prisma.$transaction(async (tx) => {
+      await applyAuditContext(tx, context);
+      return tx.productVariant.update({
+        where: { id: variantId },
+        data: { offerEnabled: dto.offerEnabled },
       });
     });
 

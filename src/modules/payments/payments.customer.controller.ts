@@ -39,6 +39,18 @@ export class PaymentsCustomerController {
     });
   }
 
+  @Post(':id/payment/resend-code')
+  resendCode(
+    @Param('id', new ParseUUIDPipe()) id: string,
+    @Req() req: { customerAuth?: { authUserId?: string }; user?: unknown; headers?: Record<string, unknown>; ip?: string },
+  ) {
+    return this.paymentsService.resendConfirmationCode({
+      orderId: id,
+      authUserId: req.customerAuth?.authUserId ?? '',
+      context: buildAuditContext(req),
+    });
+  }
+
   @Post(':id/payment/confirm')
   confirm(
     @Param('id', new ParseUUIDPipe()) id: string,

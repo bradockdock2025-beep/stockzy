@@ -54,6 +54,7 @@ async function bootstrap() {
       'Content-Type',
       'Authorization',
       'x-cart-token',
+      'x-offer-token',
       'idempotency-key',
       'x-idempotency-key',
       'x-admin-key',

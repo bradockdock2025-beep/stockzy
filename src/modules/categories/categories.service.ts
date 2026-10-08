@@ -60,21 +60,76 @@ export class CategoriesService {
     return Math.min(Math.floor(parsed), 200);
   }
 
+  /**
+   * Traduz o P2002 (slug duplicado) do Prisma numa mensagem clara em vez do 500 cru.
+   * Com o driver adapter (@prisma/adapter-pg), os campos do índice único vêm em
+   * `meta.driverAdapterError.cause.constraint.fields`, não em `meta.target` (formato do
+   * Prisma "clássico") — checa os dois formatos pra não depender de uma versão específica.
+   */
+  private throwIfDuplicateSlug(error: unknown, slug: string | undefined): never {
+    if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2002') {
+      const meta = error.meta as
+        | { target?: string[]; driverAdapterError?: { cause?: { constraint?: { fields?: string[] } } } }
+        | undefined;
+      const fields = meta?.target ?? meta?.driverAdapterError?.cause?.constraint?.fields ?? [];
+      if (fields.includes('slug')) {
+        throw new BadRequestException(`Category slug "${slug}" is already in use.`);
+      }
+    }
+    throw error;
+  }
+
+  private async assertNoCycle(
+    categoryId: string,
+    newParentId: string,
+    tx: Prisma.TransactionClient,
+  ) {
+    if (newParentId === categoryId) {
+      throw new BadRequestException('A category cannot be its own parent.');
+    }
+
+    const parent = await tx.category.findUnique({ where: { id: newParentId } });
+    if (!parent) {
+      throw new NotFoundException('Parent category not found');
+    }
+
+    const descendantIds = await this.getCategoryAndDescendantIds(categoryId, tx);
+    if (descendantIds.includes(newParentId)) {
+      throw new BadRequestException(
+        'Cannot set a descendant category as parent — this would create a cycle.',
+      );
+    }
+  }
+
   async create(dto: CreateCategoryDto, context?: AuditContext) {
-    const created = await this.prisma.$transaction(async (tx) => {
-      await applyAuditContext(tx, context);
-      return tx.category.create({
-        data: {
-          name: dto.name,
-          slug: dto.slug,
-          code: dto.code,
-          parentId: dto.parentId ?? null,
-          familyTag: dto.familyTag ?? null,
-          bannerTitle: dto.bannerTitle ?? null,
-          bannerDescription: dto.bannerDescription ?? null,
-        },
+    let created;
+    try {
+      created = await this.prisma.$transaction(async (tx) => {
+        await applyAuditContext(tx, context);
+        return tx.category.create({
+          data: {
+            name: dto.name,
+            slug: dto.slug,
+            code: dto.code,
+            parentId: dto.parentId ?? null,
+            familyTag: dto.familyTag ?? null,
+            bannerTitle: dto.bannerTitle ?? null,
+            bannerDescription: dto.bannerDescription ?? null,
+          },
+        });
       });
+    } catch (error) {
+      this.throwIfDuplicateSlug(error, dto.slug);
+    }
+
+    await this.auditLog.log({
+      action: 'create',
+      entity: 'category',
+      entityId: created.id,
+      after: created,
+      context,
     });
+
     await this.invalidatePublicTreeCache();
     return created;
   }
@@ -230,39 +285,65 @@ export class CategoriesService {
   }
 
   async update(id: string, dto: UpdateCategoryDto, context?: AuditContext) {
-    const updated = await this.prisma.$transaction(async (tx) => {
-      await applyAuditContext(tx, context);
-      const existing = await tx.category.findUnique({ where: { id } });
-      if (!existing) {
-        throw new NotFoundException('Category not found');
-      }
+    let existingBefore;
+    let updated;
+    try {
+      updated = await this.prisma.$transaction(async (tx) => {
+        await applyAuditContext(tx, context);
+        const existing = await tx.category.findUnique({ where: { id } });
+        if (!existing) {
+          throw new NotFoundException('Category not found');
+        }
+        existingBefore = existing;
 
-      return tx.category.update({
-        where: { id },
-        data: {
-          name: dto.name ?? undefined,
-          slug: dto.slug ?? undefined,
-          code: dto.code ?? undefined,
-          parentId: dto.parentId === undefined ? undefined : dto.parentId,
-          isActive: dto.isActive ?? undefined,
-          familyTag: dto.familyTag === undefined ? undefined : dto.familyTag,
-          bannerTitle: dto.bannerTitle === undefined ? undefined : dto.bannerTitle,
-          bannerDescription: dto.bannerDescription === undefined ? undefined : dto.bannerDescription,
-        },
+        if (dto.parentId !== undefined && dto.parentId !== null) {
+          await this.assertNoCycle(id, dto.parentId, tx);
+        }
+
+        return tx.category.update({
+          where: { id },
+          data: {
+            name: dto.name ?? undefined,
+            slug: dto.slug ?? undefined,
+            code: dto.code ?? undefined,
+            parentId: dto.parentId === undefined ? undefined : dto.parentId,
+            isActive: dto.isActive ?? undefined,
+            familyTag: dto.familyTag === undefined ? undefined : dto.familyTag,
+            bannerTitle: dto.bannerTitle === undefined ? undefined : dto.bannerTitle,
+            bannerDescription: dto.bannerDescription === undefined ? undefined : dto.bannerDescription,
+          },
+        });
       });
+    } catch (error) {
+      this.throwIfDuplicateSlug(error, dto.slug);
+    }
+
+    await this.auditLog.log({
+      action: 'update',
+      entity: 'category',
+      entityId: id,
+      before: existingBefore,
+      after: updated,
+      context,
     });
+
     await this.invalidatePublicTreeCache();
     return updated;
   }
 
   async remove(id: string, context?: AuditContext) {
+    let existingBefore;
+    let alreadyInactive = false;
+
     const removed = await this.prisma.$transaction(async (tx) => {
       await applyAuditContext(tx, context);
       const existing = await tx.category.findUnique({ where: { id } });
       if (!existing) {
         throw new NotFoundException('Category not found');
       }
+      existingBefore = existing;
       if (!existing.isActive) {
+        alreadyInactive = true;
         return existing;
       }
 
@@ -271,6 +352,18 @@ export class CategoriesService {
         data: { isActive: false },
       });
     });
+
+    if (!alreadyInactive) {
+      await this.auditLog.log({
+        action: 'deactivate',
+        entity: 'category',
+        entityId: id,
+        before: existingBefore,
+        after: removed,
+        context,
+      });
+    }
+
     await this.invalidatePublicTreeCache();
     return removed;
   }
@@ -336,7 +429,11 @@ export class CategoriesService {
         data: { categoryId: targetId },
       });
 
-      await tx.category.delete({ where: { id: sourceId } });
+      // Desativa em vez de apagar (era DELETE antes — cascadeava PromotionTarget.category
+      // e deixava promoções sem alvo, que o motor de checkout trata como "carrinho
+      // inteiro"). Categoria some do menu/loja (isActive: false), slug e vínculos
+      // continuam intactos.
+      await tx.category.update({ where: { id: sourceId }, data: { isActive: false } });
 
       return {
         sourceId,

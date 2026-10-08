@@ -16,42 +16,74 @@ export class PromotionsService {
     private readonly auditLog: AuditLogService,
   ) {}
 
+  /** Desconto percentual > 100% daria valor negativo no checkout (desconto maior que a compra). */
+  private assertValidPercentValue(type: 'percent' | 'fixed', value: number) {
+    if (type === 'percent' && value > 100) {
+      throw new BadRequestException('Percent discount cannot be greater than 100.');
+    }
+  }
+
+  /**
+   * Traduz o P2002 (código duplicado) do Prisma numa mensagem clara em vez do 500 cru.
+   * Mesmo formato usado em Categories/Brands/ProductsService — com o driver adapter
+   * (@prisma/adapter-pg) os campos do índice único vêm em
+   * `meta.driverAdapterError.cause.constraint.fields`, não em `meta.target`.
+   */
+  private throwIfDuplicateCode(error: unknown, code: string | null): never {
+    if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2002') {
+      const meta = error.meta as
+        | { target?: string[]; driverAdapterError?: { cause?: { constraint?: { fields?: string[] } } } }
+        | undefined;
+      const fields = meta?.target ?? meta?.driverAdapterError?.cause?.constraint?.fields ?? [];
+      if (fields.includes('code')) {
+        throw new BadRequestException(`Promotion code "${code}" is already in use.`);
+      }
+    }
+    throw error;
+  }
+
   async create(dto: CreatePromotionDto, context?: AuditContext) {
+    this.assertValidPercentValue(dto.type, dto.value);
     const targets = this.normalizeTargets(dto.targets);
     const code = this.normalizeCode(dto.code);
 
-    const promotion = await this.prisma.$transaction(async (tx) => {
-      await applyAuditContext(tx, context);
-      const created = await tx.promotion.create({
-        data: {
-          name: dto.name,
-          code,
-          type: dto.type,
-          value: dto.value,
-          isActive: dto.isActive ?? true,
-          startsAt: dto.startsAt ? new Date(dto.startsAt) : null,
-          endsAt: dto.endsAt ? new Date(dto.endsAt) : null,
-          priority: dto.priority ?? 0,
-          minSubtotal: dto.minSubtotal ?? null,
-          maxUses: dto.maxUses ?? null,
-          maxUsesPerCustomer: dto.maxUsesPerCustomer ?? null,
-          label: dto.label ?? null,
-        },
-      });
-
-      if (targets.length) {
-        await tx.promotionTarget.createMany({
-          data: targets.map((target) => ({
-            promotionId: created.id,
-            targetType: target.type,
-            productId: target.productId ?? null,
-            categoryId: target.categoryId ?? null,
-          })),
+    let promotion;
+    try {
+      promotion = await this.prisma.$transaction(async (tx) => {
+        await applyAuditContext(tx, context);
+        const created = await tx.promotion.create({
+          data: {
+            name: dto.name,
+            code,
+            type: dto.type,
+            value: dto.value,
+            isActive: dto.isActive ?? true,
+            startsAt: dto.startsAt ? new Date(dto.startsAt) : null,
+            endsAt: dto.endsAt ? new Date(dto.endsAt) : null,
+            priority: dto.priority ?? 0,
+            minSubtotal: dto.minSubtotal ?? null,
+            maxUses: dto.maxUses ?? null,
+            maxUsesPerCustomer: dto.maxUsesPerCustomer ?? null,
+            label: dto.label ?? null,
+          },
         });
-      }
 
-      return created;
-    });
+        if (targets.length) {
+          await tx.promotionTarget.createMany({
+            data: targets.map((target) => ({
+              promotionId: created.id,
+              targetType: target.type,
+              productId: target.productId ?? null,
+              categoryId: target.categoryId ?? null,
+            })),
+          });
+        }
+
+        return created;
+      });
+    } catch (error) {
+      this.throwIfDuplicateCode(error, code);
+    }
 
     const result = await this.findOne(promotion.id);
 
@@ -69,10 +101,15 @@ export class PromotionsService {
   async update(id: string, dto: UpdatePromotionDto, context?: AuditContext) {
     const existing = await this.findOne(id);
 
+    const effectiveType = dto.type ?? existing.type;
+    const effectiveValue = dto.value ?? Number(existing.value);
+    this.assertValidPercentValue(effectiveType, effectiveValue);
+
+    const code = dto.code !== undefined ? this.normalizeCode(dto.code) : undefined;
     const data: Prisma.PromotionUpdateInput = {};
 
     if (dto.name !== undefined) data.name = dto.name;
-    if (dto.code !== undefined) data.code = this.normalizeCode(dto.code);
+    if (code !== undefined) data.code = code;
     if (dto.type !== undefined) data.type = dto.type;
     if (dto.value !== undefined) data.value = dto.value;
     if (dto.isActive !== undefined) data.isActive = dto.isActive;
@@ -88,27 +125,31 @@ export class PromotionsService {
 
     const targets = dto.targets ? this.normalizeTargets(dto.targets) : null;
 
-    await this.prisma.$transaction(async (tx) => {
-      await applyAuditContext(tx, context);
-      await tx.promotion.update({
-        where: { id },
-        data,
-      });
+    try {
+      await this.prisma.$transaction(async (tx) => {
+        await applyAuditContext(tx, context);
+        await tx.promotion.update({
+          where: { id },
+          data,
+        });
 
-      if (targets) {
-        await tx.promotionTarget.deleteMany({ where: { promotionId: id } });
-        if (targets.length) {
-          await tx.promotionTarget.createMany({
-            data: targets.map((target) => ({
-              promotionId: id,
-              targetType: target.type,
-              productId: target.productId ?? null,
-              categoryId: target.categoryId ?? null,
-            })),
-          });
+        if (targets) {
+          await tx.promotionTarget.deleteMany({ where: { promotionId: id } });
+          if (targets.length) {
+            await tx.promotionTarget.createMany({
+              data: targets.map((target) => ({
+                promotionId: id,
+                targetType: target.type,
+                productId: target.productId ?? null,
+                categoryId: target.categoryId ?? null,
+              })),
+            });
+          }
         }
-      }
-    });
+      });
+    } catch (error) {
+      this.throwIfDuplicateCode(error, code ?? null);
+    }
 
     const updated = await this.findOne(id);
 

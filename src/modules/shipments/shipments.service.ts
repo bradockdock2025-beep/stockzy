@@ -105,6 +105,8 @@ export class ShipmentsService {
   }
 
   async create(dto: CreateShipmentDto, context?: AuditContext) {
+    const status = dto.status ?? shipment_status.pending;
+
     return this.prisma.$transaction(async (tx) => {
       await applyAuditContext(tx, context);
 
@@ -119,7 +121,6 @@ export class ShipmentsService {
 
       this.assertOrderMutable(order.status);
 
-      const status = dto.status ?? shipment_status.pending;
       const { shippedAt, deliveredAt } = this.normalizeDates({
         status,
         shippedAt: dto.shippedAt,
@@ -323,7 +324,10 @@ export class ShipmentsService {
           orderBy: [{ createdAt: 'desc' }, { id: 'desc' }],
           cursor: { id: query.cursor },
           skip: 1,
-          include: { events: true },
+          include: {
+            events: true,
+            order: { select: { id: true, orderNumber: true } },
+          },
         });
       } catch (error) {
         if (
@@ -355,7 +359,10 @@ export class ShipmentsService {
         skip,
         take: limit,
         orderBy: [{ createdAt: 'desc' }, { id: 'desc' }],
-        include: { events: true },
+        include: {
+          events: true,
+          order: { select: { id: true, orderNumber: true } },
+        },
       }),
       this.prisma.shipment.count({ where }),
     ]);
