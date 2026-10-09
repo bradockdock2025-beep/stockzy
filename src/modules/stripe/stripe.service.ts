@@ -3,6 +3,10 @@ import { ConfigService } from '@nestjs/config';
 import Stripe from 'stripe';
 import { Prisma } from '@prisma/client';
 
+type StripeClient = InstanceType<typeof Stripe>;
+type StripePaymentIntent = Awaited<ReturnType<StripeClient['paymentIntents']['retrieve']>>;
+type StripeEvent = ReturnType<StripeClient['webhooks']['constructEvent']>;
+
 @Injectable()
 export class StripeService {
   private _stripe: InstanceType<typeof Stripe> | null = null;
@@ -36,7 +40,7 @@ export class StripeService {
     amount: number;
     currency: string;
     metadata?: Record<string, string>;
-  }) {
+  }): Promise<StripePaymentIntent> {
     return this.getClient().paymentIntents.create({
       amount: params.amount,
       currency: params.currency.toLowerCase(),
@@ -45,7 +49,7 @@ export class StripeService {
     });
   }
 
-  constructWebhookEvent(rawBody: Buffer, signature: string) {
+  constructWebhookEvent(rawBody: Buffer, signature: string): StripeEvent {
     const webhookSecret = this.configService.get<string>('STRIPE_WEBHOOK_SECRET');
     if (!webhookSecret) {
       throw new InternalServerErrorException('STRIPE_WEBHOOK_SECRET is not configured');
@@ -53,7 +57,7 @@ export class StripeService {
     return this.getClient().webhooks.constructEvent(rawBody, signature, webhookSecret);
   }
 
-  async retrievePaymentIntent(id: string) {
+  async retrievePaymentIntent(id: string): Promise<StripePaymentIntent> {
     return this.getClient().paymentIntents.retrieve(id);
   }
 
