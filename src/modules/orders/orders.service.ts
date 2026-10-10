@@ -1344,6 +1344,23 @@ export class OrdersService {
         }
       }
 
+      const hasUsageLimit =
+        (promotion.maxUses !== null && promotion.maxUses !== undefined) ||
+        (promotion.maxUsesPerCustomer !== null && promotion.maxUsesPerCustomer !== undefined);
+
+      if (hasUsageLimit) {
+        // PENDENCIAS-BACKEND-GESTAO-RONDA-3.md #1.1 — sem travar a linha da promoção,
+        // dois checkouts concorrentes podem ambos contar `totalUses` antes de qualquer um
+        // comitar o `promotionUsage.create` (mais abaixo, na mesma transação), e os dois
+        // passam a checagem mesmo com `maxUses: 1`. Mesmo padrão já usado pro estoque
+        // (`FOR UPDATE`, acima neste ficheiro) — o lock só serializa de verdade porque
+        // esta função só é chamada dentro de uma transação no caminho real de checkout
+        // (`buildCartQuote` com `tx`); no caminho de cotação (sem `tx`, usa `this.prisma`
+        // direto), cada instrução é a própria transação implícita e o lock não sobrevive
+        // além dela — inofensivo, porque a cotação nunca grava `promotionUsage`.
+        await input.tx.$queryRaw`SELECT id FROM promotions WHERE id = ${promotion.id} FOR UPDATE;`;
+      }
+
       if (promotion.maxUses !== null && promotion.maxUses !== undefined) {
         const totalUses = await input.tx.promotionUsage.count({
           where: { promotionId: promotion.id },

@@ -93,7 +93,29 @@ export class RecommendationsService {
     return response;
   }
 
-  async recordView(productId: string, body: RecordViewDto, req: Request): Promise<void> {
+  /**
+   * PENDENCIAS-BACKEND-GESTAO-RONDA-3.md #2.2 — nunca confiar num `customerId` vindo do
+   * corpo/query; só é válido quando resolvido a partir do `authUserId` de um token
+   * verificado (`OptionalCustomerAuthGuard`). Sem token (visitante anónimo) ou token sem
+   * `Customer` correspondente, devolve `undefined` — tratado como anónimo.
+   */
+  async resolveAuthenticatedCustomerId(authUserId?: string): Promise<string | undefined> {
+    if (!authUserId) {
+      return undefined;
+    }
+    const customer = await this.prisma.customer.findUnique({
+      where: { authUserId },
+      select: { id: true },
+    });
+    return customer?.id;
+  }
+
+  async recordView(
+    productId: string,
+    body: RecordViewDto,
+    req: Request,
+    authenticatedCustomerId?: string,
+  ): Promise<void> {
     const rawIp =
       (req.headers['x-forwarded-for'] as string)?.split(',')[0]?.trim() ??
       req.socket?.remoteAddress ??
@@ -121,7 +143,7 @@ export class RecommendationsService {
       return;
     }
 
-    const customerId = body.customerId ?? null;
+    const customerId = authenticatedCustomerId ?? null;
 
     await this.prisma.$executeRaw`
       INSERT INTO product_views

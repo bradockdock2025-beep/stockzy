@@ -8,14 +8,19 @@ import {
   Post,
   Query,
   Req,
+  UseGuards,
 } from '@nestjs/common';
 import type { Request } from 'express';
 import { Public } from '../../common/decorators/public.decorator';
+import { OptionalCustomerAuthGuard } from '../customers/optional-customer-auth.guard';
+import { CustomerAuthPayload } from '../customers/customer-auth-resolver.service';
 import { RecommendationsService } from './recommendations.service';
 import { AlsoViewedQueryDto } from './dto/also-viewed-query.dto';
 import { RecordViewDto } from './dto/record-view.dto';
 import { RecentlyViewedQueryDto } from './dto/recently-viewed-query.dto';
 import { RecommendedQueryDto } from './dto/recommended-query.dto';
+
+type RequestWithOptionalAuth = Request & { customerAuth?: CustomerAuthPayload };
 
 @Controller('products')
 export class RecommendationsController {
@@ -31,14 +36,18 @@ export class RecommendationsController {
   }
 
   @Public()
+  @UseGuards(OptionalCustomerAuthGuard)
   @Post(':id/view')
   @HttpCode(204)
-  recordView(
+  async recordView(
     @Param('id', ParseUUIDPipe) productId: string,
     @Body() body: RecordViewDto,
-    @Req() req: Request,
+    @Req() req: RequestWithOptionalAuth,
   ) {
-    return this.recommendationsService.recordView(productId, body, req);
+    const customerId = await this.recommendationsService.resolveAuthenticatedCustomerId(
+      req.customerAuth?.authUserId,
+    );
+    return this.recommendationsService.recordView(productId, body, req, customerId);
   }
 }
 
@@ -52,21 +61,35 @@ export class CatalogRecentlyViewedController {
   constructor(private readonly recommendationsService: RecommendationsService) {}
 
   @Public()
+  @UseGuards(OptionalCustomerAuthGuard)
   @Get('recently-viewed')
-  getRecentlyViewed(@Query() query: RecentlyViewedQueryDto) {
+  async getRecentlyViewed(
+    @Query() query: RecentlyViewedQueryDto,
+    @Req() req: RequestWithOptionalAuth,
+  ) {
+    const customerId = await this.recommendationsService.resolveAuthenticatedCustomerId(
+      req.customerAuth?.authUserId,
+    );
     return this.recommendationsService.getRecentlyViewed(
       query.sessionId,
-      query.customerId,
+      customerId,
       query.limit ?? 12,
     );
   }
 
   @Public()
+  @UseGuards(OptionalCustomerAuthGuard)
   @Get('recommended')
-  getRecommended(@Query() query: RecommendedQueryDto) {
+  async getRecommended(
+    @Query() query: RecommendedQueryDto,
+    @Req() req: RequestWithOptionalAuth,
+  ) {
+    const customerId = await this.recommendationsService.resolveAuthenticatedCustomerId(
+      req.customerAuth?.authUserId,
+    );
     return this.recommendationsService.getRecommendedForYou(
       query.sessionId,
-      query.customerId,
+      customerId,
       query.limit ?? 12,
     );
   }

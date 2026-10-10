@@ -45,6 +45,7 @@ export class PromotionsService {
   async create(dto: CreatePromotionDto, context?: AuditContext) {
     this.assertValidPercentValue(dto.type, dto.value);
     const targets = this.normalizeTargets(dto.targets);
+    await this.assertTargetsExist(targets);
     const code = this.normalizeCode(dto.code);
 
     let promotion;
@@ -124,6 +125,9 @@ export class PromotionsService {
     if (dto.label !== undefined) data.label = dto.label ?? null;
 
     const targets = dto.targets ? this.normalizeTargets(dto.targets) : null;
+    if (targets) {
+      await this.assertTargetsExist(targets);
+    }
 
     try {
       await this.prisma.$transaction(async (tx) => {
@@ -340,6 +344,42 @@ export class PromotionsService {
       }
       return target;
     });
+  }
+
+  /**
+   * PENDENCIAS-BACKEND-GESTAO-RONDA-3.md #2.1 — só confirmava que productId/categoryId
+   * foi enviado, nunca que existe. Um id inexistente batia na FK no createMany e subia
+   * como 500 cru (throwIfDuplicateCode só trata P2002, não P2003).
+   */
+  private async assertTargetsExist(
+    targets: ReturnType<PromotionsService['normalizeTargets']>,
+  ) {
+    const productIds = [...new Set(targets.map((t) => t.productId).filter((id): id is string => !!id))];
+    const categoryIds = [...new Set(targets.map((t) => t.categoryId).filter((id): id is string => !!id))];
+
+    if (productIds.length) {
+      const found = await this.prisma.product.findMany({
+        where: { id: { in: productIds } },
+        select: { id: true },
+      });
+      const foundIds = new Set(found.map((p) => p.id));
+      const missing = productIds.filter((id) => !foundIds.has(id));
+      if (missing.length) {
+        throw new BadRequestException(`Product(s) not found: ${missing.join(', ')}`);
+      }
+    }
+
+    if (categoryIds.length) {
+      const found = await this.prisma.category.findMany({
+        where: { id: { in: categoryIds } },
+        select: { id: true },
+      });
+      const foundIds = new Set(found.map((c) => c.id));
+      const missing = categoryIds.filter((id) => !foundIds.has(id));
+      if (missing.length) {
+        throw new BadRequestException(`Category(ies) not found: ${missing.join(', ')}`);
+      }
+    }
   }
 
   private normalizeCode(code?: string | null) {

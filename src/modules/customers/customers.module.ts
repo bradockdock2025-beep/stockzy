@@ -9,13 +9,28 @@ import { CustomersAdminController } from './customers.admin.controller';
 import { CustomersWebhookController } from './customers.webhook.controller';
 import { CustomersService } from './customers.service';
 import { SupabaseAuthService } from './supabase-auth.service';
+import { CustomerAuthResolverService } from './customer-auth-resolver.service';
 import { CustomerAuthGuard } from './customer-auth.guard';
+import { OptionalCustomerAuthGuard } from './optional-customer-auth.guard';
 import { CustomerRateLimitGuard } from './customer-rate-limit.guard';
 
 @Module({
   imports: [DatabaseModule, AuthModule, RedisModule, NotificationsModule, AuditModule],
   controllers: [CustomersController, CustomersAdminController, CustomersWebhookController],
-  providers: [CustomersService, SupabaseAuthService, CustomerAuthGuard, CustomerRateLimitGuard],
-  exports: [CustomerAuthGuard, SupabaseAuthService, RedisModule],
+  providers: [
+    CustomersService,
+    SupabaseAuthService,
+    CustomerAuthResolverService,
+    CustomerAuthGuard,
+    OptionalCustomerAuthGuard,
+    CustomerRateLimitGuard,
+  ],
+  exports: [
+    CustomerAuthGuard,
+    OptionalCustomerAuthGuard,
+    CustomerAuthResolverService,
+    SupabaseAuthService,
+    RedisModule,
+  ],
 })
 export class CustomersModule {}
