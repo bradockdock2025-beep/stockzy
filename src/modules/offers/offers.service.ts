@@ -167,12 +167,13 @@ export class OffersService {
 
   async listForAdmin(status?: offer_status) {
     return this.prisma.offer.findMany({
-      where: { status: status ?? offer_status.pending },
+      where: status ? { status } : {},
       orderBy: { createdAt: 'asc' },
       include: {
         variant: { select: { id: true, sku: true, product: { select: { name: true } } } },
         customer: { select: { id: true, email: true, firstName: true, lastName: true } },
       },
+      omit: { guestToken: true },
     });
   }
 

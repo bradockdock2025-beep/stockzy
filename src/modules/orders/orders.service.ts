@@ -395,7 +395,7 @@ export class OrdersService {
 
     if (query.cursor) {
       const limit = Number(query.limit) || 20;
-      let data: Prisma.OrderGetPayload<{ include: { items: true; customer: { select: { id: true, firstName: true, lastName: true, email: true, phoneNumber: true, authUserId: true } } } }>[];
+      let data: Prisma.OrderGetPayload<{ include: { items: true; customer: { select: { id: true, firstName: true, lastName: true, email: true, phoneNumber: true, authUserId: true } } }; omit: { guestToken: true } }>[];
       try {
         data = await this.prisma.order.findMany({
           where,
@@ -404,6 +404,7 @@ export class OrdersService {
           cursor: { id: query.cursor },
           skip: 1,
           include: { items: true, customer: { select: { id: true, firstName: true, lastName: true, email: true, phoneNumber: true, authUserId: true } } },
+          omit: { guestToken: true },
         });
       } catch (error) {
         if (
@@ -436,6 +437,7 @@ export class OrdersService {
         take: limit,
         orderBy: [{ createdAt: 'desc' }, { id: 'desc' }],
         include: { items: true, customer: { select: { id: true, firstName: true, lastName: true, email: true, phoneNumber: true, authUserId: true } } },
+        omit: { guestToken: true },
       }),
       this.prisma.order.count({ where }),
     ]);
@@ -710,6 +712,7 @@ export class OrdersService {
     const order = await this.prisma.order.findUnique({
       where: { id },
       include: { items: true, customer: { select: { id: true, firstName: true, lastName: true, email: true, phoneNumber: true, authUserId: true } } },
+      omit: { guestToken: true },
     });
 
     if (!order) {

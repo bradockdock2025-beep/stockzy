@@ -40,9 +40,11 @@ export class PaymentsService {
 
   /**
    * Shape seguro pra admin/payments — nunca devolve `confirmationCodeHash` (hash do
-   * código de confirmação de COD) nem `metadata` (guarda o clientSecret do Stripe, um
-   * segredo real de PaymentIntent, não um dado de exibição). Ver
-   * ANALISE_PROBLEMAS_REPORTADOS_MODULO_PEDIDOS_FRONTEND.md #2 e #5.
+   * código de confirmação de COD). `metadata` é selecionado só pra extrair o
+   * `stripePaymentIntentId` em `withStripePaymentIntentId`; o `clientSecret` que também
+   * mora em `metadata` nunca sai do método de mapeamento. Ver
+   * ANALISE_PROBLEMAS_REPORTADOS_MODULO_PEDIDOS_FRONTEND.md #2 e #5 e
+   * PENDENCIAS-BACKEND-GESTAO.md #1.3.
    */
   private readonly adminPaymentSelect = {
     id: true,
@@ -57,8 +59,22 @@ export class PaymentsService {
     confirmedBy: true,
     createdAt: true,
     updatedAt: true,
-    order: true,
+    metadata: true,
+    order: { omit: { guestToken: true } },
   } satisfies Prisma.PaymentSelect;
+
+  /** Extrai só o `stripePaymentIntentId` de `metadata` — nunca deixa `clientSecret` passar. */
+  private withStripePaymentIntentId<T extends { metadata: Prisma.JsonValue }>(
+    payment: T,
+  ): Omit<T, 'metadata'> & { stripePaymentIntentId: string | null } {
+    const { metadata, ...rest } = payment;
+    const stripePaymentIntentId =
+      metadata && typeof metadata === 'object' && !Array.isArray(metadata) &&
+      typeof (metadata as Record<string, unknown>).stripePaymentIntentId === 'string'
+        ? ((metadata as Record<string, unknown>).stripePaymentIntentId as string)
+        : null;
+    return { ...rest, stripePaymentIntentId };
+  }
 
   constructor(
     private readonly prisma: PrismaService,
@@ -807,12 +823,14 @@ export class PaymentsService {
         throw error;
       }
 
+      const mapped = data.map((payment) => this.withStripePaymentIntentId(payment));
+
       return {
-        data,
+        data: mapped,
         meta: {
           mode: 'cursor' as const,
           limit,
-          nextCursor: data.length === limit ? data[data.length - 1]?.id : null,
+          nextCursor: mapped.length === limit ? mapped[mapped.length - 1]?.id : null,
         },
       };
     }
@@ -833,7 +851,7 @@ export class PaymentsService {
     ]);
 
     return {
-      data,
+      data: data.map((payment) => this.withStripePaymentIntentId(payment)),
       meta: {
         mode: 'offset' as const,
         total,
@@ -854,7 +872,7 @@ export class PaymentsService {
       throw new NotFoundException('Payment not found');
     }
 
-    return payment;
+    return this.withStripePaymentIntentId(payment);
   }
 
   async findForCustomer(orderId: string, customerId: string) {

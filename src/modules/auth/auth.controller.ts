@@ -6,6 +6,7 @@ import {
   Post,
   Req,
   Res,
+  UnauthorizedException,
   UploadedFile,
   UseGuards,
   UseInterceptors,
@@ -16,7 +17,8 @@ import type { Response, Request } from 'express';
 import { AuthService } from './auth.service';
 import { LoginDto } from './dto/login.dto';
 import { Public } from '../../common/decorators/public.decorator';
-import { LoginRateLimitGuard } from './login-rate-limit.guard';
+import { LoginRateLimitGuard, deriveLoginRateLimitKey } from './login-rate-limit.guard';
+import { LoginRateLimitService } from './login-rate-limit.service';
 import { ChangePasswordDto } from './dto/change-password.dto';
 import { buildAuditContext } from '../../common/audit/audit-context';
 
@@ -46,17 +48,32 @@ function msFromExpiry(expiry: string): number {
 
 @Controller('admin/auth')
 export class AuthController {
-  constructor(private readonly authService: AuthService) {}
+  constructor(
+    private readonly authService: AuthService,
+    private readonly loginRateLimitService: LoginRateLimitService,
+  ) {}
 
   @Public()
   @UseGuards(LoginRateLimitGuard)
   @Post('login')
   async login(
-    @Req() req: { user?: unknown; headers?: Record<string, unknown>; ip?: string },
+    @Req() req: { user?: unknown; headers?: Record<string, unknown>; ip?: string; body?: { email?: string } },
     @Res({ passthrough: true }) res: Response,
     @Body() dto: LoginDto,
   ) {
-    const result = await this.authService.login(dto.email, dto.password, buildAuditContext(req));
+    let result;
+    try {
+      result = await this.authService.login(dto.email, dto.password, buildAuditContext(req));
+    } catch (error) {
+      // PENDENCIAS-BACKEND-GESTAO.md #2.3 — só conta pro limite depois de confirmada a
+      // falha de autenticação; login certo nunca chega aqui, então nunca incrementa o
+      // contador. Erros que não são de credenciais (timeout de DB, etc.) não devem contar
+      // contra o utilizador, senão uma instabilidade de infra vira bloqueio de login.
+      if (error instanceof UnauthorizedException) {
+        await this.loginRateLimitService.recordFailedAttempt(deriveLoginRateLimitKey(req));
+      }
+      throw error;
+    }
     setRefreshCookie(res, result.refreshToken, msFromExpiry(result.refreshExpiresIn));
     const { refreshToken: _, ...safe } = result;
     return safe;

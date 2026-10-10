@@ -49,6 +49,32 @@ export class ShipmentsService {
     }
   }
 
+  /**
+   * PENDENCIAS-BACKEND-GESTAO.md #2.7 — hoje era possível ir de `pending` direto para
+   * `delivered`. Única regra aplicada: `delivered` exige ter passado por `shipped` ou
+   * `in_transit` antes. Não restrinjo as outras transições (ex.: voltar de `failed` pra
+   * `pending`) — não fazia parte do relatado e arriscaria travar correções legítimas.
+   */
+  private assertValidShipmentTransition(
+    currentStatus: shipment_status | null,
+    nextStatus: shipment_status,
+  ) {
+    if (currentStatus === nextStatus) {
+      return;
+    }
+    if (
+      nextStatus === shipment_status.delivered &&
+      currentStatus !== shipment_status.shipped &&
+      currentStatus !== shipment_status.in_transit
+    ) {
+      this.badRequest(
+        'INVALID_SHIPMENT_TRANSITION',
+        'Shipment must pass through "shipped" before being marked as "delivered".',
+        { from: currentStatus, to: nextStatus },
+      );
+    }
+  }
+
   private async applyOrderStatus(
     tx: Prisma.TransactionClient,
     orderId: string,
@@ -106,6 +132,7 @@ export class ShipmentsService {
 
   async create(dto: CreateShipmentDto, context?: AuditContext) {
     const status = dto.status ?? shipment_status.pending;
+    this.assertValidShipmentTransition(null, status);
 
     return this.prisma.$transaction(async (tx) => {
       await applyAuditContext(tx, context);
@@ -154,7 +181,7 @@ export class ShipmentsService {
           trackingNumber: dto.trackingNumber ?? undefined,
           trackingUrl: dto.trackingUrl ?? undefined,
           carrier: dto.carrier ?? undefined,
-          estimatedDelivery: dto.estimatedDeliveryAt ?? undefined,
+          estimatedDelivery: this.parseDate(dto.estimatedDeliveryAt) ?? undefined,
         });
       } else if (status === shipment_status.delivered) {
         void this.notificationsService.dispatch('order.delivered', dto.orderId);
@@ -187,6 +214,8 @@ export class ShipmentsService {
       existingTracking = { trackingNumber: existing.trackingNumber, trackingUrl: existing.trackingUrl, carrier: existing.carrier };
 
       const status = dto.status ?? existing.status;
+      this.assertValidShipmentTransition(existing.status, status);
+
       const { shippedAt, deliveredAt } = this.normalizeDates({
         status,
         shippedAt: dto.shippedAt,
@@ -238,31 +267,40 @@ export class ShipmentsService {
   }
 
   async addEvent(id: string, dto: CreateShipmentEventDto, context?: AuditContext) {
-    return this.prisma.$transaction(async (tx) => {
+    let previousStatus: shipment_status | undefined;
+    let orderId: string | undefined;
+    let existingTracking: { trackingNumber: string | null; trackingUrl: string | null; carrier: string | null } | undefined;
+
+    const shipment = await this.prisma.$transaction(async (tx) => {
       await applyAuditContext(tx, context);
 
-      const shipment = await tx.shipment.findUnique({
+      const existing = await tx.shipment.findUnique({
         where: { id },
         include: { order: { select: { id: true, status: true } } },
       });
 
-      if (!shipment) {
+      if (!existing) {
         throw new NotFoundException('Shipment not found');
       }
 
-      this.assertOrderMutable(shipment.order.status);
+      this.assertOrderMutable(existing.order.status);
+      this.assertValidShipmentTransition(existing.status, dto.status);
+
+      previousStatus = existing.status;
+      orderId = existing.order.id;
+      existingTracking = { trackingNumber: existing.trackingNumber, trackingUrl: existing.trackingUrl, carrier: existing.carrier };
 
       const { shippedAt, deliveredAt } = this.normalizeDates({
         status: dto.status,
         existing: {
-          shippedAt: shipment.shippedAt,
-          deliveredAt: shipment.deliveredAt,
+          shippedAt: existing.shippedAt,
+          deliveredAt: existing.deliveredAt,
         },
       });
 
       await tx.shipmentEvent.create({
         data: {
-          shipmentId: shipment.id,
+          shipmentId: existing.id,
           status: dto.status,
           message: dto.message ?? null,
           location: dto.location ?? null,
@@ -272,7 +310,7 @@ export class ShipmentsService {
       });
 
       await tx.shipment.update({
-        where: { id: shipment.id },
+        where: { id: existing.id },
         data: {
           status: dto.status,
           shippedAt,
@@ -280,13 +318,28 @@ export class ShipmentsService {
         },
       });
 
-      await this.applyOrderStatus(tx, shipment.order.id, dto.status);
+      await this.applyOrderStatus(tx, existing.order.id, dto.status);
 
       return tx.shipment.findUnique({
-        where: { id: shipment.id },
+        where: { id: existing.id },
         include: { events: true },
       });
     });
+
+    // PENDENCIAS-BACKEND-GESTAO.md #2.6 — POST /events agora avisa o cliente, igual ao
+    // PATCH; só dispara quando o estado realmente muda, pra não duplicar e-mail se o mesmo
+    // evento for repetido.
+    if (orderId && dto.status === shipment_status.shipped && previousStatus !== shipment_status.shipped) {
+      void this.notificationsService.dispatch('order.shipped', orderId, {
+        trackingNumber: existingTracking?.trackingNumber ?? undefined,
+        trackingUrl: existingTracking?.trackingUrl ?? undefined,
+        carrier: existingTracking?.carrier ?? undefined,
+      });
+    } else if (orderId && dto.status === shipment_status.delivered && previousStatus !== shipment_status.delivered) {
+      void this.notificationsService.dispatch('order.delivered', orderId);
+    }
+
+    return shipment;
   }
 
   async findOne(id: string) {

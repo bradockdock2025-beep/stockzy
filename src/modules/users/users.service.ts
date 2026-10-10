@@ -1,20 +1,42 @@
-import { ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
+import { ConflictException, ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import * as bcrypt from 'bcrypt';
-import { user_role } from '@prisma/client';
+import { Prisma, user_role } from '@prisma/client';
 import { PrismaService } from '../../database/prisma.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { QueryUserDto } from './dto/query-user.dto';
 import { AuditContext } from '../../common/audit/audit-context';
 import { applyAuditContext } from '../../common/audit/audit-context.db';
+import { AuditLogService } from '../audit/audit-log.service';
 
 @Injectable()
 export class UsersService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly configService: ConfigService,
+    private readonly auditLog: AuditLogService,
   ) {}
+
+  /** Nunca logar passwordHash no audit trail — só um retrato seguro do registro. */
+  private toAuditSnapshot(user: { passwordHash?: string | null } & Record<string, unknown>) {
+    const { passwordHash: _passwordHash, ...safe } = user;
+    return safe;
+  }
+
+  /** P2002 de e-mail duplicado dava 500 cru — mesmo tratamento de slug duplicado em marcas/categorias. */
+  private throwIfDuplicateEmail(error: unknown, email: string): never {
+    if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2002') {
+      const meta = error.meta as
+        | { target?: string[]; driverAdapterError?: { cause?: { constraint?: { fields?: string[] } } } }
+        | undefined;
+      const fields = meta?.target ?? meta?.driverAdapterError?.cause?.constraint?.fields ?? [];
+      if (fields.includes('email')) {
+        throw new ConflictException(`Email "${email}" is already in use.`);
+      }
+    }
+    throw error;
+  }
 
   async create(dto: CreateUserDto, context?: AuditContext) {
     if (context?.actorRole === user_role.manager && dto.role !== undefined) {
@@ -24,28 +46,43 @@ export class UsersService {
     const email = dto.email.trim().toLowerCase();
     const passwordHash = await bcrypt.hash(dto.password, this.getSaltRounds());
 
-    return this.prisma.$transaction(async (tx) => {
-      await applyAuditContext(tx, context);
-      return tx.user.create({
-        data: {
-          name: dto.name,
-          email,
-          passwordHash,
-          role: dto.role,
-          isActive: dto.isActive ?? true,
-        },
-        select: {
-          id: true,
-          name: true,
-          email: true,
-          role: true,
-          isActive: true,
-          avatarUrl: true,
-          createdAt: true,
-          updatedAt: true,
-        },
+    let result;
+    try {
+      result = await this.prisma.$transaction(async (tx) => {
+        await applyAuditContext(tx, context);
+        return tx.user.create({
+          data: {
+            name: dto.name,
+            email,
+            passwordHash,
+            role: dto.role ?? user_role.support,
+            isActive: dto.isActive ?? true,
+          },
+          select: {
+            id: true,
+            name: true,
+            email: true,
+            role: true,
+            isActive: true,
+            avatarUrl: true,
+            createdAt: true,
+            updatedAt: true,
+          },
+        });
       });
+    } catch (error) {
+      this.throwIfDuplicateEmail(error, email);
+    }
+
+    await this.auditLog.log({
+      action: 'create',
+      entity: 'user',
+      entityId: result.id,
+      after: result,
+      context,
     });
+
+    return result;
   }
 
   async findAll(query: QueryUserDto) {
@@ -126,54 +163,74 @@ export class UsersService {
       throw new ForbiddenException('Managers cannot change user roles');
     }
 
-    return this.prisma.$transaction(async (tx) => {
-      await applyAuditContext(tx, context);
-      const existing = await tx.user.findUnique({ where: { id } });
-      if (!existing) {
-        throw new NotFoundException('User not found');
-      }
+    let before: Record<string, unknown> | undefined;
+    let updated;
+    try {
+      updated = await this.prisma.$transaction(async (tx) => {
+        await applyAuditContext(tx, context);
+        const existing = await tx.user.findUnique({ where: { id } });
+        if (!existing) {
+          throw new NotFoundException('User not found');
+        }
+        before = existing;
 
-      const data: Record<string, unknown> = {};
-      if (dto.name !== undefined) {
-        data.name = dto.name;
-      }
-      if (dto.email !== undefined) {
-        data.email = dto.email.trim().toLowerCase();
-      }
-      if (dto.role !== undefined) {
-        data.role = dto.role;
-      }
-      if (dto.isActive !== undefined) {
-        data.isActive = dto.isActive;
-      }
-      if (dto.password) {
-        data.passwordHash = await bcrypt.hash(dto.password, this.getSaltRounds());
-      }
+        const data: Record<string, unknown> = {};
+        if (dto.name !== undefined) {
+          data.name = dto.name;
+        }
+        if (dto.email !== undefined) {
+          data.email = dto.email.trim().toLowerCase();
+        }
+        if (dto.role !== undefined) {
+          data.role = dto.role;
+        }
+        if (dto.isActive !== undefined) {
+          data.isActive = dto.isActive;
+        }
+        if (dto.password) {
+          data.passwordHash = await bcrypt.hash(dto.password, this.getSaltRounds());
+        }
 
-      return tx.user.update({
-        where: { id },
-        data,
-        select: {
-          id: true,
-          name: true,
-          email: true,
-          role: true,
-          isActive: true,
-          avatarUrl: true,
-          createdAt: true,
-          updatedAt: true,
-        },
+        return tx.user.update({
+          where: { id },
+          data,
+          select: {
+            id: true,
+            name: true,
+            email: true,
+            role: true,
+            isActive: true,
+            avatarUrl: true,
+            createdAt: true,
+            updatedAt: true,
+          },
+        });
       });
+    } catch (error) {
+      this.throwIfDuplicateEmail(error, dto.email ?? '');
+    }
+
+    await this.auditLog.log({
+      action: 'update',
+      entity: 'user',
+      entityId: id,
+      before: before ? this.toAuditSnapshot(before as { passwordHash?: string | null }) : undefined,
+      after: updated,
+      context,
     });
+
+    return updated;
   }
 
   async remove(id: string, context?: AuditContext) {
-    return this.prisma.$transaction(async (tx) => {
+    let before: Record<string, unknown> | undefined;
+    const updated = await this.prisma.$transaction(async (tx) => {
       await applyAuditContext(tx, context);
       const existing = await tx.user.findUnique({ where: { id } });
       if (!existing) {
         throw new NotFoundException('User not found');
       }
+      before = existing;
 
       await tx.refreshToken.updateMany({
         where: { userId: id, revokedAt: null },
@@ -195,6 +252,17 @@ export class UsersService {
         },
       });
     });
+
+    await this.auditLog.log({
+      action: 'deactivate',
+      entity: 'user',
+      entityId: id,
+      before: before ? this.toAuditSnapshot(before as { passwordHash?: string | null }) : undefined,
+      after: updated,
+      context,
+    });
+
+    return updated;
   }
 
   private getSaltRounds() {

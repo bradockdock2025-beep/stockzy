@@ -21,6 +21,7 @@ import { UpdatePresaleSettingsDto } from './dto/update-presale-settings.dto';
 import { UpdateOfferSettingsDto } from './dto/update-offer-settings.dto';
 import { QueryProductDto } from './dto/query-product.dto';
 import { ReorderProductsDto } from './dto/reorder-products.dto';
+import { ReorderProductImagesDto } from './dto/reorder-product-images.dto';
 import { Roles } from '../../common/decorators/roles.decorator';
 import { user_role } from '@prisma/client';
 import { buildAuditContext } from '../../common/audit/audit-context';
@@ -30,12 +31,18 @@ import { buildAuditContext } from '../../common/audit/audit-context';
 export class ProductsAdminController {
   constructor(private readonly productsService: ProductsService) {}
 
+  /**
+   * PENDENCIAS-BACKEND-GESTAO.md #2.5 — gestor lê, escrita continua só admin (herdado do
+   * `@Roles(admin)` da classe).
+   */
   @Get()
+  @Roles(user_role.admin, user_role.manager)
   findAll(@Query() query: QueryProductDto) {
     return this.productsService.findAll(query, { allowAllStatuses: true });
   }
 
   @Get(':id')
+  @Roles(user_role.admin, user_role.manager)
   findOne(
     @Param('id', new ParseUUIDPipe()) id: string,
     @Query() query: QueryProductDto,
@@ -78,6 +85,23 @@ export class ProductsAdminController {
     return this.productsService.reorder(dto.products);
   }
 
+  @Patch(':id/images/reorder')
+  reorderImages(
+    @Param('id', new ParseUUIDPipe()) id: string,
+    @Body() dto: ReorderProductImagesDto,
+    @Req() req: { user?: unknown; headers?: Record<string, unknown>; ip?: string },
+  ) {
+    return this.productsService.reorderImages(id, dto.images, buildAuditContext(req));
+  }
+
+  @Delete('images/:imageId')
+  deleteImage(
+    @Param('imageId', new ParseUUIDPipe()) imageId: string,
+    @Req() req: { user?: unknown; headers?: Record<string, unknown>; ip?: string },
+  ) {
+    return this.productsService.deleteImage(imageId, buildAuditContext(req));
+  }
+
   @Patch(':id')
   update(
     @Param('id', new ParseUUIDPipe()) id: string,
@@ -93,6 +117,14 @@ export class ProductsAdminController {
     @Req() req: { user?: unknown; headers?: Record<string, unknown>; ip?: string },
   ) {
     return this.productsService.remove(id, buildAuditContext(req));
+  }
+
+  @Patch('variants/:id/deactivate')
+  deactivateVariant(
+    @Param('id', new ParseUUIDPipe()) id: string,
+    @Req() req: { user?: unknown; headers?: Record<string, unknown>; ip?: string },
+  ) {
+    return this.productsService.deactivateVariant(id, buildAuditContext(req));
   }
 
   @Patch('variants/:id/presale')
@@ -114,6 +146,7 @@ export class ProductsAdminController {
   }
 
   @Get(':id/price-history')
+  @Roles(user_role.admin, user_role.manager)
   priceHistory(@Param('id', new ParseUUIDPipe()) id: string) {
     return this.productsService.getPriceHistory(id);
   }

@@ -13,6 +13,7 @@ import { AuditLogService } from '../audit/audit-log.service';
 import { AuditContext } from '../../common/audit/audit-context';
 import { applyAuditContext } from '../../common/audit/audit-context.db';
 import { RedisService } from '../../common/redis/redis.service';
+import { extractStoragePath } from '../../common/storage/storage-path.util';
 import { CreateProductDto } from './dto/create-product.dto';
 import { QueryProductDto } from './dto/query-product.dto';
 import { QueryOffersDto } from './dto/query-offers.dto';
@@ -2739,5 +2740,163 @@ export class ProductsService {
 
     await this.invalidateProductCache();
     return updated;
+  }
+
+  /**
+   * PENDENCIAS-BACKEND-GESTAO.md #2.4 — decisão: bloquear (400) desativar a última variante
+   * ativa de um produto **ativo**; em rascunho/arquivado, permitir (não há vitrine pra ficar
+   * sem variante comprável).
+   */
+  async deactivateVariant(variantId: string, context?: AuditContext) {
+    let alreadyInactive = false;
+
+    const updated = await this.prisma.$transaction(async (tx) => {
+      await applyAuditContext(tx, context);
+
+      // FOR UPDATE — sem isso, duas desativações concorrentes de variantes diferentes do
+      // mesmo produto podem cada uma ler a outra como "ainda ativa" antes de qualquer
+      // commit, e as duas passam a checagem (ver PENDENCIAS-BACKEND-GESTAO.md #2.4: o
+      // objetivo do bloqueio é justamente nunca deixar um produto ativo sem variante
+      // comprável). Trava todas as linhas de variante do produto, não só a atual, pra
+      // serializar com qualquer outra desativação do mesmo produto em curso.
+      const [variant] = await tx.$queryRaw<
+        Array<{ id: string; product_id: string; is_active: boolean }>
+      >`SELECT id, product_id, is_active FROM product_variants WHERE id = ${variantId} FOR UPDATE;`;
+
+      if (!variant) {
+        throw new NotFoundException('Variant not found');
+      }
+
+      if (!variant.is_active) {
+        alreadyInactive = true;
+        return tx.productVariant.findUniqueOrThrow({ where: { id: variantId } });
+      }
+
+      const product = await tx.product.findUnique({
+        where: { id: variant.product_id },
+        select: { status: true },
+      });
+
+      if (product?.status === product_status.active) {
+        const siblings = await tx.$queryRaw<Array<{ id: string; is_active: boolean }>>`
+          SELECT id, is_active FROM product_variants WHERE product_id = ${variant.product_id} FOR UPDATE;
+        `;
+        const otherActiveVariants = siblings.filter((v) => v.id !== variantId && v.is_active).length;
+        if (otherActiveVariants === 0) {
+          throw new BadRequestException({
+            code: 'LAST_ACTIVE_VARIANT',
+            message: 'Cannot deactivate the last active variant of an active product.',
+          });
+        }
+      }
+
+      return tx.productVariant.update({ where: { id: variantId }, data: { isActive: false } });
+    });
+
+    if (alreadyInactive) {
+      return updated;
+    }
+
+    await this.auditLog.log({
+      action: 'deactivate',
+      entity: 'product_variant',
+      entityId: variantId,
+      before: { isActive: true },
+      after: { isActive: updated.isActive },
+      context,
+    });
+
+    await this.invalidateProductCache();
+    return updated;
+  }
+
+  /**
+   * PENDENCIAS-BACKEND-GESTAO.md #2.4 — decisão: permitir apagar a última imagem de um
+   * produto (mesmo ativo); o frontend avisa quando um produto ativo fica sem imagens.
+   */
+  async deleteImage(imageId: string, context?: AuditContext) {
+    const image = await this.prisma.productImage.findUnique({ where: { id: imageId } });
+    if (!image) {
+      throw new NotFoundException('Image not found');
+    }
+
+    await this.prisma.$transaction(async (tx) => {
+      await applyAuditContext(tx, context);
+      await tx.productImage.delete({ where: { id: imageId } });
+    });
+
+    // Best-effort: o registo já foi apagado (acima); uma falha aqui (ex.: Supabase sem
+    // configurar) não pode voltar como 500 pro admin — o ficheiro fica órfão no Storage,
+    // mas a operação que o admin pediu (remover a imagem do produto) já foi concluída.
+    try {
+      const { bucket } = this.getStorageSettings();
+      const path = extractStoragePath(image.url, bucket);
+      if (path) {
+        await this.getSupabaseClient().storage.from(bucket).remove([path]).catch(() => undefined);
+      }
+    } catch (error) {
+      this.logger.warn(
+        `Failed to remove image ${imageId} from storage: ${error instanceof Error ? error.message : String(error)}`,
+      );
+    }
+
+    await this.auditLog.log({
+      action: 'delete',
+      entity: 'product_image',
+      entityId: imageId,
+      before: image,
+      after: null,
+      context,
+    });
+
+    await this.invalidateProductCache();
+    return { id: imageId, deleted: true };
+  }
+
+  async reorderImages(
+    productId: string,
+    items: { id: string; position: number }[],
+    context?: AuditContext,
+  ) {
+    const product = await this.prisma.product.findUnique({
+      where: { id: productId },
+      select: { id: true },
+    });
+    if (!product) {
+      throw new NotFoundException('Product not found');
+    }
+
+    const ids = items.map((item) => item.id);
+    const existing = await this.prisma.productImage.findMany({ where: { id: { in: ids } } });
+    if (existing.length !== ids.length || existing.some((image) => image.productId !== productId)) {
+      throw new BadRequestException('All images must belong to the product');
+    }
+
+    await this.prisma.$transaction(async (tx) => {
+      await applyAuditContext(tx, context);
+      // Sequencial, não Promise.all — uma transação interativa do Prisma está presa a uma
+      // única conexão; disparar updates em paralelo nela não é seguro (pode dar erro
+      // intermitente atrás de um pooler em modo transaction, ex. PgBouncer).
+      for (const item of items) {
+        await tx.productImage.update({ where: { id: item.id }, data: { position: item.position } });
+      }
+    });
+
+    const after = await this.prisma.productImage.findMany({
+      where: { productId },
+      orderBy: { position: 'asc' },
+    });
+
+    await this.auditLog.log({
+      action: 'update',
+      entity: 'product_image',
+      entityId: productId,
+      before: existing,
+      after,
+      context,
+    });
+
+    await this.invalidateProductCache();
+    return after;
   }
 }

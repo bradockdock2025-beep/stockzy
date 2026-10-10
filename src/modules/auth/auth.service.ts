@@ -10,6 +10,7 @@ import { fileTypeFromBuffer } from 'file-type';
 import { AuditLogService } from '../audit/audit-log.service';
 import { AuditContext } from '../../common/audit/audit-context';
 import { applyAuditContext } from '../../common/audit/audit-context.db';
+import { extractStoragePath } from '../../common/storage/storage-path.util';
 
 @Injectable()
 export class AuthService {
@@ -53,15 +54,6 @@ export class AuthService {
     return { bucket, isPublic, signedTtl };
   }
 
-  /** Extrai o `path` dentro do bucket a partir de uma URL pública já gerada, pra poder apagar o ficheiro antigo. */
-  private extractStoragePath(url: string, bucket: string): string | null {
-    const marker = `/object/public/${bucket}/`;
-    const index = url.indexOf(marker);
-    if (index === -1) {
-      return null;
-    }
-    return url.slice(index + marker.length);
-  }
 
   async uploadAvatar(userId: string, file: Express.Multer.File | undefined, context?: AuditContext) {
     if (!userId) {
@@ -123,7 +115,7 @@ export class AuthService {
     });
 
     if (before.avatarUrl) {
-      const oldPath = this.extractStoragePath(before.avatarUrl, bucket);
+      const oldPath = extractStoragePath(before.avatarUrl, bucket);
       if (oldPath) {
         await supabase.storage.from(bucket).remove([oldPath]).catch(() => undefined);
       }
@@ -158,7 +150,7 @@ export class AuthService {
 
     if (before.avatarUrl) {
       const { bucket } = this.getStorageSettings();
-      const oldPath = this.extractStoragePath(before.avatarUrl, bucket);
+      const oldPath = extractStoragePath(before.avatarUrl, bucket);
       if (oldPath) {
         await this.getSupabaseClient().storage.from(bucket).remove([oldPath]).catch(() => undefined);
       }

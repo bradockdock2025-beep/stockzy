@@ -11,7 +11,7 @@ model User {
   name         String
   email        String    @unique
   passwordHash String    @map("password_hash")
-  role         user_role @default(admin)
+  role         user_role @default(support)
   isActive     Boolean   @default(true) @map("is_active")
   avatarUrl    String?   @map("avatar_url")
   createdAt    DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)

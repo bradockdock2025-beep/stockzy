@@ -105,6 +105,13 @@ export class NotificationsService {
     return `${dd}/${mm}/${date.getFullYear()} ${hh}:${min}`;
   }
 
+  /** PENDENCIAS-BACKEND-GESTAO.md #2.8 — previsão de entrega é só data, sem hora (fica 00:00). */
+  private formatDateOnly(date: Date): string {
+    const dd = String(date.getDate()).padStart(2, '0');
+    const mm = String(date.getMonth() + 1).padStart(2, '0');
+    return `${dd}/${mm}/${date.getFullYear()}`;
+  }
+
   private buildReceiptUrl(orderId: string): string {
     const token = createHmac('sha256', this.receiptSecret).update(orderId).digest('hex');
     return `${this.apiUrl}/orders/${orderId}/receipt?token=${token}`;
@@ -200,6 +207,9 @@ export class NotificationsService {
         year: new Date().getFullYear(),
         ...presaleExtra,
         ...extraPayload,
+        ...(extraPayload.estimatedDelivery instanceof Date
+          ? { estimatedDelivery: this.formatDateOnly(extraPayload.estimatedDelivery) }
+          : {}),
       };
 
       const jobId = `${eventKey.replace(/\./g, '_')}__${orderId}`;

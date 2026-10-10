@@ -46,7 +46,138 @@ export class LoginRateLimitService implements OnModuleInit, OnModuleDestroy {
     }
   }
 
+  /**
+   * Comportamento antigo (verifica bloqueio e incrementa sempre, sucesso ou falha) — mantido
+   * só pra quem ainda não migrou pro par `assertNotBlocked`/`recordFailedAttempt`
+   * (hoje, `CustomerRateLimitGuard`, fora do escopo de PENDENCIAS-BACKEND-GESTAO.md #2.3,
+   * que trata só do login do painel de gestão).
+   */
   async check(payload: { key: string; ip?: string | null; email?: string | null }) {
+    await this.assertNotBlocked(payload);
+    await this.recordFailedAttempt(payload);
+  }
+
+  /**
+   * PENDENCIAS-BACKEND-GESTAO.md #2.3 — só verifica se a chave (ou o IP) já está bloqueada;
+   * não incrementa nada. Chamado no guard, antes de validar a senha, pra não deixar nem
+   * tentar logins quando já está bloqueado. `recordFailedAttempt` é quem incrementa, e só é
+   * chamado depois de confirmada a falha de autenticação — login certo nunca conta pro limite.
+   */
+  async assertNotBlocked(payload: { key: string; ip?: string | null; email?: string | null }) {
+    const config = this.resolveConfig();
+    const ipKey = payload.ip ? `ip:${payload.ip}` : null;
+
+    if (this.redis) {
+      const applyIpLimit = ipKey
+        ? await this.shouldApplyIpLimitRedis(
+            config.ipMode,
+            payload.ip!,
+            payload.email ?? null,
+            config.ipEmailWindowMs,
+            config.ipDistinctEmailsThreshold,
+          )
+        : false;
+
+      if (ipKey && applyIpLimit) {
+        await this.assertKeyNotBlockedRedis(ipKey, config.ipBaseBlockMs);
+      }
+      await this.assertKeyNotBlockedRedis(payload.key, config.baseBlockMs);
+      return;
+    }
+
+    const applyIpLimit = ipKey
+      ? this.shouldApplyIpLimitMemory(
+          config.ipMode,
+          payload.ip!,
+          payload.email ?? null,
+          config.ipEmailWindowMs,
+          config.ipDistinctEmailsThreshold,
+        )
+      : false;
+
+    if (ipKey && applyIpLimit) {
+      this.assertKeyNotBlockedMemory(ipKey);
+    }
+    this.assertKeyNotBlockedMemory(payload.key);
+  }
+
+  /**
+   * Incrementa o contador de tentativas (e aplica o bloqueio/backoff se passar do limite).
+   * Só deve ser chamado depois de confirmada a falha de autenticação.
+   */
+  async recordFailedAttempt(payload: { key: string; ip?: string | null; email?: string | null }) {
+    const config = this.resolveConfig();
+    const ipKey = payload.ip ? `ip:${payload.ip}` : null;
+
+    if (this.redis) {
+      const applyIpLimit = ipKey
+        ? await this.shouldApplyIpLimitRedis(
+            config.ipMode,
+            payload.ip!,
+            payload.email ?? null,
+            config.ipEmailWindowMs,
+            config.ipDistinctEmailsThreshold,
+          )
+        : false;
+
+      if (ipKey && applyIpLimit) {
+        await this.recordAttemptRedis(
+          ipKey,
+          config.ipMaxAttempts,
+          config.ipWindowMs,
+          config.ipBaseBlockMs,
+          config.ipMaxBlockMs,
+          config.ipPenaltyWindowMs,
+          config.ipBackoffMultiplier,
+          { ip: payload.ip, email: null },
+        );
+      }
+
+      await this.recordAttemptRedis(
+        payload.key,
+        config.maxAttempts,
+        config.windowMs,
+        config.baseBlockMs,
+        config.maxBlockMs,
+        config.penaltyWindowMs,
+        config.backoffMultiplier,
+        { ip: payload.ip, email: payload.email ?? null },
+      );
+      return;
+    }
+
+    const applyIpLimit = ipKey
+      ? this.shouldApplyIpLimitMemory(
+          config.ipMode,
+          payload.ip!,
+          payload.email ?? null,
+          config.ipEmailWindowMs,
+          config.ipDistinctEmailsThreshold,
+        )
+      : false;
+
+    if (ipKey && applyIpLimit) {
+      await this.recordAttemptMemory(ipKey, {
+        maxAttempts: config.ipMaxAttempts,
+        windowMs: config.ipWindowMs,
+        baseBlockMs: config.ipBaseBlockMs,
+        maxBlockMs: config.ipMaxBlockMs,
+        penaltyWindowMs: config.ipPenaltyWindowMs,
+        backoffMultiplier: config.ipBackoffMultiplier,
+      }, { ip: payload.ip, email: null });
+    }
+
+    await this.recordAttemptMemory(payload.key, {
+      maxAttempts: config.maxAttempts,
+      windowMs: config.windowMs,
+      baseBlockMs: config.baseBlockMs,
+      maxBlockMs: config.maxBlockMs,
+      penaltyWindowMs: config.penaltyWindowMs,
+      backoffMultiplier: config.backoffMultiplier,
+    }, { ip: payload.ip, email: payload.email ?? null });
+  }
+
+  private resolveConfig() {
     const maxAttempts = this.getNumber('LOGIN_RATE_LIMIT_MAX', 5);
     const windowMs = this.getNumber('LOGIN_RATE_LIMIT_WINDOW_MS', 60_000);
     const baseBlockMs = this.getNumber('LOGIN_RATE_LIMIT_BLOCK_MS', 300_000);
@@ -95,74 +226,11 @@ export class LoginRateLimitService implements OnModuleInit, OnModuleDestroy {
       ipWindowMs,
     );
 
-    const ipKey = payload.ip ? `ip:${payload.ip}` : null;
-
-    if (this.redis) {
-      const applyIpLimit = ipKey
-        ? await this.shouldApplyIpLimitRedis(
-            ipMode,
-            payload.ip!,
-            payload.email ?? null,
-            ipEmailWindowMs,
-            ipDistinctEmailsThreshold,
-          )
-        : false;
-
-      if (ipKey && applyIpLimit) {
-        await this.checkWithRedis(
-          ipKey,
-          ipMaxAttempts,
-          ipWindowMs,
-          ipBaseBlockMs,
-          ipMaxBlockMs,
-          ipPenaltyWindowMs,
-          ipBackoffMultiplier,
-          { ip: payload.ip, email: null },
-        );
-      }
-
-      await this.checkWithRedis(
-        payload.key,
-        maxAttempts,
-        windowMs,
-        baseBlockMs,
-        maxBlockMs,
-        penaltyWindowMs,
-        backoffMultiplier,
-        { ip: payload.ip, email: payload.email ?? null },
-      );
-      return;
-    }
-
-    const applyIpLimit = ipKey
-      ? this.shouldApplyIpLimitMemory(
-          ipMode,
-          payload.ip!,
-          payload.email ?? null,
-          ipEmailWindowMs,
-          ipDistinctEmailsThreshold,
-        )
-      : false;
-
-    if (ipKey && applyIpLimit) {
-      await this.checkWithMemory(ipKey, {
-        maxAttempts: ipMaxAttempts,
-        windowMs: ipWindowMs,
-        baseBlockMs: ipBaseBlockMs,
-        maxBlockMs: ipMaxBlockMs,
-        penaltyWindowMs: ipPenaltyWindowMs,
-        backoffMultiplier: ipBackoffMultiplier,
-      }, { ip: payload.ip, email: null });
-    }
-
-    await this.checkWithMemory(payload.key, {
-      maxAttempts,
-      windowMs,
-      baseBlockMs,
-      maxBlockMs,
-      penaltyWindowMs,
-      backoffMultiplier,
-    }, { ip: payload.ip, email: payload.email ?? null });
+    return {
+      maxAttempts, windowMs, baseBlockMs, maxBlockMs, penaltyWindowMs, backoffMultiplier,
+      ipMaxAttempts, ipWindowMs, ipBaseBlockMs, ipMaxBlockMs, ipPenaltyWindowMs,
+      ipBackoffMultiplier, ipMode, ipDistinctEmailsThreshold, ipEmailWindowMs,
+    };
   }
 
   private async shouldApplyIpLimitRedis(
@@ -230,7 +298,25 @@ export class LoginRateLimitService implements OnModuleInit, OnModuleDestroy {
     return entry.emails.size >= distinctThreshold;
   }
 
-  private async checkWithRedis(
+  private async assertKeyNotBlockedRedis(key: string, baseBlockMs: number) {
+    const redis = this.redis;
+    if (!redis) {
+      return;
+    }
+
+    const blockKey = `login:block:${key}`;
+    const isBlocked = await redis.exists(blockKey);
+    if (isBlocked) {
+      const retryAfterSeconds = await this.getRedisRetryAfterSeconds(blockKey, baseBlockMs);
+      this.logger.warn(`Login blocked (redis). key=${key} retryAfter=${retryAfterSeconds}s`);
+      throw new HttpException(
+        `Too many login attempts. Try again in ${retryAfterSeconds}s.`,
+        HttpStatus.TOO_MANY_REQUESTS,
+      );
+    }
+  }
+
+  private async recordAttemptRedis(
     key: string,
     maxAttempts: number,
     windowMs: number,
@@ -247,16 +333,6 @@ export class LoginRateLimitService implements OnModuleInit, OnModuleDestroy {
 
     const attemptKey = `login:attempts:${key}`;
     const blockKey = `login:block:${key}`;
-
-    const isBlocked = await redis.exists(blockKey);
-    if (isBlocked) {
-      const retryAfterSeconds = await this.getRedisRetryAfterSeconds(blockKey, baseBlockMs);
-      this.logger.warn(`Login blocked (redis). key=${key} retryAfter=${retryAfterSeconds}s`);
-      throw new HttpException(
-        `Too many login attempts. Try again in ${retryAfterSeconds}s.`,
-        HttpStatus.TOO_MANY_REQUESTS,
-      );
-    }
 
     const attempts = await redis.incr(attemptKey);
     if (attempts === 1) {
@@ -306,7 +382,21 @@ export class LoginRateLimitService implements OnModuleInit, OnModuleDestroy {
     this.logger.debug(`Login attempt (redis). key=${key} count=${attempts} max=${maxAttempts}`);
   }
 
-  private async checkWithMemory(
+  private assertKeyNotBlockedMemory(key: string) {
+    const now = Date.now();
+    const entry = this.attempts.get(key);
+
+    if (entry?.blockedUntil && entry.blockedUntil > now) {
+      const retryAfterSeconds = Math.ceil((entry.blockedUntil - now) / 1000);
+      this.logger.warn(`Login blocked (memory). key=${key} retryAfter=${retryAfterSeconds}s`);
+      throw new HttpException(
+        `Too many login attempts. Try again in ${retryAfterSeconds}s.`,
+        HttpStatus.TOO_MANY_REQUESTS,
+      );
+    }
+  }
+
+  private async recordAttemptMemory(
     key: string,
     config: {
       maxAttempts: number;
@@ -320,15 +410,6 @@ export class LoginRateLimitService implements OnModuleInit, OnModuleDestroy {
   ) {
     const now = Date.now();
     const entry = this.attempts.get(key);
-
-    if (entry?.blockedUntil && entry.blockedUntil > now) {
-      const retryAfterSeconds = Math.ceil((entry.blockedUntil - now) / 1000);
-      this.logger.warn(`Login blocked (memory). key=${key} retryAfter=${retryAfterSeconds}s`);
-      throw new HttpException(
-        `Too many login attempts. Try again in ${retryAfterSeconds}s.`,
-        HttpStatus.TOO_MANY_REQUESTS,
-      );
-    }
 
     let penaltyLevel = entry?.penaltyLevel ?? 0;
     let penaltyResetAt = entry?.penaltyResetAt ?? 0;
