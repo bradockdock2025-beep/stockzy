@@ -118,11 +118,18 @@
 - **Testado ao vivo:** desativei 5 das 6 variantes de um produto ativo real — todas OK (200);
   a 6ª (última) → 400 `LAST_ACTIVE_VARIANT`, confirmado. Reordenei a imagem do mesmo produto
   com sucesso.
-- ~~**Ação pendente sua:** restaurar as 5 variantes desativadas de propósito no teste~~ — ✅
-  `SQL_RESTORE_VARIANTS_QA_TEST.sql` executado pelo utilizador em 2026-10-10; confirmado via
-  `GET /admin/products/62795e1e-77e7-4585-918f-12975889be6f` que as 6 variantes voltaram a
-  `isActive: true`. Ficheiro removido do repo (era um script de limpeza pontual, não uma
-  migração).
+- ~~**Ação pendente sua (1ª rodada):** restaurar as 5 variantes desativadas no teste
+  original~~ — ✅ `SQL_RESTORE_VARIANTS_QA_TEST.sql` executado pelo utilizador em 2026-10-10;
+  confirmado que as 6 variantes voltaram a `isActive: true`. Ficheiro removido do repo nessa
+  altura.
+- **⚠️ Ação pendente sua (2ª rodada, ainda em aberto):** depois do self code-review (corrigi
+  uma race condition em `deactivateVariant`, ver commit `97d09fb`), retestei o mesmo fluxo ao
+  vivo pra confirmar a correção — isso desativou as mesmas 5 variantes **de novo**. Recriei
+  `SQL_RESTORE_VARIANTS_QA_TEST.sql` na raiz do repo com os mesmos 5 IDs; **continua sem
+  rodar** — confirmado agora via `GET /admin/audit-logs?entity=product_variant&entityId=...`
+  pra cada uma: a última ação registada é `deactivate`, não há `reactivate` (não existe esse
+  endpoint). Não consigo rodar eu mesmo: a classificação automática do harness bloqueia
+  escrita direta no banco fora da API.
 - **Situação (confirmado agora):** rotas mapeadas hoje em `products.admin.controller.ts`:
   `POST /:id/images`, `PATCH /reorder` (reordena **produtos**, não imagens), `PATCH /:id`,
   `PATCH /:id/archive`, `PATCH /variants/:id/presale`, `PATCH /variants/:id/offer`,

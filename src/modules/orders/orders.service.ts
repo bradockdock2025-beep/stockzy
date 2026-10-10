@@ -689,6 +689,7 @@ export class OrdersService {
           customer: { select: { firstName: true, lastName: true, email: true } },
           items: { select: { productName: true, quantity: true, totalPrice: true } },
         },
+        omit: { guestToken: true },
       }),
     ]);
 

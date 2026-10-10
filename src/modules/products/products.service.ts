@@ -2811,6 +2811,40 @@ export class ProductsService {
   }
 
   /**
+   * PENDENCIAS-BACKEND-GESTAO-RONDA-2.md #2.3 — não existia nenhuma rota pra desfazer um
+   * `deactivateVariant`; o único caminho era um UPDATE direto no banco (aconteceu de
+   * verdade nos testes do item que criou o `deactivate`). Sem checagem de "última
+   * variante" — reativar nunca reduz o número de variantes compráveis de um produto.
+   */
+  async reactivateVariant(variantId: string, context?: AuditContext) {
+    const variant = await this.prisma.productVariant.findUnique({ where: { id: variantId } });
+    if (!variant) {
+      throw new NotFoundException('Variant not found');
+    }
+
+    if (variant.isActive) {
+      return variant;
+    }
+
+    const updated = await this.prisma.$transaction(async (tx) => {
+      await applyAuditContext(tx, context);
+      return tx.productVariant.update({ where: { id: variantId }, data: { isActive: true } });
+    });
+
+    await this.auditLog.log({
+      action: 'reactivate',
+      entity: 'product_variant',
+      entityId: variantId,
+      before: { isActive: false },
+      after: { isActive: updated.isActive },
+      context,
+    });
+
+    await this.invalidateProductCache();
+    return updated;
+  }
+
+  /**
    * PENDENCIAS-BACKEND-GESTAO.md #2.4 — decisão: permitir apagar a última imagem de um
    * produto (mesmo ativo); o frontend avisa quando um produto ativo fica sem imagens.
    */

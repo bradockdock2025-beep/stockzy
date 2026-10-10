@@ -39,41 +39,53 @@ export class DashboardService {
   private async getLowStock() {
     const threshold = DashboardService.LOW_STOCK_THRESHOLD;
 
-    // Prisma não filtra por diferença entre duas colunas direto — traz ativos com
-    // stockQuantity baixo (o teto que realmente importa pra escassez) e refina em JS
-    // pela quantidade disponível de verdade (stock - reserved).
-    const candidates = await this.prisma.inventory.findMany({
-      where: {
-        stockQuantity: { lte: threshold + 20 },
-        variant: { isActive: true },
-      },
-      include: {
-        variant: {
-          select: {
-            id: true,
-            sku: true,
-            product: { select: { id: true, name: true, slug: true } },
-          },
-        },
-      },
-    });
+    // PENDENCIAS-BACKEND-GESTAO-RONDA-2.md #2.2 — filtrar por stockQuantity bruto antes de
+    // calcular o disponível (stock - reserved) escondia variantes de alto volume/alta
+    // reserva quase esgotadas (ex.: stock 100, reserved 97 → available 3, mas stockQuantity
+    // 100 já passava do corte e nunca chegava a ser considerada). Calcula
+    // `stock_quantity - reserved_quantity` direto no banco, sem pré-filtro em cima da
+    // coluna bruta.
+    const rows = await this.prisma.$queryRaw<
+      Array<{
+        variant_id: string;
+        sku: string;
+        product_id: string;
+        product_name: string;
+        product_slug: string;
+        available: number;
+      }>
+    >`
+      SELECT
+        i.variant_id, pv.sku, p.id AS product_id, p.name AS product_name, p.slug AS product_slug,
+        (i.stock_quantity - i.reserved_quantity) AS available
+      FROM inventory i
+      JOIN product_variants pv ON pv.id = i.variant_id
+      JOIN products p ON p.id = pv.product_id
+      WHERE pv.is_active = true
+        AND (i.stock_quantity - i.reserved_quantity) <= ${threshold}
+      ORDER BY available ASC
+      LIMIT ${DashboardService.LOW_STOCK_SAMPLE_SIZE};
+    `;
 
-    const lowStockItems = candidates
-      .map((inv) => ({
-        variantId: inv.variant.id,
-        sku: inv.variant.sku,
-        productId: inv.variant.product.id,
-        productName: inv.variant.product.name,
-        productSlug: inv.variant.product.slug,
-        available: inv.stockQuantity - inv.reservedQuantity,
-      }))
-      .filter((item) => item.available <= threshold)
-      .sort((a, b) => a.available - b.available);
+    const count = await this.prisma.$queryRaw<Array<{ count: bigint }>>`
+      SELECT COUNT(*) AS count
+      FROM inventory i
+      JOIN product_variants pv ON pv.id = i.variant_id
+      WHERE pv.is_active = true
+        AND (i.stock_quantity - i.reserved_quantity) <= ${threshold};
+    `;
 
     return {
       threshold,
-      count: lowStockItems.length,
-      items: lowStockItems.slice(0, DashboardService.LOW_STOCK_SAMPLE_SIZE),
+      count: Number(count[0]?.count ?? 0),
+      items: rows.map((row) => ({
+        variantId: row.variant_id,
+        sku: row.sku,
+        productId: row.product_id,
+        productName: row.product_name,
+        productSlug: row.product_slug,
+        available: row.available,
+      })),
     };
   }
 }

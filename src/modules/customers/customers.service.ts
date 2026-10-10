@@ -862,6 +862,7 @@ export class CustomersService {
         updatedAt: true,
         addresses: true,
         orders: {
+          omit: { guestToken: true },
           include: { items: true },
           orderBy: { createdAt: 'desc' },
         },
@@ -1059,6 +1060,7 @@ export class CustomersService {
           include: {
             addresses: true,
             orders: {
+              omit: { guestToken: true },
               include: { items: true },
               orderBy: { createdAt: 'desc' },
             },
@@ -1100,6 +1102,7 @@ export class CustomersService {
         include: {
           addresses: true,
           orders: {
+            omit: { guestToken: true },
             include: { items: true },
             orderBy: { createdAt: 'desc' },
           },
@@ -1131,6 +1134,7 @@ export class CustomersService {
       include: {
         addresses: true,
         orders: {
+          omit: { guestToken: true },
           include: { items: true },
           orderBy: { createdAt: 'desc' },
         },
@@ -1494,6 +1498,7 @@ export class CustomersService {
       updatedAt: true,
       addresses: true,
       orders: {
+        omit: { guestToken: true },
         include: { items: true },
         orderBy: { createdAt: Prisma.SortOrder.desc },
       },

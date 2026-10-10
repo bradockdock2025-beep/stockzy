@@ -44,26 +44,49 @@ export class FacetsService {
     }
   }
 
+  /**
+   * PENDENCIAS-BACKEND-GESTAO-RONDA-2.md #2.1 — P2002 em `key` (Facet) ou `(facetId, value)`
+   * (FacetValue) subia cru como 500. Mesmo padrão de `throwIfDuplicateSlug` em
+   * brands.service.ts/categories.service.ts.
+   */
+  private throwIfDuplicate(error: unknown, field: string, message: string): never {
+    if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2002') {
+      const meta = error.meta as
+        | { target?: string[]; driverAdapterError?: { cause?: { constraint?: { fields?: string[] } } } }
+        | undefined;
+      const fields = meta?.target ?? meta?.driverAdapterError?.cause?.constraint?.fields ?? [];
+      if (fields.includes(field)) {
+        throw new BadRequestException(message);
+      }
+    }
+    throw error;
+  }
+
   // ─── Facet ──────────────────────────────────────────────────────────────
 
   async create(dto: CreateFacetDto, context?: AuditContext) {
     this.assertVisibilityValue(dto.visibility, dto.visibilityValue);
 
-    const result = await this.prisma.$transaction(async (tx) => {
-      await applyAuditContext(tx, context);
-      return tx.facet.create({
-        data: {
-          key: dto.key,
-          name: dto.name,
-          inputType: dto.inputType,
-          scope: dto.scope ?? 'product',
-          visibility: dto.visibility ?? 'always',
-          visibilityValue: dto.visibilityValue ?? null,
-          sortOrder: dto.sortOrder ?? null,
-          isActive: dto.isActive ?? true,
-        },
+    let result;
+    try {
+      result = await this.prisma.$transaction(async (tx) => {
+        await applyAuditContext(tx, context);
+        return tx.facet.create({
+          data: {
+            key: dto.key,
+            name: dto.name,
+            inputType: dto.inputType,
+            scope: dto.scope ?? 'product',
+            visibility: dto.visibility ?? 'always',
+            visibilityValue: dto.visibilityValue ?? null,
+            sortOrder: dto.sortOrder ?? null,
+            isActive: dto.isActive ?? true,
+          },
+        });
       });
-    });
+    } catch (error) {
+      this.throwIfDuplicate(error, 'key', `Facet key "${dto.key}" is already in use.`);
+    }
 
     await this.auditLog.log({
       action: 'create',
@@ -112,22 +135,27 @@ export class FacetsService {
     const before = await this.findFacetOrFail(id);
     this.assertVisibilityValue(dto.visibility ?? before.visibility, dto.visibilityValue ?? before.visibilityValue ?? undefined);
 
-    const updated = await this.prisma.$transaction(async (tx) => {
-      await applyAuditContext(tx, context);
-      return tx.facet.update({
-        where: { id },
-        data: {
-          ...(dto.key !== undefined ? { key: dto.key } : {}),
-          ...(dto.name !== undefined ? { name: dto.name } : {}),
-          ...(dto.inputType !== undefined ? { inputType: dto.inputType } : {}),
-          ...(dto.scope !== undefined ? { scope: dto.scope } : {}),
-          ...(dto.visibility !== undefined ? { visibility: dto.visibility } : {}),
-          ...(dto.visibilityValue !== undefined ? { visibilityValue: dto.visibilityValue ?? null } : {}),
-          ...(dto.sortOrder !== undefined ? { sortOrder: dto.sortOrder } : {}),
-          ...(dto.isActive !== undefined ? { isActive: dto.isActive } : {}),
-        },
+    let updated;
+    try {
+      updated = await this.prisma.$transaction(async (tx) => {
+        await applyAuditContext(tx, context);
+        return tx.facet.update({
+          where: { id },
+          data: {
+            ...(dto.key !== undefined ? { key: dto.key } : {}),
+            ...(dto.name !== undefined ? { name: dto.name } : {}),
+            ...(dto.inputType !== undefined ? { inputType: dto.inputType } : {}),
+            ...(dto.scope !== undefined ? { scope: dto.scope } : {}),
+            ...(dto.visibility !== undefined ? { visibility: dto.visibility } : {}),
+            ...(dto.visibilityValue !== undefined ? { visibilityValue: dto.visibilityValue ?? null } : {}),
+            ...(dto.sortOrder !== undefined ? { sortOrder: dto.sortOrder } : {}),
+            ...(dto.isActive !== undefined ? { isActive: dto.isActive } : {}),
+          },
+        });
       });
-    });
+    } catch (error) {
+      this.throwIfDuplicate(error, 'key', `Facet key "${dto.key}" is already in use.`);
+    }
 
     await this.auditLog.log({
       action: 'update',
@@ -168,21 +196,26 @@ export class FacetsService {
   async createValue(facetId: string, dto: CreateFacetValueDto, context?: AuditContext) {
     await this.findFacetOrFail(facetId);
 
-    const result = await this.prisma.$transaction(async (tx) => {
-      await applyAuditContext(tx, context);
-      return tx.facetValue.create({
-        data: {
-          facetId,
-          value: dto.value,
-          label: dto.label,
-          extra: (dto.extra as Prisma.InputJsonValue | undefined) ?? undefined,
-          sortOrder: dto.sortOrder ?? null,
-          isActive: dto.isActive ?? true,
-          bannerTitle: dto.bannerTitle ?? null,
-          bannerDescription: dto.bannerDescription ?? null,
-        },
+    let result;
+    try {
+      result = await this.prisma.$transaction(async (tx) => {
+        await applyAuditContext(tx, context);
+        return tx.facetValue.create({
+          data: {
+            facetId,
+            value: dto.value,
+            label: dto.label,
+            extra: (dto.extra as Prisma.InputJsonValue | undefined) ?? undefined,
+            sortOrder: dto.sortOrder ?? null,
+            isActive: dto.isActive ?? true,
+            bannerTitle: dto.bannerTitle ?? null,
+            bannerDescription: dto.bannerDescription ?? null,
+          },
+        });
       });
-    });
+    } catch (error) {
+      this.throwIfDuplicate(error, 'value', `Value "${dto.value}" already exists for this facet.`);
+    }
 
     await this.auditLog.log({
       action: 'create',
@@ -207,25 +240,30 @@ export class FacetsService {
   async updateValue(facetId: string, id: string, dto: UpdateFacetValueDto, context?: AuditContext) {
     const before = await this.findValueOrFail(facetId, id);
 
-    const updated = await this.prisma.$transaction(async (tx) => {
-      await applyAuditContext(tx, context);
-      return tx.facetValue.update({
-        where: { id },
-        data: {
-          ...(dto.value !== undefined ? { value: dto.value } : {}),
-          ...(dto.label !== undefined ? { label: dto.label } : {}),
-          ...(dto.extra !== undefined
-            ? { extra: (dto.extra as Prisma.InputJsonValue | null) ?? Prisma.JsonNull }
-            : {}),
-          ...(dto.sortOrder !== undefined ? { sortOrder: dto.sortOrder } : {}),
-          ...(dto.isActive !== undefined ? { isActive: dto.isActive } : {}),
-          ...(dto.bannerTitle !== undefined ? { bannerTitle: dto.bannerTitle ?? null } : {}),
-          ...(dto.bannerDescription !== undefined
-            ? { bannerDescription: dto.bannerDescription ?? null }
-            : {}),
-        },
+    let updated;
+    try {
+      updated = await this.prisma.$transaction(async (tx) => {
+        await applyAuditContext(tx, context);
+        return tx.facetValue.update({
+          where: { id },
+          data: {
+            ...(dto.value !== undefined ? { value: dto.value } : {}),
+            ...(dto.label !== undefined ? { label: dto.label } : {}),
+            ...(dto.extra !== undefined
+              ? { extra: (dto.extra as Prisma.InputJsonValue | null) ?? Prisma.JsonNull }
+              : {}),
+            ...(dto.sortOrder !== undefined ? { sortOrder: dto.sortOrder } : {}),
+            ...(dto.isActive !== undefined ? { isActive: dto.isActive } : {}),
+            ...(dto.bannerTitle !== undefined ? { bannerTitle: dto.bannerTitle ?? null } : {}),
+            ...(dto.bannerDescription !== undefined
+              ? { bannerDescription: dto.bannerDescription ?? null }
+              : {}),
+          },
+        });
       });
-    });
+    } catch (error) {
+      this.throwIfDuplicate(error, 'value', `Value "${dto.value}" already exists for this facet.`);
+    }
 
     await this.auditLog.log({
       action: 'update',

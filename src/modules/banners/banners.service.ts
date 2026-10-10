@@ -280,19 +280,13 @@ export class BannersService {
     return updated;
   }
 
+  /**
+   * PENDENCIAS-BACKEND-GESTAO-RONDA-2.md #3.1 — era hard delete de verdade, inconsistente
+   * com todo o resto da API admin (brands/categories/facets/promotions: DELETE só desativa,
+   * reversível). Delega pro mesmo soft-delete do `deactivate()` — um admin acostumado com o
+   * padrão "desativar é reversível" não perde o registo de vez por engano.
+   */
   async remove(id: string, context?: AuditContext) {
-    const before = await this.findOne(id);
-    const removed = await this.prisma.banner.delete({ where: { id } });
-
-    await this.auditLog.log({
-      action: 'delete',
-      entity: 'banner',
-      entityId: id,
-      before,
-      after: null,
-      context,
-    });
-
-    return removed;
+    return this.deactivate(id, context);
   }
 }

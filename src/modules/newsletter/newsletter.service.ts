@@ -17,19 +17,18 @@ export class NewsletterService {
       where: { email: dto.email },
     });
 
-    if (existing) {
-      if (existing.isActive) {
-        throw new ConflictException('Email already subscribed');
-      }
-      await this.prisma.newsletterSubscription.update({
-        where: { email: dto.email },
-        data: { isActive: true, unsubscribedAt: null, subscribedAt: new Date() },
-      });
-      return { message: 'Subscribed successfully' };
+    if (existing?.isActive) {
+      throw new ConflictException('Email already subscribed');
     }
 
-    await this.prisma.newsletterSubscription.create({
-      data: { email: dto.email },
+    // PENDENCIAS-BACKEND-GESTAO-RONDA-2.md #2.4 — upsert em vez de create()/update()
+    // separado do findUnique: dois POST /newsletter/subscribe concorrentes com o mesmo
+    // e-mail novo não conseguem mais os dois caírem no create() e um deles bater em P2002
+    // sem tratamento (500) — o upsert é atômico no Postgres.
+    await this.prisma.newsletterSubscription.upsert({
+      where: { email: dto.email },
+      update: { isActive: true, unsubscribedAt: null, subscribedAt: new Date() },
+      create: { email: dto.email },
     });
     return { message: 'Subscribed successfully' };
   }

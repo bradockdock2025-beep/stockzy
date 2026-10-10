@@ -127,6 +127,14 @@ export class ProductsAdminController {
     return this.productsService.deactivateVariant(id, buildAuditContext(req));
   }
 
+  @Patch('variants/:id/reactivate')
+  reactivateVariant(
+    @Param('id', new ParseUUIDPipe()) id: string,
+    @Req() req: { user?: unknown; headers?: Record<string, unknown>; ip?: string },
+  ) {
+    return this.productsService.reactivateVariant(id, buildAuditContext(req));
+  }
+
   @Patch('variants/:id/presale')
   updatePresaleSettings(
     @Param('id', new ParseUUIDPipe()) id: string,

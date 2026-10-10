@@ -302,20 +302,26 @@ export class HomepageService {
     return updated;
   }
 
+  /**
+   * PENDENCIAS-BACKEND-GESTAO-RONDA-2.md #3.1 — era hard delete de verdade, inconsistente
+   * com o resto da API admin (brands/categories/facets/promotions/banners: DELETE só
+   * desativa, reversível). `PATCH :id` já aceita `isActive`, então isto só alinha o DELETE
+   * com o que o PATCH já permite.
+   */
   async removeTile(id: string, context?: AuditContext) {
     const before = await this.findTileOrFail(id);
-    const removed = await this.prisma.homepageTile.delete({ where: { id } });
+    const updated = await this.prisma.homepageTile.update({ where: { id }, data: { isActive: false } });
 
     await this.auditLog.log({
-      action: 'delete',
+      action: 'deactivate',
       entity: 'homepage_tile',
       entityId: id,
       before,
-      after: null,
+      after: updated,
       context,
     });
 
-    return removed;
+    return updated;
   }
 
   private async findTileOrFail(id: string) {
@@ -459,18 +465,18 @@ export class HomepageService {
 
   async removeSocialImage(id: string, context?: AuditContext) {
     const before = await this.findSocialImageOrFail(id);
-    const removed = await this.prisma.socialFeedImage.delete({ where: { id } });
+    const updated = await this.prisma.socialFeedImage.update({ where: { id }, data: { isActive: false } });
 
     await this.auditLog.log({
-      action: 'delete',
+      action: 'deactivate',
       entity: 'social_feed_image',
       entityId: id,
       before,
-      after: null,
+      after: updated,
       context,
     });
 
-    return removed;
+    return updated;
   }
 
   private async findSocialImageOrFail(id: string) {
