@@ -709,4 +709,95 @@ export class NotificationsService {
       );
     }
   }
+
+  /**
+   * ANALISE_SELLER_PRODUCT_SUBMISSION.md — recebido ao submeter. Sem campo de idioma no
+   * formulário (ecrãs em inglês) — por agora, só `en`; os outros locales entram se/quando
+   * o portal de venda tiver seletor de idioma.
+   */
+  async dispatchSellerSubmissionReceived(submissionId: string): Promise<void> {
+    try {
+      const submission = await this.prisma.sellerSubmission.findUnique({
+        where: { id: submissionId },
+        select: { sellerName: true, sellerEmail: true, brand: true, modelName: true },
+      });
+      if (!submission) return;
+
+      await this.notificationsQueue.enqueueEmail(
+        {
+          to: submission.sellerEmail,
+          subject: `We received your submission — ${submission.brand} ${submission.modelName}`,
+          template: 'seller-submission-received.en.hbs',
+          context: {
+            sellerName: submission.sellerName,
+            brand: submission.brand,
+            modelName: submission.modelName,
+            supportEmail: this.supportEmail,
+            year: new Date().getFullYear(),
+          },
+        },
+        `seller_submission_received__${submissionId}`,
+      );
+
+      this.logger.log(`Seller submission received notification enqueued: submission=${submissionId}`);
+    } catch (error) {
+      this.logger.error(
+        `Failed to dispatch seller submission received for ${submissionId}: ${error instanceof Error ? error.message : String(error)}`,
+      );
+    }
+  }
+
+  async dispatchSellerSubmissionDecision(
+    eventKey: 'seller_submission.approved' | 'seller_submission.rejected',
+    submissionId: string,
+  ): Promise<void> {
+    const subjects: Record<'seller_submission.approved' | 'seller_submission.rejected', string> = {
+      'seller_submission.approved': 'Your item was approved and is now listed!',
+      'seller_submission.rejected': 'Update on your submission',
+    };
+    const templates: Record<'seller_submission.approved' | 'seller_submission.rejected', string> = {
+      'seller_submission.approved': 'seller-submission-approved',
+      'seller_submission.rejected': 'seller-submission-rejected',
+    };
+
+    try {
+      const submission = await this.prisma.sellerSubmission.findUnique({
+        where: { id: submissionId },
+        select: {
+          sellerName: true,
+          sellerEmail: true,
+          brand: true,
+          modelName: true,
+          rejectionReason: true,
+          product: { select: { slug: true } },
+        },
+      });
+      if (!submission) return;
+
+      await this.notificationsQueue.enqueueEmail(
+        {
+          to: submission.sellerEmail,
+          subject: `${subjects[eventKey]} — ${submission.brand} ${submission.modelName}`,
+          template: `${templates[eventKey]}.en.hbs`,
+          context: {
+            sellerName: submission.sellerName,
+            brand: submission.brand,
+            modelName: submission.modelName,
+            rejectionReason: submission.rejectionReason ?? '',
+            productUrl: submission.product ? `${this.frontendUrl}/products/${submission.product.slug}` : this.frontendUrl,
+            storeUrl: this.frontendUrl,
+            supportEmail: this.supportEmail,
+            year: new Date().getFullYear(),
+          },
+        },
+        `${eventKey.replace(/\./g, '_')}__${submissionId}`,
+      );
+
+      this.logger.log(`Seller submission notification enqueued: event=${eventKey} submission=${submissionId}`);
+    } catch (error) {
+      this.logger.error(
+        `Failed to dispatch ${eventKey} for submission ${submissionId}: ${error instanceof Error ? error.message : String(error)}`,
+      );
+    }
+  }
 }

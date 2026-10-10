@@ -85,6 +85,7 @@ model Category {
   children   Category[]          @relation("CategoryHierarchy")
   products   Product[]
   promotionTargets PromotionTarget[]
+  sellerSubmissions SellerSubmission[]
 
   @@index([isActive], map: "idx_categories_active")
   @@index([parentId], map: "idx_categories_parent")
@@ -127,6 +128,7 @@ model Product {
   coOccurrencesB ProductCoOccurrence[] @relation("CoOccurrenceB")
   wishlistItems  WishlistItem[]
   facetValues    ProductFacetValue[]
+  sellerSubmission SellerSubmission?
 
   @@index([categoryId], map: "idx_products_category")
   @@index([brandId], map: "idx_products_brand")
@@ -242,6 +244,60 @@ model Brand {
 
   @@index([isActive], map: "idx_brands_active")
   @@map("brands")
+}
+
+// --- Seller product submission (ANALISE_SELLER_PRODUCT_SUBMISSION.md) ---
+// Vendedor sem conta (mesmo padrão de Order.guestToken/Offer.guestToken) submete um
+// produto pro marketplace; aprovação cria um Product/ProductVariant/Inventory/ProductImage
+// de verdade a partir dos dados da submissão.
+
+model SellerSubmission {
+  id                String                    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  sellerName        String                    @map("seller_name")
+  sellerEmail       String                    @map("seller_email")
+  sellerPhone       String                    @map("seller_phone")
+  guestToken        String                    @unique @map("guest_token")
+
+  categoryId        String                    @map("category_id") @db.Uuid
+  brand             String
+  modelName         String                    @map("model_name")
+  size              String
+  condition         seller_item_condition
+  originalBox       Boolean?                  @map("original_box")
+  quantity          Int                       @default(1)
+  askingPrice       Decimal                   @map("asking_price") @db.Decimal(12, 2)
+  additionalDetails String?                   @map("additional_details")
+  spreadsheetLink   String?                   @map("spreadsheet_link")
+
+  status            seller_submission_status  @default(pending_review)
+  rejectionReason   String?                   @map("rejection_reason")
+  respondedAt       DateTime?                 @map("responded_at") @db.Timestamptz(6)
+  respondedBy       String?                   @map("responded_by") @db.Uuid
+
+  productId         String?                   @unique @map("product_id") @db.Uuid
+
+  createdAt         DateTime                  @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt         DateTime                  @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  category          Category                  @relation(fields: [categoryId], references: [id], onUpdate: NoAction)
+  product           Product?                  @relation(fields: [productId], references: [id], onUpdate: NoAction)
+  images            SellerSubmissionImage[]
+
+  @@index([status], map: "idx_seller_submissions_status")
+  @@index([guestToken], map: "idx_seller_submissions_guest_token")
+  @@map("seller_submissions")
+}
+
+model SellerSubmissionImage {
+  id           String           @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  submissionId String           @map("submission_id") @db.Uuid
+  url          String
+  position     Int              @default(0)
+  createdAt    DateTime         @default(now()) @map("created_at") @db.Timestamptz(6)
+  submission   SellerSubmission @relation(fields: [submissionId], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@index([submissionId], map: "idx_seller_submission_images_submission")
+  @@map("seller_submission_images")
 }
 
 model Facet {
@@ -700,6 +756,19 @@ enum product_status {
   draft
   active
   archived
+}
+
+enum seller_submission_status {
+  pending_review
+  approved
+  rejected
+}
+
+enum seller_item_condition {
+  new
+  like_new
+  used_good
+  used_fair
 }
 
 enum shipment_status {
