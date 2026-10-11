@@ -16,7 +16,9 @@ import { AuditContext } from '../../common/audit/audit-context';
 import { applyAuditContext } from '../../common/audit/audit-context.db';
 import { AuditLogService } from '../audit/audit-log.service';
 import { NotificationsService } from '../notifications/notifications.service';
+import { extractStoragePath } from '../../common/storage/storage-path.util';
 import { CreateSellerSubmissionDto } from './dto/create-seller-submission.dto';
+import { UpdateSellerSubmissionDto } from './dto/update-seller-submission.dto';
 import { QuerySellerSubmissionDto } from './dto/query-seller-submission.dto';
 import { ApproveSellerSubmissionDto } from './dto/approve-seller-submission.dto';
 import { RejectSellerSubmissionDto } from './dto/reject-seller-submission.dto';
@@ -233,6 +235,204 @@ export class SellerSubmissionsService {
       throw new NotFoundException('Submission not found');
     }
     return submission;
+  }
+
+  /**
+   * O admin pode corrigir qualquer campo — inclusive os dados do vendedor (nome/e-mail/
+   * telefone), que podem ter vindo errados no formulário. Só permitido enquanto
+   * `pending_review`: depois de aprovada já é um produto normal (edita-se por lá); depois
+   * de rejeitada é definitivo.
+   */
+  private async assertPendingReview(id: string) {
+    const submission = await this.prisma.sellerSubmission.findUnique({
+      where: { id },
+      select: { id: true, status: true },
+    });
+    if (!submission) {
+      throw new NotFoundException('Submission not found');
+    }
+    if (submission.status !== seller_submission_status.pending_review) {
+      throw new BadRequestException({
+        code: 'SUBMISSION_NOT_PENDING',
+        message: `Submission is already ${submission.status}; it can no longer be edited here.`,
+      });
+    }
+  }
+
+  async updateForAdmin(id: string, dto: UpdateSellerSubmissionDto, context?: AuditContext) {
+    await this.assertPendingReview(id);
+    const before = await this.prisma.sellerSubmission.findUnique({ where: { id } });
+
+    if (dto.categoryId) {
+      const category = await this.prisma.category.findUnique({
+        where: { id: dto.categoryId },
+        select: { id: true, isActive: true },
+      });
+      if (!category || !category.isActive) {
+        throw new BadRequestException('Category not found');
+      }
+    }
+
+    const updated = await this.prisma.$transaction(async (tx) => {
+      await applyAuditContext(tx, context);
+      return tx.sellerSubmission.update({
+        where: { id },
+        data: {
+          ...(dto.sellerName !== undefined ? { sellerName: dto.sellerName } : {}),
+          ...(dto.sellerEmail !== undefined ? { sellerEmail: dto.sellerEmail } : {}),
+          ...(dto.sellerPhone !== undefined ? { sellerPhone: dto.sellerPhone } : {}),
+          ...(dto.categoryId !== undefined ? { categoryId: dto.categoryId } : {}),
+          ...(dto.brand !== undefined ? { brand: dto.brand } : {}),
+          ...(dto.modelName !== undefined ? { modelName: dto.modelName } : {}),
+          ...(dto.size !== undefined ? { size: dto.size } : {}),
+          ...(dto.condition !== undefined ? { condition: dto.condition } : {}),
+          ...(dto.originalBox !== undefined ? { originalBox: dto.originalBox } : {}),
+          ...(dto.quantity !== undefined ? { quantity: dto.quantity } : {}),
+          ...(dto.askingPrice !== undefined ? { askingPrice: dto.askingPrice } : {}),
+          ...(dto.additionalDetails !== undefined ? { additionalDetails: dto.additionalDetails } : {}),
+          ...(dto.spreadsheetLink !== undefined ? { spreadsheetLink: dto.spreadsheetLink } : {}),
+        },
+        select: submissionSelect,
+      });
+    });
+
+    await this.auditLog.log({
+      action: 'update',
+      entity: 'seller_submission',
+      entityId: id,
+      before,
+      after: updated,
+      context,
+    });
+
+    return updated;
+  }
+
+  async addImages(id: string, files: Express.Multer.File[], context?: AuditContext) {
+    await this.assertPendingReview(id);
+    if (!files || files.length === 0) {
+      throw new BadRequestException('No files uploaded');
+    }
+
+    const existingCount = await this.prisma.sellerSubmissionImage.count({ where: { submissionId: id } });
+    if (existingCount + files.length > 10) {
+      throw new BadRequestException('A maximum of 10 pictures is allowed per submission');
+    }
+
+    for (const file of files) {
+      const detected = await fileTypeFromBuffer(file.buffer);
+      if (!detected || !ALLOWED_MIME_TYPES.includes(detected.mime)) {
+        throw new BadRequestException(
+          `Invalid file: ${file.originalname}. Only JPEG, PNG, WebP and GIF are allowed.`,
+        );
+      }
+    }
+
+    const positionBase =
+      (
+        await this.prisma.sellerSubmissionImage.aggregate({
+          where: { submissionId: id },
+          _max: { position: true },
+        })
+      )._max.position ?? -1;
+
+    const supabase = this.getSupabaseClient();
+    const { bucket, isPublic, signedTtl } = this.getStorageSettings();
+
+    const imageData = await Promise.all(
+      files.map(async (file, index) => {
+        const ext = extname(file.originalname).toLowerCase();
+        const path = `seller-submissions/${id}/${randomUUID()}${ext}`;
+
+        const { error: uploadError } = await supabase.storage
+          .from(bucket)
+          .upload(path, file.buffer, { contentType: file.mimetype, upsert: false });
+        if (uploadError) {
+          throw new BadRequestException(`Upload failed: ${uploadError.message}`);
+        }
+
+        let url: string;
+        if (isPublic) {
+          url = supabase.storage.from(bucket).getPublicUrl(path).data.publicUrl;
+        } else {
+          const { data: signed, error: signedError } = await supabase.storage
+            .from(bucket)
+            .createSignedUrl(path, signedTtl);
+          if (signedError || !signed?.signedUrl) {
+            throw new BadRequestException(
+              `Failed to generate signed URL: ${signedError?.message ?? 'unknown error'}`,
+            );
+          }
+          url = signed.signedUrl;
+        }
+
+        return { submissionId: id, url, position: positionBase + index + 1 };
+      }),
+    );
+
+    await this.prisma.sellerSubmissionImage.createMany({ data: imageData });
+
+    await this.auditLog.log({
+      action: 'update',
+      entity: 'seller_submission_image',
+      entityId: id,
+      after: { added: imageData.length },
+      context,
+    });
+
+    return this.findOneForAdmin(id);
+  }
+
+  async removeImage(id: string, imageId: string, context?: AuditContext) {
+    await this.assertPendingReview(id);
+    const image = await this.prisma.sellerSubmissionImage.findUnique({ where: { id: imageId } });
+    if (!image || image.submissionId !== id) {
+      throw new NotFoundException('Image not found');
+    }
+
+    await this.prisma.sellerSubmissionImage.delete({ where: { id: imageId } });
+
+    try {
+      const { bucket } = this.getStorageSettings();
+      const path = extractStoragePath(image.url, bucket);
+      if (path) {
+        await this.getSupabaseClient().storage.from(bucket).remove([path]).catch(() => undefined);
+      }
+    } catch (error) {
+      this.logger.warn(
+        `Failed to remove seller submission image ${imageId} from storage: ${error instanceof Error ? error.message : String(error)}`,
+      );
+    }
+
+    await this.auditLog.log({
+      action: 'delete',
+      entity: 'seller_submission_image',
+      entityId: imageId,
+      before: image,
+      after: null,
+      context,
+    });
+
+    return this.findOneForAdmin(id);
+  }
+
+  async reorderImages(id: string, items: { id: string; position: number }[], context?: AuditContext) {
+    await this.assertPendingReview(id);
+
+    const ids = items.map((item) => item.id);
+    const existing = await this.prisma.sellerSubmissionImage.findMany({ where: { id: { in: ids } } });
+    if (existing.length !== ids.length || existing.some((image) => image.submissionId !== id)) {
+      throw new BadRequestException('All images must belong to the submission');
+    }
+
+    await this.prisma.$transaction(async (tx) => {
+      await applyAuditContext(tx, context);
+      for (const item of items) {
+        await tx.sellerSubmissionImage.update({ where: { id: item.id }, data: { position: item.position } });
+      }
+    });
+
+    return this.findOneForAdmin(id);
   }
 
   /** `name` igual (sem diferenciar maiúsculas) já existente é reaproveitado; senão cria uma marca nova. */
