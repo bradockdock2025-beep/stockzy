@@ -801,6 +801,94 @@ export class NotificationsService {
     }
   }
 
+  /** Texto exato que o vendedor aceitou ao submeter — igual nos dois e-mails (recibo e espelho interno). */
+  private readonly sellerTermsDeclaration =
+    'Confirmo que sou o proprietário legítimo deste item, que a descrição fornecida é precisa, e que o item é autêntico.';
+
+  /**
+   * Recibo de consentimento — ANALISE-POLITICA-IDENTIDADE-SELLER-2026-10-11.md. O
+   * vendedor só consegue submeter com `termsAccepted: true`; isto manda o texto exato
+   * que aceitou, com timestamp, como prova que ele próprio guarda. Dispara sempre junto
+   * da submissão (não é um evento separado no tempo — `termsAcceptedAt` é gravado no
+   * mesmo instante que a submissão é criada).
+   */
+  async dispatchSellerSubmissionTermsAccepted(submissionId: string): Promise<void> {
+    try {
+      const submission = await this.prisma.sellerSubmission.findUnique({
+        where: { id: submissionId },
+        select: { sellerName: true, sellerEmail: true, brand: true, modelName: true, termsAcceptedAt: true },
+      });
+      if (!submission || !submission.termsAcceptedAt) return;
+
+      await this.notificationsQueue.enqueueEmail(
+        {
+          to: submission.sellerEmail,
+          subject: `Confirmação de termos — ${submission.brand} ${submission.modelName}`,
+          template: 'seller-submission-terms-accepted.pt.hbs',
+          context: {
+            sellerName: submission.sellerName,
+            brand: submission.brand,
+            modelName: submission.modelName,
+            declaration: this.sellerTermsDeclaration,
+            acceptedAt: this.formatDateTime(submission.termsAcceptedAt),
+            supportEmail: this.supportEmail,
+            year: new Date().getFullYear(),
+          },
+        },
+        `seller_submission_terms_accepted__${submissionId}`,
+      );
+
+      this.logger.log(`Seller submission terms-accepted notification enqueued: submission=${submissionId}`);
+    } catch (error) {
+      this.logger.error(
+        `Failed to dispatch terms-accepted notification for submission ${submissionId}: ${error instanceof Error ? error.message : String(error)}`,
+      );
+    }
+  }
+
+  /** Espelho interno do recibo de consentimento — prova de que foi mandado, com os dados de contacto. */
+  async dispatchSellerSubmissionTermsAcceptedInternal(submissionId: string): Promise<void> {
+    try {
+      const submission = await this.prisma.sellerSubmission.findUnique({
+        where: { id: submissionId },
+        select: {
+          sellerName: true,
+          sellerEmail: true,
+          sellerPhone: true,
+          brand: true,
+          modelName: true,
+          termsAcceptedAt: true,
+        },
+      });
+      if (!submission || !submission.termsAcceptedAt) return;
+
+      await this.notificationsQueue.enqueueEmail(
+        {
+          to: this.internalEmail,
+          subject: `Termos aceites — ${submission.brand} ${submission.modelName}`,
+          template: 'seller-submission-terms-accepted-internal.hbs',
+          context: {
+            sellerName: submission.sellerName,
+            sellerEmail: submission.sellerEmail,
+            sellerPhone: submission.sellerPhone,
+            brand: submission.brand,
+            modelName: submission.modelName,
+            declaration: this.sellerTermsDeclaration,
+            acceptedAt: this.formatDateTime(submission.termsAcceptedAt),
+            year: new Date().getFullYear(),
+          },
+        },
+        `seller_submission_terms_accepted_internal__${submissionId}`,
+      );
+
+      this.logger.log(`Internal terms-accepted notification enqueued: submission=${submissionId}`);
+    } catch (error) {
+      this.logger.error(
+        `Failed to dispatch internal terms-accepted notification for submission ${submissionId}: ${error instanceof Error ? error.message : String(error)}`,
+      );
+    }
+  }
+
   /**
    * `approved` aqui só significa "aceitámos o teu item" — ainda não existe produto nem
    * link de loja (isso só acontece em `dispatchSellerSubmissionPublished`, passo separado).
@@ -858,6 +946,59 @@ export class NotificationsService {
     }
   }
 
+  /**
+   * Espelho interno de `dispatchSellerSubmissionDecision` — toda notificação que vai pro
+   * vendedor devia ter uma equivalente pra equipa, não só a de "recebido". Serve de
+   * registo paralelo (fora da base de dados) do que foi efetivamente comunicado, com
+   * quem tomou a decisão.
+   */
+  async dispatchSellerSubmissionDecisionInternal(
+    eventKey: 'seller_submission.approved' | 'seller_submission.rejected',
+    submissionId: string,
+    actorEmail?: string | null,
+  ): Promise<void> {
+    const isApproved = eventKey === 'seller_submission.approved';
+
+    try {
+      const submission = await this.prisma.sellerSubmission.findUnique({
+        where: { id: submissionId },
+        select: {
+          sellerName: true,
+          sellerEmail: true,
+          brand: true,
+          modelName: true,
+          rejectionReason: true,
+        },
+      });
+      if (!submission) return;
+
+      await this.notificationsQueue.enqueueEmail(
+        {
+          to: this.internalEmail,
+          subject: `${isApproved ? 'Submissão aprovada' : 'Submissão rejeitada'} — ${submission.brand} ${submission.modelName}`,
+          template: 'seller-submission-decision-internal.hbs',
+          context: {
+            isApproved,
+            sellerName: submission.sellerName,
+            sellerEmail: submission.sellerEmail,
+            brand: submission.brand,
+            modelName: submission.modelName,
+            rejectionReason: submission.rejectionReason ?? '',
+            actorEmail: actorEmail ?? 'desconhecido',
+            year: new Date().getFullYear(),
+          },
+        },
+        `${eventKey.replace(/\./g, '_')}_internal__${submissionId}`,
+      );
+
+      this.logger.log(`Internal seller submission decision notification enqueued: event=${eventKey} submission=${submissionId}`);
+    } catch (error) {
+      this.logger.error(
+        `Failed to dispatch internal ${eventKey} notification for submission ${submissionId}: ${error instanceof Error ? error.message : String(error)}`,
+      );
+    }
+  }
+
   /** Publicação (passo final) — agora existe um produto de verdade, com link pra loja. */
   async dispatchSellerSubmissionPublished(submissionId: string): Promise<void> {
     try {
@@ -895,6 +1036,54 @@ export class NotificationsService {
     } catch (error) {
       this.logger.error(
         `Failed to dispatch seller submission published for ${submissionId}: ${error instanceof Error ? error.message : String(error)}`,
+      );
+    }
+  }
+
+  /** Espelho interno de `dispatchSellerSubmissionPublished` — mesma lógica das outras duas. */
+  async dispatchSellerSubmissionPublishedInternal(
+    submissionId: string,
+    actorEmail?: string | null,
+  ): Promise<void> {
+    try {
+      const submission = await this.prisma.sellerSubmission.findUnique({
+        where: { id: submissionId },
+        select: {
+          sellerName: true,
+          sellerEmail: true,
+          brand: true,
+          modelName: true,
+          askingPrice: true,
+          quantity: true,
+          product: { select: { slug: true } },
+        },
+      });
+      if (!submission) return;
+
+      await this.notificationsQueue.enqueueEmail(
+        {
+          to: this.internalEmail,
+          subject: `Submissão publicada — ${submission.brand} ${submission.modelName}`,
+          template: 'seller-submission-published-internal.hbs',
+          context: {
+            sellerName: submission.sellerName,
+            sellerEmail: submission.sellerEmail,
+            brand: submission.brand,
+            modelName: submission.modelName,
+            askingPrice: Number(submission.askingPrice).toFixed(2),
+            quantity: submission.quantity,
+            productUrl: submission.product ? `${this.frontendUrl}/products/${submission.product.slug}` : this.frontendUrl,
+            actorEmail: actorEmail ?? 'desconhecido',
+            year: new Date().getFullYear(),
+          },
+        },
+        `seller_submission_published_internal__${submissionId}`,
+      );
+
+      this.logger.log(`Internal seller submission published notification enqueued: submission=${submissionId}`);
+    } catch (error) {
+      this.logger.error(
+        `Failed to dispatch internal published notification for submission ${submissionId}: ${error instanceof Error ? error.message : String(error)}`,
       );
     }
   }

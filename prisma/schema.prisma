@@ -275,6 +275,7 @@ model SellerSubmission {
   respondedBy       String?                   @map("responded_by") @db.Uuid
   publishedAt       DateTime?                 @map("published_at") @db.Timestamptz(6)
   publishedBy       String?                   @map("published_by") @db.Uuid
+  termsAcceptedAt   DateTime?                 @map("terms_accepted_at") @db.Timestamptz(6)
 
   productId         String?                   @unique @map("product_id") @db.Uuid
 

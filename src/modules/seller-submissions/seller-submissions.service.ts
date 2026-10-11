@@ -47,6 +47,7 @@ const submissionSelect = {
   respondedBy: true,
   publishedAt: true,
   publishedBy: true,
+  termsAcceptedAt: true,
   productId: true,
   createdAt: true,
   updatedAt: true,
@@ -103,6 +104,11 @@ export class SellerSubmissionsService {
   // ─── Portal de venda (público) ──────────────────────────────────────────
 
   async create(dto: CreateSellerSubmissionDto, files: Express.Multer.File[]) {
+    if (dto.termsAccepted !== true) {
+      throw new BadRequestException(
+        'You must confirm you are the legitimate owner of this item and that the description is accurate.',
+      );
+    }
     if (!files || files.length === 0) {
       throw new BadRequestException('At least one picture is required');
     }
@@ -180,12 +186,15 @@ export class SellerSubmissionsService {
         askingPrice: dto.askingPrice,
         additionalDetails: dto.additionalDetails ?? null,
         spreadsheetLink: dto.spreadsheetLink ?? null,
+        termsAcceptedAt: new Date(),
         images: { createMany: { data: imageData } },
       },
     });
 
     void this.notificationsService.dispatchSellerSubmissionReceived(id);
     void this.notificationsService.dispatchSellerSubmissionInternal(id);
+    void this.notificationsService.dispatchSellerSubmissionTermsAccepted(id);
+    void this.notificationsService.dispatchSellerSubmissionTermsAcceptedInternal(id);
 
     return { id, guestToken };
   }
@@ -229,6 +238,31 @@ export class SellerSubmissionsService {
     };
   }
 
+  /**
+   * Histórico mínimo, sem exigir conta de vendedor: outras submissões com o mesmo
+   * e-mail ou telefone. Não é um "perfil" (não pega variações de contacto), mas já
+   * resolve o caso mais comum — a equipa reconhecer um vendedor recorrente, ou um
+   * contacto já rejeitado antes, no momento da revisão.
+   */
+  private async findRelatedSubmissions(id: string, sellerEmail: string, sellerPhone: string) {
+    return this.prisma.sellerSubmission.findMany({
+      where: {
+        id: { not: id },
+        OR: [{ sellerEmail }, { sellerPhone }],
+      },
+      select: {
+        id: true,
+        brand: true,
+        modelName: true,
+        status: true,
+        rejectionReason: true,
+        productId: true,
+        createdAt: true,
+      },
+      orderBy: { createdAt: 'desc' },
+    });
+  }
+
   async findOneForAdmin(id: string) {
     const submission = await this.prisma.sellerSubmission.findUnique({
       where: { id },
@@ -237,7 +271,14 @@ export class SellerSubmissionsService {
     if (!submission) {
       throw new NotFoundException('Submission not found');
     }
-    return submission;
+
+    const relatedSubmissions = await this.findRelatedSubmissions(
+      id,
+      submission.sellerEmail,
+      submission.sellerPhone,
+    );
+
+    return { ...submission, relatedSubmissions };
   }
 
   /**
@@ -465,6 +506,47 @@ export class SellerSubmissionsService {
     return created.id;
   }
 
+  /**
+   * ANALISE-CONDICAO-PRODUTO-2026-10-11.md — facet `condition` já é criado pela
+   * migration (New/Like New/Used – Good/Used – Fair), mas busca por `value` em vez de
+   * assumir que existe: se o facet ainda não tiver sido criado num ambiente (ex. testes
+   * locais sem a migration), cria na hora — mesmo espírito defensivo do
+   * `findOrCreateBrand`.
+   */
+  private async findOrCreateConditionFacetValue(
+    tx: Prisma.TransactionClient,
+    condition: string,
+  ): Promise<string> {
+    const labels: Record<string, string> = {
+      new: 'New',
+      like_new: 'Like New',
+      used_good: 'Used – Good',
+      used_fair: 'Used – Fair',
+    };
+
+    let facet = await tx.facet.findUnique({ where: { key: 'condition' }, select: { id: true } });
+    if (!facet) {
+      facet = await tx.facet.create({
+        data: { key: 'condition', name: 'Condition', inputType: 'chip', scope: 'product', visibility: 'always' },
+        select: { id: true },
+      });
+    }
+
+    const existing = await tx.facetValue.findUnique({
+      where: { facetId_value: { facetId: facet.id, value: condition } },
+      select: { id: true },
+    });
+    if (existing) {
+      return existing.id;
+    }
+
+    const created = await tx.facetValue.create({
+      data: { facetId: facet.id, value: condition, label: labels[condition] ?? condition },
+      select: { id: true },
+    });
+    return created.id;
+  }
+
   /** Estados em que a submissão ainda não teve uma decisão final (aprovar/rejeitar). */
   private static readonly OPEN_STATUSES: seller_submission_status[] = [
     seller_submission_status.pending_review,
@@ -563,6 +645,11 @@ export class SellerSubmissionsService {
     });
 
     void this.notificationsService.dispatchSellerSubmissionDecision('seller_submission.approved', id);
+    void this.notificationsService.dispatchSellerSubmissionDecisionInternal(
+      'seller_submission.approved',
+      id,
+      context?.actorEmail,
+    );
 
     return updated;
   }
@@ -606,6 +693,11 @@ export class SellerSubmissionsService {
     });
 
     void this.notificationsService.dispatchSellerSubmissionDecision('seller_submission.rejected', id);
+    void this.notificationsService.dispatchSellerSubmissionDecisionInternal(
+      'seller_submission.rejected',
+      id,
+      context?.actorEmail,
+    );
 
     return updated;
   }
@@ -678,6 +770,11 @@ export class SellerSubmissionsService {
         });
       }
 
+      const conditionFacetValueId = await this.findOrCreateConditionFacetValue(tx, submission.condition);
+      await tx.productFacetValue.create({
+        data: { productId: product.id, facetValueId: conditionFacetValueId },
+      });
+
       return tx.sellerSubmission.update({
         where: { id },
         data: {
@@ -700,6 +797,7 @@ export class SellerSubmissionsService {
     });
 
     void this.notificationsService.dispatchSellerSubmissionPublished(id);
+    void this.notificationsService.dispatchSellerSubmissionPublishedInternal(id, context?.actorEmail);
 
     return updated;
   }

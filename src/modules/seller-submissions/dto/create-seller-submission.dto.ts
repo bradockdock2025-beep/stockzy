@@ -72,4 +72,13 @@ export class CreateSellerSubmissionDto {
   @IsOptional()
   @IsUrl()
   spreadsheetLink?: string;
+
+  /**
+   * Checkbox obrigatório — "confirmo que sou o proprietário legítimo deste item e que a
+   * descrição é precisa". Só `true` passa; `create()` recusa qualquer outro valor. Não
+   * existe estado "recusado" — quem não aceita, simplesmente não consegue submeter.
+   */
+  @Type(() => Boolean)
+  @IsBoolean()
+  termsAccepted: boolean;
 }
