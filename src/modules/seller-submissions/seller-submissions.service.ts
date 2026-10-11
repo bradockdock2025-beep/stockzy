@@ -45,6 +45,8 @@ const submissionSelect = {
   rejectionReason: true,
   respondedAt: true,
   respondedBy: true,
+  publishedAt: true,
+  publishedBy: true,
   productId: true,
   createdAt: true,
   updatedAt: true,
@@ -183,6 +185,7 @@ export class SellerSubmissionsService {
     });
 
     void this.notificationsService.dispatchSellerSubmissionReceived(id);
+    void this.notificationsService.dispatchSellerSubmissionInternal(id);
 
     return { id, guestToken };
   }
@@ -239,11 +242,12 @@ export class SellerSubmissionsService {
 
   /**
    * O admin pode corrigir qualquer campo — inclusive os dados do vendedor (nome/e-mail/
-   * telefone), que podem ter vindo errados no formulário. Só permitido enquanto
-   * `pending_review`: depois de aprovada já é um produto normal (edita-se por lá); depois
-   * de rejeitada é definitivo.
+   * telefone), que podem ter vindo errados no formulário. Permitido em `pending_review`,
+   * `under_review` e `approved` — aprovar não cria o produto, então ainda há espaço pra
+   * ajustar preço/fotos/categoria antes de publicar. Trava só depois de `published`
+   * (já é um produto normal, edita-se por lá) ou `rejected` (definitivo).
    */
-  private async assertPendingReview(id: string) {
+  private async assertEditable(id: string) {
     const submission = await this.prisma.sellerSubmission.findUnique({
       where: { id },
       select: { id: true, status: true },
@@ -251,16 +255,19 @@ export class SellerSubmissionsService {
     if (!submission) {
       throw new NotFoundException('Submission not found');
     }
-    if (submission.status !== seller_submission_status.pending_review) {
+    if (
+      submission.status === seller_submission_status.published ||
+      submission.status === seller_submission_status.rejected
+    ) {
       throw new BadRequestException({
-        code: 'SUBMISSION_NOT_PENDING',
+        code: 'SUBMISSION_LOCKED',
         message: `Submission is already ${submission.status}; it can no longer be edited here.`,
       });
     }
   }
 
   async updateForAdmin(id: string, dto: UpdateSellerSubmissionDto, context?: AuditContext) {
-    await this.assertPendingReview(id);
+    await this.assertEditable(id);
     const before = await this.prisma.sellerSubmission.findUnique({ where: { id } });
 
     if (dto.categoryId) {
@@ -309,7 +316,7 @@ export class SellerSubmissionsService {
   }
 
   async addImages(id: string, files: Express.Multer.File[], context?: AuditContext) {
-    await this.assertPendingReview(id);
+    await this.assertEditable(id);
     if (!files || files.length === 0) {
       throw new BadRequestException('No files uploaded');
     }
@@ -384,7 +391,7 @@ export class SellerSubmissionsService {
   }
 
   async removeImage(id: string, imageId: string, context?: AuditContext) {
-    await this.assertPendingReview(id);
+    await this.assertEditable(id);
     const image = await this.prisma.sellerSubmissionImage.findUnique({ where: { id: imageId } });
     if (!image || image.submissionId !== id) {
       throw new NotFoundException('Image not found');
@@ -417,7 +424,7 @@ export class SellerSubmissionsService {
   }
 
   async reorderImages(id: string, items: { id: string; position: number }[], context?: AuditContext) {
-    await this.assertPendingReview(id);
+    await this.assertEditable(id);
 
     const ids = items.map((item) => item.id);
     const existing = await this.prisma.sellerSubmissionImage.findMany({ where: { id: { in: ids } } });
@@ -458,17 +465,67 @@ export class SellerSubmissionsService {
     return created.id;
   }
 
-  async approve(id: string, dto: ApproveSellerSubmissionDto, context?: AuditContext) {
+  /** Estados em que a submissão ainda não teve uma decisão final (aprovar/rejeitar). */
+  private static readonly OPEN_STATUSES: seller_submission_status[] = [
+    seller_submission_status.pending_review,
+    seller_submission_status.under_review,
+  ];
+
+  /**
+   * Marca que alguém começou a rever — sinal pra equipe não duplicar trabalho em filas
+   * partilhadas. Puramente informativo: aprovar/rejeitar continuam a funcionar mesmo que
+   * ninguém tenha passado por aqui.
+   */
+  async startReview(id: string, context?: AuditContext) {
     const submission = await this.prisma.sellerSubmission.findUnique({
       where: { id },
-      include: { images: { orderBy: { position: 'asc' } } },
+      select: { id: true, status: true },
     });
     if (!submission) {
       throw new NotFoundException('Submission not found');
     }
     if (submission.status !== seller_submission_status.pending_review) {
       throw new BadRequestException({
-        code: 'SUBMISSION_NOT_PENDING',
+        code: 'SUBMISSION_NOT_PENDING_REVIEW',
+        message: `Submission is already ${submission.status}.`,
+      });
+    }
+
+    const updated = await this.prisma.$transaction(async (tx) => {
+      await applyAuditContext(tx, context);
+      return tx.sellerSubmission.update({
+        where: { id },
+        data: { status: seller_submission_status.under_review },
+        select: submissionSelect,
+      });
+    });
+
+    await this.auditLog.log({
+      action: 'start_review',
+      entity: 'seller_submission',
+      entityId: id,
+      before: { status: submission.status },
+      after: { status: updated.status },
+      context,
+    });
+
+    return updated;
+  }
+
+  /**
+   * Decisão de aceitar o item — NÃO cria o produto nem publica na loja. Isso é um passo
+   * separado (`publish`), porque aprovar não significa que já deve ficar visível de
+   * imediato (ex.: a equipe ainda quer confirmar que recebeu o item fisicamente, trocar
+   * fotos, ou simplesmente agrupar publicações).
+   */
+  async approve(id: string, dto: ApproveSellerSubmissionDto, context?: AuditContext) {
+    const submission = await this.prisma.sellerSubmission.findUnique({ where: { id } });
+    if (!submission) {
+      throw new NotFoundException('Submission not found');
+    }
+    if (!SellerSubmissionsService.OPEN_STATUSES.includes(submission.status)) {
+      throw new BadRequestException({
+        code: 'SUBMISSION_NOT_OPEN',
         message: `Submission is already ${submission.status}.`,
       });
     }
@@ -480,6 +537,97 @@ export class SellerSubmissionsService {
     });
     if (!category || !category.isActive) {
       throw new BadRequestException('Category not found');
+    }
+
+    const updated = await this.prisma.$transaction(async (tx) => {
+      await applyAuditContext(tx, context);
+      return tx.sellerSubmission.update({
+        where: { id },
+        data: {
+          status: seller_submission_status.approved,
+          categoryId,
+          respondedAt: new Date(),
+          respondedBy: context?.actorId ?? null,
+        },
+        select: submissionSelect,
+      });
+    });
+
+    await this.auditLog.log({
+      action: 'approve',
+      entity: 'seller_submission',
+      entityId: id,
+      before: { status: submission.status },
+      after: { status: updated.status, categoryId: updated.categoryId },
+      context,
+    });
+
+    void this.notificationsService.dispatchSellerSubmissionDecision('seller_submission.approved', id);
+
+    return updated;
+  }
+
+  async reject(id: string, dto: RejectSellerSubmissionDto, context?: AuditContext) {
+    const submission = await this.prisma.sellerSubmission.findUnique({ where: { id } });
+    if (!submission) {
+      throw new NotFoundException('Submission not found');
+    }
+    if (
+      submission.status === seller_submission_status.published ||
+      submission.status === seller_submission_status.rejected
+    ) {
+      throw new BadRequestException({
+        code: 'SUBMISSION_LOCKED',
+        message: `Submission is already ${submission.status}.`,
+      });
+    }
+
+    const updated = await this.prisma.$transaction(async (tx) => {
+      await applyAuditContext(tx, context);
+      return tx.sellerSubmission.update({
+        where: { id },
+        data: {
+          status: seller_submission_status.rejected,
+          rejectionReason: dto.rejectionReason,
+          respondedAt: new Date(),
+          respondedBy: context?.actorId ?? null,
+        },
+        select: submissionSelect,
+      });
+    });
+
+    await this.auditLog.log({
+      action: 'reject',
+      entity: 'seller_submission',
+      entityId: id,
+      before: { status: submission.status },
+      after: { status: updated.status, rejectionReason: updated.rejectionReason },
+      context,
+    });
+
+    void this.notificationsService.dispatchSellerSubmissionDecision('seller_submission.rejected', id);
+
+    return updated;
+  }
+
+  /**
+   * Última ação: cria o `Product`/`ProductVariant`/`Inventory`/`ProductImage` de verdade e
+   * deixa o item visível na loja. Só a partir de `approved` — publicar é uma escolha
+   * explícita, não uma consequência automática de aprovar.
+   */
+  async publish(id: string, context?: AuditContext) {
+    const submission = await this.prisma.sellerSubmission.findUnique({
+      where: { id },
+      include: { images: { orderBy: { position: 'asc' } } },
+    });
+    if (!submission) {
+      throw new NotFoundException('Submission not found');
+    }
+    if (submission.status !== seller_submission_status.approved) {
+      throw new BadRequestException({
+        code: 'SUBMISSION_NOT_APPROVED',
+        message: `Submission must be approved before it can be published; it is currently ${submission.status}.`,
+      });
     }
 
     const updated = await this.prisma.$transaction(async (tx) => {
@@ -498,7 +646,7 @@ export class SellerSubmissionsService {
 
       const product = await tx.product.create({
         data: {
-          categoryId,
+          categoryId: submission.categoryId,
           brandId,
           name: `${submission.brand} ${submission.modelName}`.trim(),
           slug,
@@ -533,66 +681,25 @@ export class SellerSubmissionsService {
       return tx.sellerSubmission.update({
         where: { id },
         data: {
-          status: seller_submission_status.approved,
-          categoryId,
+          status: seller_submission_status.published,
           productId: product.id,
-          respondedAt: new Date(),
-          respondedBy: context?.actorId ?? null,
+          publishedAt: new Date(),
+          publishedBy: context?.actorId ?? null,
         },
         select: submissionSelect,
       });
     });
 
     await this.auditLog.log({
-      action: 'approve',
+      action: 'publish',
       entity: 'seller_submission',
       entityId: id,
       before: { status: submission.status },
-      after: { status: updated.status, productId: updated.productId, categoryId: updated.categoryId },
+      after: { status: updated.status, productId: updated.productId },
       context,
     });
 
-    void this.notificationsService.dispatchSellerSubmissionDecision('seller_submission.approved', id);
-
-    return updated;
-  }
-
-  async reject(id: string, dto: RejectSellerSubmissionDto, context?: AuditContext) {
-    const submission = await this.prisma.sellerSubmission.findUnique({ where: { id } });
-    if (!submission) {
-      throw new NotFoundException('Submission not found');
-    }
-    if (submission.status !== seller_submission_status.pending_review) {
-      throw new BadRequestException({
-        code: 'SUBMISSION_NOT_PENDING',
-        message: `Submission is already ${submission.status}.`,
-      });
-    }
-
-    const updated = await this.prisma.$transaction(async (tx) => {
-      await applyAuditContext(tx, context);
-      return tx.sellerSubmission.update({
-        where: { id },
-        data: {
-          status: seller_submission_status.rejected,
-          rejectionReason: dto.rejectionReason,
-          respondedAt: new Date(),
-          respondedBy: context?.actorId ?? null,
-        },
-        select: submissionSelect,
-      });
-    });
-
-    await this.auditLog.log({
-      action: 'reject',
-      entity: 'seller_submission',
-      entityId: id,
-      before: { status: submission.status },
-      after: { status: updated.status, rejectionReason: updated.rejectionReason },
-      context,
-    });
-
-    void this.notificationsService.dispatchSellerSubmissionDecision('seller_submission.rejected', id);
+    void this.notificationsService.dispatchSellerSubmissionPublished(id);
 
     return updated;
   }

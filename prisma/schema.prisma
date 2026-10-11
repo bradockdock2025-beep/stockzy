@@ -273,6 +273,8 @@ model SellerSubmission {
   rejectionReason   String?                   @map("rejection_reason")
   respondedAt       DateTime?                 @map("responded_at") @db.Timestamptz(6)
   respondedBy       String?                   @map("responded_by") @db.Uuid
+  publishedAt       DateTime?                 @map("published_at") @db.Timestamptz(6)
+  publishedBy       String?                   @map("published_by") @db.Uuid
 
   productId         String?                   @unique @map("product_id") @db.Uuid
 
@@ -760,7 +762,9 @@ enum product_status {
 
 enum seller_submission_status {
   pending_review
+  under_review
   approved
+  published
   rejected
 }
 

@@ -64,7 +64,7 @@ export class SellerSubmissionsAdminController {
         }
         cb(null, true);
       },
-      limits: { fileSize: 15 * 1024 * 1024 },
+      limits: { fileSize: 25 * 1024 * 1024 },
     }),
   )
   addImages(
@@ -93,6 +93,11 @@ export class SellerSubmissionsAdminController {
     return this.sellerSubmissionsService.reorderImages(id, dto.images, buildAuditContext(req));
   }
 
+  @Patch(':id/start-review')
+  startReview(@Param('id', new ParseUUIDPipe()) id: string, @Req() req: ReqWithAuth) {
+    return this.sellerSubmissionsService.startReview(id, buildAuditContext(req));
+  }
+
   @Patch(':id/approve')
   approve(
     @Param('id', new ParseUUIDPipe()) id: string,
@@ -109,5 +114,10 @@ export class SellerSubmissionsAdminController {
     @Req() req: ReqWithAuth,
   ) {
     return this.sellerSubmissionsService.reject(id, dto, buildAuditContext(req));
+  }
+
+  @Patch(':id/publish')
+  publish(@Param('id', new ParseUUIDPipe()) id: string, @Req() req: ReqWithAuth) {
+    return this.sellerSubmissionsService.publish(id, buildAuditContext(req));
   }
 }

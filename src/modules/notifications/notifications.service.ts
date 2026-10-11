@@ -747,12 +747,71 @@ export class NotificationsService {
     }
   }
 
+  /**
+   * Avisa o time interno que chegou uma submissão nova — sem isto, "revisão manual" não
+   * tem gatilho nenhum, ninguém saberia que existe algo esperando em
+   * /admin/seller-submissions.
+   */
+  async dispatchSellerSubmissionInternal(submissionId: string): Promise<void> {
+    try {
+      const submission = await this.prisma.sellerSubmission.findUnique({
+        where: { id: submissionId },
+        select: {
+          sellerName: true,
+          sellerEmail: true,
+          sellerPhone: true,
+          brand: true,
+          modelName: true,
+          size: true,
+          condition: true,
+          quantity: true,
+          askingPrice: true,
+          category: { select: { name: true } },
+        },
+      });
+      if (!submission) return;
+
+      await this.notificationsQueue.enqueueEmail(
+        {
+          to: this.internalEmail,
+          subject: `Nova submissão de vendedor — ${submission.brand} ${submission.modelName}`,
+          template: 'seller-submission-internal.hbs',
+          context: {
+            sellerName: submission.sellerName,
+            sellerEmail: submission.sellerEmail,
+            sellerPhone: submission.sellerPhone,
+            brand: submission.brand,
+            modelName: submission.modelName,
+            size: submission.size,
+            condition: submission.condition,
+            quantity: submission.quantity,
+            askingPrice: Number(submission.askingPrice).toFixed(2),
+            categoryName: submission.category?.name ?? '',
+            year: new Date().getFullYear(),
+          },
+        },
+        `seller_submission_internal__${submissionId}`,
+      );
+
+      this.logger.log(`Internal seller submission notification enqueued: submission=${submissionId}`);
+    } catch (error) {
+      this.logger.error(
+        `Failed to dispatch internal seller submission notification for ${submissionId}: ${error instanceof Error ? error.message : String(error)}`,
+      );
+    }
+  }
+
+  /**
+   * `approved` aqui só significa "aceitámos o teu item" — ainda não existe produto nem
+   * link de loja (isso só acontece em `dispatchSellerSubmissionPublished`, passo separado).
+   * `rejected` é definitivo.
+   */
   async dispatchSellerSubmissionDecision(
     eventKey: 'seller_submission.approved' | 'seller_submission.rejected',
     submissionId: string,
   ): Promise<void> {
     const subjects: Record<'seller_submission.approved' | 'seller_submission.rejected', string> = {
-      'seller_submission.approved': 'Your item was approved and is now listed!',
+      'seller_submission.approved': 'Your item was approved!',
       'seller_submission.rejected': 'Update on your submission',
     };
     const templates: Record<'seller_submission.approved' | 'seller_submission.rejected', string> = {
@@ -769,7 +828,6 @@ export class NotificationsService {
           brand: true,
           modelName: true,
           rejectionReason: true,
-          product: { select: { slug: true } },
         },
       });
       if (!submission) return;
@@ -784,7 +842,6 @@ export class NotificationsService {
             brand: submission.brand,
             modelName: submission.modelName,
             rejectionReason: submission.rejectionReason ?? '',
-            productUrl: submission.product ? `${this.frontendUrl}/products/${submission.product.slug}` : this.frontendUrl,
             storeUrl: this.frontendUrl,
             supportEmail: this.supportEmail,
             year: new Date().getFullYear(),
@@ -797,6 +854,47 @@ export class NotificationsService {
     } catch (error) {
       this.logger.error(
         `Failed to dispatch ${eventKey} for submission ${submissionId}: ${error instanceof Error ? error.message : String(error)}`,
+      );
+    }
+  }
+
+  /** Publicação (passo final) — agora existe um produto de verdade, com link pra loja. */
+  async dispatchSellerSubmissionPublished(submissionId: string): Promise<void> {
+    try {
+      const submission = await this.prisma.sellerSubmission.findUnique({
+        where: { id: submissionId },
+        select: {
+          sellerName: true,
+          sellerEmail: true,
+          brand: true,
+          modelName: true,
+          product: { select: { slug: true } },
+        },
+      });
+      if (!submission) return;
+
+      await this.notificationsQueue.enqueueEmail(
+        {
+          to: submission.sellerEmail,
+          subject: `Your item is now listed! — ${submission.brand} ${submission.modelName}`,
+          template: 'seller-submission-published.en.hbs',
+          context: {
+            sellerName: submission.sellerName,
+            brand: submission.brand,
+            modelName: submission.modelName,
+            productUrl: submission.product ? `${this.frontendUrl}/products/${submission.product.slug}` : this.frontendUrl,
+            storeUrl: this.frontendUrl,
+            supportEmail: this.supportEmail,
+            year: new Date().getFullYear(),
+          },
+        },
+        `seller_submission_published__${submissionId}`,
+      );
+
+      this.logger.log(`Seller submission published notification enqueued: submission=${submissionId}`);
+    } catch (error) {
+      this.logger.error(
+        `Failed to dispatch seller submission published for ${submissionId}: ${error instanceof Error ? error.message : String(error)}`,
       );
     }
   }
